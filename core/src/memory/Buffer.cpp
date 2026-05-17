@@ -4,7 +4,7 @@
 #include <utility>
 
 namespace core::memory {
-Buffer::Buffer(const std::size_t size) : m_size(size), m_data(new std::byte[size]) {}
+Buffer::Buffer(const std::size_t size) noexcept : m_size(size), m_data(new std::byte[size]) {}
 
 Buffer::Buffer(Buffer&& other) noexcept : m_size(other.m_size), m_data(std::exchange(other.m_data, nullptr)) {}
 
@@ -12,7 +12,7 @@ Buffer::~Buffer() {
   delete[] m_data;
 }
 
-void* Buffer::at(std::size_t offset) const {
+void* Buffer::at(const std::size_t offset) const {
   if (offset >= m_size) {
     throw std::out_of_range(
         std::format("core::memory:Buffer::at(): offset {} out of range (max {})", offset, m_size - 1));
@@ -20,17 +20,14 @@ void* Buffer::at(std::size_t offset) const {
   return m_data + offset;
 }
 
-std::size_t Buffer::size() const {
+std::size_t Buffer::size() const noexcept {
   return m_size;
 }
 
-bool Buffer::contains(uintptr_t address) const {
+bool Buffer::contains(void* ptr) const noexcept {
   const auto start = reinterpret_cast<uintptr_t>(m_data);
   const auto end = start + m_size;
+  const auto address = reinterpret_cast<uintptr_t>(ptr);
   return address >= start && address < end;
-}
-
-bool Buffer::contains(void* ptr) const {
-  return contains(reinterpret_cast<uintptr_t>(ptr));
 }
 }  // namespace core::memory

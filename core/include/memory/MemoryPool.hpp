@@ -1,6 +1,5 @@
 #pragma once
 
-#include <format>
 #include <shared_mutex>
 #include <vector>
 
@@ -25,8 +24,12 @@ class IBinConfig {
    * used to calculate the total size of the memory chunk that will be allocated for the bin.
    * @param blockSize The size of each block in bytes. This determines the size of each block that will be allocated
    * within the bin, and is used to calculate the total size of the memory chunk that will be allocated for the bin.
+   * @param growthNumerator Numerator for the growth ratio used when computing grow size.
+   * @param growthDenominator Denominator for the growth ratio used when computing grow size.
+   *
    */
-  explicit IBinConfig(std::size_t blocks, std::size_t blockSize) noexcept;
+  explicit IBinConfig(std::size_t blocks, std::size_t blockSize, std::size_t growthNumerator = 1,
+                      std::size_t growthDenominator = 1) noexcept;
 
   /**
    * @brief Destructs the IBinConfig object. The destructor is declared as pure virtual to make the class abstract.
@@ -47,6 +50,40 @@ class IBinConfig {
    */
   [[nodiscard]] std::size_t capacity() const noexcept;
 
+  /**
+   * @brief Returns the numerator of the growth ratio used when computing the size to grow the bin.
+   *
+   * A growth ratio less than 1 will result in logarithmic growth of the bin, a growth ratio of 1 will result in linear
+   * growth of the bin, and a growth ratio greater than 1 will result in exponential growth of the bin. The growth ratio
+   * allows for a flexible approach to managing the growth of the bin, and can be adjusted based on the expected
+   * allocation patterns and performance requirements of the application.
+   *
+   * The choice of growth ratio can impact the performance of the memory pool, as it affects how quickly the bin grows
+   * in response to allocation requests, and how efficiently it manages memory over time.
+   *
+   * @return The numerator of the growth ratio used when computing the size to grow the bin.
+   */
+  [[nodiscard]] std::size_t growthNumerator() const noexcept {
+    return m_growthNumerator;
+  }
+
+  /**
+   * @brief Returns the denominator of the growth ratio used when computing the size to grow the bin.
+   *
+   * A growth ratio less than 1 will result in logarithmic growth of the bin, a growth ratio of 1 will result in linear
+   * growth of the bin, and a growth ratio greater than 1 will result in exponential growth of the bin. The growth ratio
+   * allows for a flexible approach to managing the growth of the bin, and can be adjusted based on the expected
+   * allocation patterns and performance requirements of the application.
+   *
+   * The choice of growth ratio can impact the performance of the memory pool, as it affects how quickly the bin grows
+   * in response to allocation requests, and how efficiently it manages memory over time.
+   *
+   * @return The denominator of the growth ratio used when computing the size to grow the bin.
+   */
+  [[nodiscard]] std::size_t growthDenominator() const noexcept {
+    return m_growthDenominator;
+  }
+
  private:
   /**
    * @brief The size of each block in bytes.
@@ -57,6 +94,16 @@ class IBinConfig {
    * @brief The number of blocks that can be stored in the bin.
    */
   const std::size_t m_capacity;
+
+  /**
+   * @brief The numerator of the growth ratio used when computing the size to grow the bin.
+   */
+  const std::size_t m_growthNumerator;
+
+  /**
+   * @brief The denominator of the growth ratio used when computing the size to grow the bin.
+   */
+  const std::size_t m_growthDenominator;
 };
 
 /**
@@ -79,8 +126,12 @@ class BinConfig : public IBinConfig {
    * @brief Constructs a new BinConfig object with the specified number of blocks.
    *
    * @param blocks The number of blocks that can be stored in the bin.
+   * @param growthNumerator Numerator for the growth ratio used when computing grow size.
+   * @param growthDenominator Denominator for the growth ratio used when computing grow size.
    */
-  explicit BinConfig(const std::size_t blocks) noexcept : IBinConfig(blocks, BlockSize) {}
+  explicit BinConfig(const std::size_t blocks, const std::size_t growthNumerator = 1,
+                     const std::size_t growthDenominator = 1) noexcept
+      : IBinConfig(blocks, BlockSize, growthNumerator, growthDenominator) {}
 
   /**
    * @brief Destructs the BinConfig object.
@@ -94,89 +145,6 @@ class BinConfig : public IBinConfig {
  */
 struct Block {
   Block* next;
-};
-
-/**
- * @brief A chunk of memory containing a fixed number of blocks of a certain size.
- *
- * Each chunk contains a @c Buffer that encapsulates a single contiguous block of memory. This allows for efficient
- * allocation and deallocation of memory blocks, as well as minimizing fragmentation.
- */
-class Chunk {
- public:
-  /**
-   * @brief Constructs a new Chunk object with the specified number of blocks and block size.
-   *
-   * @param blocks The number of blocks in the chunk.
-   * @param blockSize The size of each block in bytes.
-   */
-  explicit Chunk(std::size_t blocks, std::size_t blockSize) noexcept;
-
-  /**
-   * @brief Move constructor for the Chunk class.
-   */
-  explicit Chunk(Chunk&& other) noexcept;
-
-  /**
-   * @brief The copy constructor is deleted to prevent copying of Chunk objects, as they manage unique resources (memory
-   * buffers).
-   */
-  explicit Chunk(const Chunk&) = delete;
-
-  /**
-   * @brief The copy assignment operator is deleted to prevent copying of Chunk objects, as they manage unique resources
-   * (memory buffers).
-   */
-  Chunk& operator=(const Chunk&) = delete;
-
-  /**
-   * @brief The move assignment operator is deleted to prevent moving of Chunk objects, as they manage unique resources
-   * (memory buffers).
-   */
-  Chunk& operator=(Chunk&&) = delete;
-
-  /**
-   * @brief Returns a pointer to the block at the specified index within the chunk. The index is zero-based, and the
-   * block size is determined by the block size specified when the chunk was created. If the index is out of range
-   * (greater than or equal to the number of blocks), a @c std::out_of_range exception is thrown.
-   *
-   * @param index The zero-based index of the block to retrieve.
-   * @return A pointer to the block at the specified index within the chunk.
-   * @throws std::out_of_range If the index is out of range (greater than or equal to the number of blocks).
-   */
-  [[nodiscard]] void* get(std::size_t index) const noexcept;
-
-  [[nodiscard]] void* get() const noexcept;
-
-  std::size_t blocks() const noexcept;
-
-  std::size_t blockSize() const noexcept;
-
-  /**
-   * @brief Checks if the specified pointer is within the memory range of the chunk.
-   *
-   * @param ptr The pointer to check.
-   * @return true if the pointer is within the memory range of the chunk, false otherwise.
-   */
-  bool contains(void* ptr) const noexcept;
-
- private:
-  /**
-   * @brief The number of blocks in the chunk.
-   */
-  const std::size_t m_blocks;
-
-  /**
-   * @brief The size of each block in bytes.
-   */
-  const std::size_t m_blockSize;
-
-  /**
-   * @brief The buffer that holds the actual memory for the chunk. The buffer is allocated as a single contiguous block
-   * of memory, and the blocks are accessed by calculating their offset within the buffer. The buffer is managed by the
-   * @c Buffer class, which handles memory allocation and deallocation.
-   */
-  const Buffer m_buffer;
 };
 
 /**
@@ -223,8 +191,8 @@ class Bin {
   /**
    * @brief Allocates a block of memory from the bin.
    *
-   * The allocation will take the block at the top of the free list. If there are no elements in the free list, a new @c
-   * Chunk will be allocated and configured.
+   * The allocation will take the block at the top of the free list. If there are no elements in the free list, a new
+   * chunk will be allocated and configured.
    *
    * The allocation process is thread-safe, allowing for concurrent allocations
    * from multiple threads without causing data races or other synchronization issues.
@@ -252,7 +220,7 @@ class Bin {
    *
    * @return A reference to the IBinConfig object that defines the configuration for this bin.
    */
-  [[nodiscard]] const IBinConfig& config() const;
+  [[nodiscard]] const std::shared_ptr<const IBinConfig>& config() const;
 
   /**
    * @brief Checks if the specified pointer is within the memory range of the chunks managed by this bin.
@@ -274,6 +242,17 @@ class Bin {
   void grow();
 
   /**
+   * @brief Calculates the number of blocks to allocate for the next chunk based on the growth ratio defined in the
+   * bin's configuration. The growth ratio is determined by the growth numerator and denominator, and can result in
+   * logarithmic, linear, or exponential growth of the bin. The calculation takes into account the number of chunks
+   * already allocated, and determines the appropriate number of blocks to allocate for the next chunk to efficiently
+   * manage memory and handle allocation requests.
+   *
+   * @return The number of blocks to allocate for the next chunk when growing the bin.
+   */
+  std::size_t calculateGrowth() const noexcept;
+
+  /**
    * @brief A mutex that protects access to the list of memory chunks managed by this bin.
    */
   mutable std::shared_mutex m_chunkMutex;
@@ -283,7 +262,7 @@ class Bin {
    * that is divided into blocks of a certain size, as defined by the bin's configuration. The chunks are allocated as
    * needed when the bin grows, and are used to satisfy allocation requests from the free list.
    */
-  std::vector<Chunk> m_chunks;
+  std::vector<Buffer> m_chunks;
 
   /**
    * @brief A pointer to the head of the intrusive freelist. Each free block stores a FreeNode at its start,
@@ -425,7 +404,7 @@ class MemoryPool {
  * cases.
  */
 inline MemoryPool defaultMemoryPool({
-    std::make_shared<const BinConfig<8>>(1000000),
+    std::make_shared<const BinConfig<8>>(10000000),
     std::make_shared<const BinConfig<16>>(5000000),
     std::make_shared<const BinConfig<32>>(2500000),
     std::make_shared<const BinConfig<64>>(100000),
