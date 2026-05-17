@@ -14,6 +14,8 @@ add_library(jaybird_core STATIC
         src/memory/Allocator.cpp
         include/memory/Allocator.hpp
         src/SpinLock.cpp
-        include/SpinLock.hpp)
+        include/SpinLock.hpp
+        src/memory/MemoryArena.cpp
+        include/memory/MemoryArena.hpp)
 
 target_include_directories(jaybird_core PUBLIC "include")
