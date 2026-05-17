@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Google
+---
+
+Language: Cpp
+
+InsertBraces: true
+AllowShortFunctionsOnASingleLine: Empty
+ColumnLimit: 120
+InsertNewlineAtEOF: true
