@@ -8,7 +8,7 @@ Buffer::Buffer(const std::size_t size) noexcept : m_size(size), m_data(new std::
 
 Buffer::Buffer(Buffer&& other) noexcept : m_size(other.m_size), m_data(std::exchange(other.m_data, nullptr)) {}
 
-Buffer::~Buffer() {
+Buffer::~Buffer() noexcept {
   delete[] m_data;
 }
 
@@ -25,6 +25,10 @@ std::size_t Buffer::size() const noexcept {
 }
 
 bool Buffer::contains(void* ptr) const noexcept {
+  if (!m_data) {
+    return false;
+  }
+
   const auto start = reinterpret_cast<uintptr_t>(m_data);
   const auto end = start + m_size;
   const auto address = reinterpret_cast<uintptr_t>(ptr);

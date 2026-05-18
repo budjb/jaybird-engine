@@ -14,22 +14,14 @@ std::size_t alignUp(const std::size_t size, const std::size_t alignment) {
 }  // namespace
 
 namespace core::memory {
-IBinConfig::IBinConfig(const std::size_t blocks, const std::size_t blockSize, const std::size_t growthNumerator,
-                       const std::size_t growthDenominator) noexcept
-    : m_size(blockSize),
-      m_capacity(blocks),
-      m_growthNumerator(growthNumerator == 0 ? 1 : growthNumerator),
-      m_growthDenominator(growthDenominator == 0 ? 1 : growthDenominator) {}
+BinConfig::BinConfig(const std::size_t blocks, const std::size_t blockSize, const std::size_t growthNumerator,
+                     const std::size_t growthDenominator) noexcept
+    : size(blockSize),
+      capacity(blocks),
+      growthNumerator(growthNumerator == 0 ? 1 : growthNumerator),
+      growthDenominator(growthDenominator == 0 ? 1 : growthDenominator) {}
 
-std::size_t IBinConfig::size() const noexcept {
-  return m_size;
-}
-
-std::size_t IBinConfig::capacity() const noexcept {
-  return m_capacity;
-}
-
-Bin::Bin(const std::shared_ptr<const IBinConfig>& config) noexcept : m_config(config) {
+Bin::Bin(const BinConfig& config) noexcept : m_config(config) {
 #ifndef NDEBUG
   assert(m_config->size() > MINIMUM_ALIGNMENT && (m_config->size() & m_config->size() - 1) == 0 &&
          "core::memory:Bin::Bin(): block size must be a power of two and greater than the size of a byte");
@@ -56,7 +48,7 @@ void Bin::deallocate(void* ptr) noexcept {
   m_free = node;
 }
 
-const std::shared_ptr<const IBinConfig>& Bin::config() const {
+const BinConfig& Bin::config() const noexcept {
   return m_config;
 }
 
@@ -69,7 +61,7 @@ void Bin::grow() {
   std::unique_lock lock(m_chunkMutex);
 
   const auto count = calculateGrowth();
-  const auto size = m_config->size();
+  const auto size = m_config.size;
 
   if (count > std::numeric_limits<std::size_t>::max() / size) {
     throw std::overflow_error("core::memory:Bin::grow(): buffer size overflow");
@@ -90,15 +82,15 @@ void Bin::grow() {
 }
 
 std::size_t Bin::calculateGrowth() const noexcept {
-  const auto numerator = m_config->growthNumerator();
-  const auto denominator = m_config->growthDenominator();
+  const auto numerator = m_config.growthNumerator;
+  const auto denominator = m_config.growthDenominator;
 
   if (numerator == denominator) {
-    return m_config->capacity();
+    return m_config.capacity;
   }
 
   const auto nextChunkIndex = m_chunks.size() + 1;
-  const auto capacity = static_cast<long double>(m_config->capacity());
+  const auto capacity = static_cast<long double>(m_config.capacity);
   const auto ratio = static_cast<long double>(numerator) / static_cast<long double>(denominator);
 
   if (numerator < denominator) {
@@ -110,16 +102,18 @@ std::size_t Bin::calculateGrowth() const noexcept {
   return std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(scaled)));
 }
 
-MemoryPool::MemoryPool(std::vector<std::shared_ptr<const IBinConfig>>&& bins) {
-  std::ranges::sort(bins, [](const std::shared_ptr<const IBinConfig>& a, const std::shared_ptr<const IBinConfig>& b) {
-    return a->size() < b->size();
-  });
+MemoryPool::MemoryPool(std::vector<BinConfig>&& bins) {
+  if (bins.empty()) {
+    throw std::invalid_argument("core::memory:MemoryPool::MemoryPool(): bins cannot be empty");
+  }
+
+  std::ranges::sort(bins, [](const BinConfig& a, const BinConfig& b) { return a.size < b.size; });
 
   for (auto& bin : bins) {
     m_bins.emplace_back(bin);
   }
 
-  m_alignment = m_bins.front().config()->size();
+  m_alignment = m_bins.front().config().size;
 }
 
 void* MemoryPool::allocate(const std::size_t size) {
@@ -127,13 +121,18 @@ void* MemoryPool::allocate(const std::size_t size) {
 }
 
 void* MemoryPool::allocate(const std::size_t size, const std::size_t alignment) {
-  const auto aligned = alignUp(size, alignment);
+  const auto requestedAlignment = std::max<std::size_t>(1, alignment);
+  const auto aligned = alignUp(size, requestedAlignment);
 
-  if (auto* bin = findBin(aligned)) {
+  if (auto* bin = findBin(aligned, requestedAlignment)) {
     return bin->allocate();
   }
 
-  return operator new(alignUp(size, alignment));
+  if (requestedAlignment > alignof(std::max_align_t)) {
+    return operator new(aligned, static_cast<std::align_val_t>(requestedAlignment));
+  }
+
+  return operator new(aligned);
 }
 
 void* MemoryPool::allocate(const rtti::IType* type) {
@@ -141,21 +140,42 @@ void* MemoryPool::allocate(const rtti::IType* type) {
 }
 
 void MemoryPool::deallocate(void* ptr, const std::size_t size) {
-  const auto aligned = alignUp(size, m_alignment);
-
-  if (auto* bin = findBin(aligned)) {
-    bin->deallocate(ptr);
-  } else {
-    operator delete(ptr);
-  }
+  deallocate(ptr, size, m_alignment);
 }
 
-Bin* MemoryPool::findBin(const std::size_t size) {
-  const auto it = std::ranges::lower_bound(m_bins.begin(), m_bins.end(), size, std::less(),
-                                           [](const Bin& bin) { return bin.config()->size(); });
+void MemoryPool::deallocate(void* ptr, const std::size_t size, const std::size_t alignment) {
+  if (!ptr) {
+    return;
+  }
 
-  if (it != m_bins.end()) {
-    return &*it;
+  const auto requestedAlignment = std::max<std::size_t>(1, alignment);
+  const auto aligned = alignUp(size, requestedAlignment);
+
+  if (auto* bin = findBin(aligned, requestedAlignment)) {
+    bin->deallocate(ptr);
+    return;
+  }
+
+  if (requestedAlignment > alignof(std::max_align_t)) {
+    operator delete(ptr, static_cast<std::align_val_t>(requestedAlignment));
+    return;
+  }
+
+  operator delete(ptr);
+}
+
+Bin* MemoryPool::findBin(const std::size_t size, const std::size_t alignment) noexcept {
+  if (alignment > alignof(std::max_align_t)) {
+    return nullptr;
+  }
+
+  // Bin sizes are power-of-two values. For power-of-two alignment, divisibility
+  // reduces to selecting a bin whose size is >= both requested size and alignment.
+  const auto requiredSize = std::max(size, alignment);
+  for (auto& bin : m_bins) {
+    if (bin.config().size >= requiredSize) {
+      return &bin;
+    }
   }
 
   return nullptr;

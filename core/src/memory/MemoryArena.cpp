@@ -1,5 +1,7 @@
 #include "memory/MemoryArena.hpp"
 
+#include <cstddef>
+
 namespace core::memory {
 MemoryArena::MemoryArena(const std::size_t size) noexcept
     : m_size(size), m_data(new std::byte[m_size]), m_cursor(reinterpret_cast<uintptr_t>(m_data)) {}
@@ -9,6 +11,10 @@ MemoryArena::~MemoryArena() noexcept {
 }
 
 void* MemoryArena::allocate(const std::size_t size, const std::size_t alignment) noexcept {
+  if (alignment == 0 || (alignment & alignment - 1) != 0 || alignment > alignof(std::max_align_t)) {
+    return nullptr;
+  }
+
   const auto current_address = m_cursor;
   const auto offset = (alignment - current_address % alignment) % alignment;
   const auto aligned_address = current_address + offset;

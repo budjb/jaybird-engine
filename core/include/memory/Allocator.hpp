@@ -1,10 +1,202 @@
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
+#include <concepts>
+#include <limits>
+#include <memory>
+#include <new>
+#include <type_traits>
 
 #include "MemoryPool.hpp"
 
 namespace core::memory {
+/**
+ * @brief Concept that defines the requirements for a type to be considered an Allocator. This concept checks for the
+ * presence of the necessary type aliases and member functions that are required for a type to be used as an allocator
+ * in the C++ Standard Library. If a type satisfies all of these requirements, it can be used as an allocator in
+ * standard containers and algorithms that support custom allocators.
+ */
+template <typename A>
+concept Allocator =
+    requires(A a, typename std::allocator_traits<A>::size_type n, typename std::allocator_traits<A>::pointer p) {
+      typename std::allocator_traits<A>::value_type;
+      { std::allocator_traits<A>::allocate(a, n) } -> std::same_as<typename std::allocator_traits<A>::pointer>;
+      { std::allocator_traits<A>::deallocate(a, p, n) } -> std::same_as<void>;
+    };
+
+/**
+ * @brief A variable template that provides a convenient way to check if a type satisfies the Allocator concept. This
+ * variable template can be used in static assertions or other compile-time checks to ensure that a type is a valid
+ * allocator before using it in standard containers or algorithms that require allocators. If the type satisfies the
+ * Allocator concept, this variable will be true; otherwise, it will be false.
+ *
+ * @tparam T The type to check for satisfying the Allocator concept.
+ * @return true if the type satisfies the Allocator concept, false otherwise.
+ */
+template <typename T>
+inline constexpr bool is_allocator_v = Allocator<T>;
+
+/**
+ * @brief A simple allocator class that manages memory allocations and deallocations using the global heap. This
+ * allocator is designed to satisfy the C++ Standard Library's allocator requirements, allowing it to be used with
+ * standard containers and algorithms that support custom allocators. The allocator uses the global heap for all memory
+ * operations, and does not provide any additional functionality or optimizations beyond what is required by the
+ * Allocator concept.
+ *
+ * @tparam T The type of objects that this allocator manages. This type will be used to determine the size of memory
+ * blocks to allocate and deallocate, and to ensure that the allocator is compatible with standard containers that
+ * require specific types of allocators.
+ */
+template <typename T>
+class HeapAllocator {
+ public:
+  /**
+   * @brief The type of objects that this allocator manages. This type will be used to determine the size of memory
+   * blocks to allocate and deallocate, and to ensure that the allocator is compatible with standard containers that
+   * require specific types of allocators.
+   */
+  using value_type = T;
+
+  /**
+   * @brief Indicates that this allocator should propagate on container move assignment.
+   *
+   * This means that if a container is move-assigned from another container that uses this allocator, the allocator will
+   * be moved along with the container, rather than being copied or left unchanged. This is important for ensuring that
+   * the allocator's resources are properly transferred during move operations, and can help to optimize performance by
+   * avoiding unnecessary copies of the allocator.
+   */
+  using propagate_on_container_move_assignment = std::true_type;
+
+  /**
+   * @brief Indicates that all instances of this allocator type are considered equal.
+   *
+   * This means that if two containers use this allocator type, they will be considered to have the same allocator,
+   * regardless of whether they are the same instance or not.
+   */
+  using is_always_equal = std::true_type;
+
+  /**
+   * @brief Rebind structure for the Allocator class. This structure allows for rebinding the allocator to a different
+   * type, while still satisfying the Allocator concept. The @c other type alias within this structure defines the type
+   * of allocator that can be used to manage objects of the new type. This is important for ensuring that the allocator
+   * can be used with standard containers that require specific types of allocators, and allows for flexibility in how
+   * the allocator can be used with different types of objects.
+   *
+   * @tparam U The type of objects that the rebound Allocator will manage. This type can be different from the type
+   * managed by this Allocator, as long as the rebound Allocator satisfies the Allocator concept and can be used with
+   * standard containers that require specific types of allocators.
+   */
+  template <typename U>
+  friend class HeapAllocator;
+
+  /**
+   * @brief Constructs a new heap allocator.
+   */
+  HeapAllocator() noexcept = default;
+
+  /**
+   * @brief Copy constructor for the Allocator class.
+   */
+  HeapAllocator(const HeapAllocator&) noexcept = default;
+
+  /**
+   * @brief Move constructor for the Allocator class.
+   */
+  HeapAllocator(HeapAllocator&&) noexcept = default;
+
+  /**
+   * @brief Copy constructor for the Allocator class that allows for copying of Allocator objects.
+   *
+   * @tparam U The type of objects that the other Allocator manages.
+   */
+  template <typename U>
+  HeapAllocator(const HeapAllocator<U>&) noexcept {}
+
+  /**
+   * @brief Copy assignment for the Allocator class.
+   *
+   * @returns A reference to this Allocator object after the assignment.
+   */
+  HeapAllocator& operator=(const HeapAllocator&) noexcept = default;
+
+  /**
+   * @brief Move assignment for the Allocator class.
+   *
+   * @returns A reference to this Allocator object after the assignment.
+   */
+  HeapAllocator& operator=(HeapAllocator&&) noexcept = default;
+
+  /**
+   * @brief Destructor for the Allocator class.
+   */
+  ~HeapAllocator() noexcept = default;
+
+  /**
+   * @brief Allocates a block of memory from the global heap for an array of objects of the specified type. The size of
+   * the memory block to allocate is determined by the number of objects and the size of the type, and the allocation is
+   * made using the global heap allocator (e.g., using ::operator new).
+   *
+   * @param n The number of objects to allocate memory for.
+   * @return A pointer to the allocated memory block. The caller is responsible for ensuring that the allocated memory
+   * is properly deallocated when it is no longer needed.
+   */
+  T* allocate(const std::size_t n) {
+    if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
+      throw std::bad_array_new_length();
+    }
+
+    if constexpr (alignof(T) > alignof(std::max_align_t)) {
+      return static_cast<T*>(operator new(n * sizeof(T), static_cast<std::align_val_t>(alignof(T))));
+    } else {
+      return static_cast<T*>(operator new(n * sizeof(T)));
+    }
+  }
+
+  /**
+   * @brief Frees a block of memory back to the global heap. The provided pointer must have been previously allocated
+   * from the global heap, and must not have already been freed. The pointer is deallocated using the global heap
+   * deallocator (e.g., using ::operator delete).
+   *
+   * @param ptr The pointer to the block of memory to free. This pointer must have been previously allocated from the
+   * global heap, and must not have already been freed.
+   */
+  void deallocate(T* ptr, const std::size_t) noexcept {
+    if constexpr (alignof(T) > alignof(std::max_align_t)) {
+      ::operator delete(ptr, static_cast<std::align_val_t>(alignof(T)));
+    } else {
+      ::operator delete(ptr);
+    }
+  }
+
+  [[nodiscard]] HeapAllocator select_on_container_copy_construction() const noexcept {
+    return {};
+  }
+};
+
+/**
+ * @brief Equality comparison operator for Allocator objects.
+ *
+ * @tparam T  The type of objects that the first Allocator manages.
+ * @tparam U The type of objects that the second Allocator manages.
+ * @return true if the two Allocator objects are considered equal, false otherwise.
+ */
+template <typename T, typename U>
+bool operator==(const HeapAllocator<T>&, const HeapAllocator<U>&) noexcept {
+  return true;
+}
+
+/**
+ * @brief Inequality comparison operator for Allocator objects.
+ *
+ * @tparam T The type of objects that the first Allocator manages.
+ * @tparam U The type of objects that the second Allocator manages.
+ * @return true if the two Allocator objects are not considered equal, false otherwise.
+ */
+template <typename T, typename U>
+bool operator!=(const HeapAllocator<T>&, const HeapAllocator<U>&) noexcept {
+  return false;
+}
+
 /**
  * @brief A custom allocator class that manages memory allocations and deallocations using a memory pool.
  *
@@ -18,34 +210,15 @@ namespace core::memory {
  * require specific types of allocators.
  */
 template <typename T>
-class Allocator {
+class PoolAllocator {
  public:
   /**
    * @brief The type of objects that this allocator manages.
    */
   using value_type = T;
 
-  /**
-   * @brief The type used to represent the size of memory blocks and the number of objects to allocate.
-   */
-  using size_type = std::size_t;
-
-  /**
-   * @brief The type used to represent the difference between two pointers, or the number of objects between two
-   * pointers.
-   */
-  using difference_type = std::ptrdiff_t;
-
-  /**
-   * @brief The type used to represent a pointer to an object of the type managed by this allocator, and a pointer to a
-   * constant object of the type managed by this allocator.
-   */
-  using pointer = T*;
-
-  /**
-   * @brief The type used to represent a pointer to a constant object of the type managed by this allocator.
-   */
-  using const_pointer = const T*;
+  using propagate_on_container_move_assignment = std::true_type;
+  using is_always_equal = std::false_type;
 
   /**
    * @brief Constructs a new Allocator object.
@@ -57,7 +230,7 @@ class Allocator {
    * @param pool An optional pointer to a MemoryPool object that this allocator will use for memory management. If
    * nullptr, the allocator will use the global heap allocator instead.
    */
-  explicit Allocator(MemoryPool* pool = nullptr) noexcept : m_pool(pool) {};
+  explicit PoolAllocator(MemoryPool* pool = nullptr) noexcept : m_pool(pool) {};
 
   /**
    * @brief Copy constructor for the Allocator class. This constructor allows for copying of Allocator objects, but the
@@ -71,7 +244,7 @@ class Allocator {
    * and will use that pool for all memory operations.
    */
   template <class U>
-  explicit Allocator(const Allocator<U>& other) noexcept : m_pool(other.pool()) {}
+  PoolAllocator(const PoolAllocator<U>& other) noexcept : m_pool(other.pool()) {}
 
   /**
    * @brief Rebind structure for the Allocator class. This structure allows for rebinding the allocator to a different
@@ -83,7 +256,7 @@ class Allocator {
    */
   template <class U>
   struct rebind {
-    using other = Allocator<U>;
+    using other = PoolAllocator<U>;
   };
 
   /**
@@ -97,7 +270,7 @@ class Allocator {
    * @return A pointer to the allocated memory block. The caller is responsible for ensuring that the allocated memory
    * is properly deallocated when it is no longer needed.
    */
-  T* allocate(const size_type n) {
+  T* allocate(const std::size_t n) {
     if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
       throw std::bad_array_new_length();
     }
@@ -106,7 +279,11 @@ class Allocator {
       return static_cast<T*>(m_pool->allocate(n * sizeof(T), alignof(T)));
     }
 
-    return static_cast<T*>(operator new(n * sizeof(T)));
+    if constexpr (alignof(T) > alignof(std::max_align_t)) {
+      return static_cast<T*>(operator new(n * sizeof(T), static_cast<std::align_val_t>(alignof(T))));
+    } else {
+      return static_cast<T*>(operator new(n * sizeof(T)));
+    }
   }
 
   /**
@@ -121,12 +298,20 @@ class Allocator {
    * @param n The number of objects that were allocated in the memory block. This number will be used to determine the
    * size of the memory block to free, and to ensure that the block is properly deallocated.
    */
-  void deallocate(T* ptr, const size_type n) noexcept {
+  void deallocate(T* ptr, const std::size_t n) noexcept {
     if (m_pool) {
-      m_pool->deallocate(ptr, n * sizeof(T));
+      m_pool->deallocate(ptr, n * sizeof(T), alignof(T));
     } else {
-      operator delete(ptr);
+      if constexpr (alignof(T) > alignof(std::max_align_t)) {
+        ::operator delete(ptr, static_cast<std::align_val_t>(alignof(T)));
+      } else {
+        ::operator delete(ptr);
+      }
     }
+  }
+
+  [[nodiscard]] PoolAllocator select_on_container_copy_construction() const noexcept {
+    return *this;
   }
 
   /**
@@ -158,7 +343,7 @@ class Allocator {
  * @return true if the two Allocator objects are considered equal, false otherwise.
  */
 template <typename T, typename U>
-bool operator==(const Allocator<T>& a, const Allocator<U>& b) noexcept {
+bool operator==(const PoolAllocator<T>& a, const PoolAllocator<U>& b) noexcept {
   return a.pool() == b.pool();
 }
 
@@ -171,7 +356,7 @@ bool operator==(const Allocator<T>& a, const Allocator<U>& b) noexcept {
  * @return true if the two Allocator objects are not considered equal, false otherwise.
  */
 template <typename T, typename U>
-bool operator!=(const Allocator<T>& a, const Allocator<U>& b) noexcept {
+bool operator!=(const PoolAllocator<T>& a, const PoolAllocator<U>& b) noexcept {
   return a.pool() != b.pool();
 }
 }  // namespace core::memory

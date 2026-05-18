@@ -13,8 +13,68 @@ namespace core::memory {
  * the size of the blocks in the bin, as well as the number of blocks that can be stored in the bin. This information is
  * used by the Bin class to manage the memory allocation and deallocation of blocks within the bin.
  */
-class IBinConfig {
+class BinConfig {
  public:
+  /**
+   * @brief Creates a new BinConfig object with the specified number of blocks and block size. The block size must be a
+   * power of two and greater than or equal to the minimum alignment (e.g., 8 bytes). The growth numerator and
+   * denominator can be used to define the growth ratio for the bin when it needs to grow (e.g., when the free list is
+   * empty). The growth ratio determines how many blocks to allocate for the next chunk when growing the bin, allowing
+   * for logarithmic, linear, or exponential growth based on the provided values.
+   *
+   * The growth ratio is calculated as follows:
+   * - If the growth numerator is equal to the growth denominator, the growth ratio is 1, and the bin will grow by a
+   * fixed number of blocks equal to the initial capacity each time it needs to grow.
+   * - If the growth numerator is less than the growth denominator, the growth ratio is less than 1, and the bin will
+   * grow logarithmically, with the number of blocks allocated for the next chunk increasing based on the logarithm of
+   * the number of chunks already allocated.
+   * - If the growth numerator is greater than the growth denominator, the growth ratio is greater than 1, and the bin
+   * will grow exponentially, with the number of blocks allocated for the next chunk increasing based on the power of
+   * the growth ratio and the number of chunks already allocated.
+   *
+   * @tparam BlockSize The size of each block in bytes. This must be a power of two and greater than or equal to the
+   * minimum alignment (e.g., 8 bytes). The block size determines the size of each block that will be allocated within
+   * the bin, and is used to calculate the total size of the memory chunk that will be allocated for the bin.
+   * @param blocks The number of blocks that can be stored in the bin. This determines the capacity of the bin, and is
+   * used to calculate the total size of the memory chunk that will be allocated for the bin.
+   * @param growthNumerator Numerator for the growth ratio used when computing grow size. This value can be used in
+   * conjunction with the growth denominator to define the growth ratio for the bin when it needs to grow. The growth
+   * ratio determines how many blocks to allocate for the next chunk when growing the bin, allowing for logarithmic,
+   * linear, or exponential growth based on the provided values.
+   * @param growthDenominator Denominator for the growth ratio used when computing grow size. This value can be used in
+   * conjunction with the growth numerator to define the growth ratio for the bin when it needs to grow. The growth
+   * ratio determines how many blocks to allocate for the next chunk when growing the bin, allowing for logarithmic,
+   * linear, or exponential growth based on the provided values.
+   * @return A new BinConfig object with the specified configuration for the bin.
+   */
+  template <std::size_t BlockSize>
+    requires(BlockSize >= MINIMUM_ALIGNMENT && (BlockSize & BlockSize - 1) == 0)
+  static BinConfig create(const std::size_t blocks, const std::size_t growthNumerator = 1,
+                          const std::size_t growthDenominator = 1) noexcept {
+    return BinConfig(blocks, BlockSize, growthNumerator, growthDenominator);
+  }
+
+  /**
+   * @brief The size of each block in bytes.
+   */
+  std::size_t size;
+
+  /**
+   * @brief The number of blocks that can be stored in the bin.
+   */
+  std::size_t capacity;
+
+  /**
+   * @brief The numerator of the growth ratio used when computing the size to grow the bin.
+   */
+  std::size_t growthNumerator;
+
+  /**
+   * @brief The denominator of the growth ratio used when computing the size to grow the bin.
+   */
+  std::size_t growthDenominator;
+
+ private:
   /**
    * @brief Constructs a new IBinConfig object with the specified number of blocks and block size. The constructor
    * initializes the internal state of the IBinConfig object, and sets the size and capacity of the bin based on the
@@ -28,115 +88,8 @@ class IBinConfig {
    * @param growthDenominator Denominator for the growth ratio used when computing grow size.
    *
    */
-  explicit IBinConfig(std::size_t blocks, std::size_t blockSize, std::size_t growthNumerator = 1,
-                      std::size_t growthDenominator = 1) noexcept;
-
-  /**
-   * @brief Destructs the IBinConfig object. The destructor is declared as pure virtual to make the class abstract.
-   */
-  virtual ~IBinConfig() = default;
-
-  /**
-   * @brief Returns the size of each block in bytes.
-   *
-   * @return The size of each block in bytes.
-   */
-  [[nodiscard]] std::size_t size() const noexcept;
-
-  /**
-   * @brief Returns the number of blocks that can be stored in the bin.
-   *
-   * @return The number of blocks that can be stored in the bin.
-   */
-  [[nodiscard]] std::size_t capacity() const noexcept;
-
-  /**
-   * @brief Returns the numerator of the growth ratio used when computing the size to grow the bin.
-   *
-   * A growth ratio less than 1 will result in logarithmic growth of the bin, a growth ratio of 1 will result in linear
-   * growth of the bin, and a growth ratio greater than 1 will result in exponential growth of the bin. The growth ratio
-   * allows for a flexible approach to managing the growth of the bin, and can be adjusted based on the expected
-   * allocation patterns and performance requirements of the application.
-   *
-   * The choice of growth ratio can impact the performance of the memory pool, as it affects how quickly the bin grows
-   * in response to allocation requests, and how efficiently it manages memory over time.
-   *
-   * @return The numerator of the growth ratio used when computing the size to grow the bin.
-   */
-  [[nodiscard]] std::size_t growthNumerator() const noexcept {
-    return m_growthNumerator;
-  }
-
-  /**
-   * @brief Returns the denominator of the growth ratio used when computing the size to grow the bin.
-   *
-   * A growth ratio less than 1 will result in logarithmic growth of the bin, a growth ratio of 1 will result in linear
-   * growth of the bin, and a growth ratio greater than 1 will result in exponential growth of the bin. The growth ratio
-   * allows for a flexible approach to managing the growth of the bin, and can be adjusted based on the expected
-   * allocation patterns and performance requirements of the application.
-   *
-   * The choice of growth ratio can impact the performance of the memory pool, as it affects how quickly the bin grows
-   * in response to allocation requests, and how efficiently it manages memory over time.
-   *
-   * @return The denominator of the growth ratio used when computing the size to grow the bin.
-   */
-  [[nodiscard]] std::size_t growthDenominator() const noexcept {
-    return m_growthDenominator;
-  }
-
- private:
-  /**
-   * @brief The size of each block in bytes.
-   */
-  const std::size_t m_size;
-
-  /**
-   * @brief The number of blocks that can be stored in the bin.
-   */
-  const std::size_t m_capacity;
-
-  /**
-   * @brief The numerator of the growth ratio used when computing the size to grow the bin.
-   */
-  const std::size_t m_growthNumerator;
-
-  /**
-   * @brief The denominator of the growth ratio used when computing the size to grow the bin.
-   */
-  const std::size_t m_growthDenominator;
-};
-
-/**
- * @brief A concrete implementation of the IBinConfig interface that represents a memory bin with a fixed block size.
- * The BinConfig class is a template class that takes a single template parameter, BlockSize, which specifies the size
- * of each block in bytes.
- *
- * The BinConfig class is constrained to only accept block sizes that are greater than zero and are powers of two. This
- * constraint ensures that the block size is valid for memory allocation and deallocation, and allows for efficient
- * memory management within the bin.
- *
- * @tparam BlockSize The size of each block in bytes. This must be greater than or equal to 8 and a power of two (e.g.,
- * 8, 16, 32, etc.).
- */
-template <std::size_t BlockSize>
-  requires(BlockSize >= MINIMUM_ALIGNMENT && (BlockSize & BlockSize - 1) == 0)
-class BinConfig : public IBinConfig {
- public:
-  /**
-   * @brief Constructs a new BinConfig object with the specified number of blocks.
-   *
-   * @param blocks The number of blocks that can be stored in the bin.
-   * @param growthNumerator Numerator for the growth ratio used when computing grow size.
-   * @param growthDenominator Denominator for the growth ratio used when computing grow size.
-   */
-  explicit BinConfig(const std::size_t blocks, const std::size_t growthNumerator = 1,
-                     const std::size_t growthDenominator = 1) noexcept
-      : IBinConfig(blocks, BlockSize, growthNumerator, growthDenominator) {}
-
-  /**
-   * @brief Destructs the BinConfig object.
-   */
-  ~BinConfig() override = default;
+  explicit BinConfig(std::size_t blocks, std::size_t blockSize, std::size_t growthNumerator = 1,
+                     std::size_t growthDenominator = 1) noexcept;
 };
 
 /**
@@ -161,7 +114,7 @@ class Bin {
    *
    * @param config A shared pointer to an IBinConfig object that defines the configuration for the bin.
    */
-  explicit Bin(const std::shared_ptr<const IBinConfig>& config) noexcept;
+  explicit Bin(const BinConfig& config) noexcept;
 
   /**
    * @brief Move constructor for the Bin class. This constructor allows for efficient transfer of ownership of the
@@ -220,7 +173,7 @@ class Bin {
    *
    * @return A reference to the IBinConfig object that defines the configuration for this bin.
    */
-  [[nodiscard]] const std::shared_ptr<const IBinConfig>& config() const;
+  [[nodiscard]] const BinConfig& config() const noexcept;
 
   /**
    * @brief Checks if the specified pointer is within the memory range of the chunks managed by this bin.
@@ -228,7 +181,7 @@ class Bin {
    * @param ptr The pointer to check.
    * @return true if the pointer is within the memory range of the chunks managed by this bin, false otherwise.
    */
-  bool contains(void* ptr) const noexcept;
+  [[nodiscard]] bool contains(void* ptr) const noexcept;
 
  private:
   /**
@@ -250,7 +203,7 @@ class Bin {
    *
    * @return The number of blocks to allocate for the next chunk when growing the bin.
    */
-  std::size_t calculateGrowth() const noexcept;
+  [[nodiscard]] std::size_t calculateGrowth() const noexcept;
 
   /**
    * @brief A mutex that protects access to the list of memory chunks managed by this bin.
@@ -275,7 +228,7 @@ class Bin {
    * @brief A shared pointer to the configuration object that defines the size and capacity of the blocks managed by
    * this bin.
    */
-  const std::shared_ptr<const IBinConfig> m_config;
+  const BinConfig m_config;
 };
 
 /**
@@ -302,7 +255,7 @@ class MemoryPool {
    * @throws std::invalid_argument If the provided vector of bin configurations is empty, or if any of the
    * configurations are invalid (e.g., if the block size is not a power of two, or if the number of blocks is zero).
    */
-  explicit MemoryPool(std::vector<std::shared_ptr<const IBinConfig>>&& bins);
+  explicit MemoryPool(std::vector<BinConfig>&& bins);
 
   /**
    * @brief Allocates a block of memory from the memory pool. After the given size is aligned, the smallest sized bin
@@ -366,6 +319,21 @@ class MemoryPool {
    */
   void deallocate(void* ptr, std::size_t size);
 
+  /**
+   * @brief Frees a block of memory back to the memory pool. The provided pointer must have been previously allocated
+   * from this memory pool, and must not have already been freed. The pointer is added back to the appropriate bin's
+   * free list, making it available for future allocations. If the pointer was allocated from the global heap allocator
+   * (e.g., using ::operator new), it will be deallocated using the global heap deallocator (e.g., using ::operator
+   * delete).
+   *
+   * @param ptr The pointer to the block of memory to free. This pointer must have been previously allocated from this
+   * memory pool, and must not have already been freed.
+   * @param size The size of the memory block to free in bytes. This size will be used to determine which bin the block
+   * belongs to, and to ensure that the block is properly deallocated.
+   * @param alignment The alignment requirement for the memory block to free.
+   */
+  void deallocate(void* ptr, std::size_t size, std::size_t alignment);
+
  private:
   /**
    * @brief Finds the appropriate bin for the given size. The method searches through the bins managed by this memory
@@ -376,10 +344,12 @@ class MemoryPool {
    *
    * @param size The size of the memory block to allocate in bytes. This size will be used to determine which bin can
    * accommodate the allocation request.
+   * @param alignment The alignment requirement for the memory block to allocate. This parameter is optional and
+   * defaults to the alignment of the largest fundamental type (alignof(std::max_align_t)).
    * @return A pointer to the Bin object that can accommodate the allocation request, or nullptr if no suitable bin is
    * found.
    */
-  Bin* findBin(std::size_t size);
+  [[nodiscard]] Bin* findBin(std::size_t size, std::size_t alignment = alignof(std::max_align_t)) noexcept;
 
   /**
    * @brief A vector of memory bins that are managed by this memory pool. Each bin is responsible for managing a
@@ -404,14 +374,12 @@ class MemoryPool {
  * cases.
  */
 inline MemoryPool defaultMemoryPool({
-    std::make_shared<const BinConfig<8>>(10000000),
-    std::make_shared<const BinConfig<16>>(5000000),
-    std::make_shared<const BinConfig<32>>(2500000),
-    std::make_shared<const BinConfig<64>>(100000),
-    std::make_shared<const BinConfig<128>>(50000),
-    std::make_shared<const BinConfig<256>>(25000),
-    std::make_shared<const BinConfig<512>>(10000),
-    std::make_shared<const BinConfig<1024>>(5000),
+    BinConfig::create<8>(10000000),
+    BinConfig::create<16>(5000000),
+    BinConfig::create<32>(2500000),
+    BinConfig::create<64>(100000),
+    BinConfig::create<128>(50000),
+    BinConfig::create<256>(25000),
 });
 
 }  // namespace core::memory

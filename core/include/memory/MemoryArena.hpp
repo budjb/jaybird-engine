@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <cstdint>
 
 namespace core::memory {
 /**
@@ -66,10 +67,10 @@ class MemoryArena {
   std::byte* m_data;
 
   /**
-   * @brief The current allocation cursor, represented as an integer offset from the base address of the arena. This
-   * value is updated each time a new block of memory is allocated from the arena, and is reset to the base address when
-   * the arena is cleared. The cursor is used to keep track of the next available memory location for allocation, and is
-   * used to ensure that allocations are properly aligned according to the specified alignment requirements.
+   * @brief The current allocation cursor, stored as an integer address within the arena. This value is updated each
+   * time a new block of memory is allocated from the arena, and is reset to the base address when the arena is cleared.
+   * The cursor is used to keep track of the next available memory location for allocation, and is used to ensure that
+   * allocations are properly aligned according to the specified alignment requirements.
    */
   uintptr_t m_cursor;
 };

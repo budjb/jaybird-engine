@@ -25,7 +25,7 @@ class Buffer {
    * source Buffer object to the newly constructed Buffer object. After the move, the source Buffer object is left in a
    * valid but unspecified state, and the memory buffer is now owned by the new Buffer object.
    */
-  ~Buffer();
+  ~Buffer() noexcept;
 
   /**
    * @brief The copy constructor is deleted to prevent copying of Buffer objects, as they manage unique resources
