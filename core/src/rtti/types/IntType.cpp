@@ -16,7 +16,9 @@ bool IntType::construct(void* memory) const noexcept {
   return true;
 }
 
-void IntType::destruct(void* memory) const noexcept { *static_cast<int*>(memory) = 0; }
+void IntType::destruct(void* memory) const noexcept {
+  *static_cast<int*>(memory) = 0;
+}
 
 bool IntType::assign(int* destination, const int* source) const {
   *destination = *source;

@@ -74,7 +74,7 @@ void runPoolMixedSizeMicroBenchmark(core::memory::MemoryPool& pool, const std::s
   std::cout << "  allocate:   " << allocNs << " ns total (" << allocPerOp << " ns/op)\n";
   std::cout << "  deallocate: " << deallocNs << " ns total (" << deallocPerOp << " ns/op)\n";
 }
-}  // namespace
+} // namespace
 
 int main() {
   std::vector<uintptr_t> my_vector;

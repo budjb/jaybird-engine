@@ -53,7 +53,7 @@ class Iterator {
    *
    * @param ptr A pointer to the element that the iterator will point to.
    */
-  explicit Iterator(const_pointer ptr) noexcept : m_ptr(ptr) {}
+  explicit Iterator(pointer ptr) noexcept : m_ptr(ptr) {}
 
   /**
    * @brief Dereferences the iterator to access the element it points to. This operator allows the iterator to be used

@@ -1,13 +1,11 @@
 #include "IString.hpp"
+
 #include "StringPool.hpp"
 
 namespace core {
-IString::IString(const hash_t hash) noexcept : m_hash(hash) {
-}
+IString::IString(const hash_t hash) noexcept : m_hash(hash) {}
 
-IString::IString(const std::string_view str) noexcept
-  : IString(fnv1a_64(str)) {
-}
+IString::IString(const std::string_view str) noexcept : IString(fnv1a_64(str)) {}
 
 std::string_view IString::toString() const noexcept {
   return StringPool::get().getString(*this);
@@ -32,4 +30,4 @@ IString::operator std::string_view() const noexcept {
 bool IString::operator==(const IString& other) const noexcept {
   return m_hash == other.m_hash;
 }
-} // core
+}  // namespace core

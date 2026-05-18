@@ -17,15 +17,13 @@ IString StringPool::addString(const std::string_view str) noexcept {
   return iStr;
 }
 
-std::string_view StringPool::getString(
-    const IString& str) const noexcept {
+std::string_view StringPool::getString(const IString& str) const noexcept {
   std::shared_lock lock(m_mutex);
 
   return m_strings.at(str);
 }
 
-std::string_view StringPool::getString(
-    const hash_t hash) const noexcept {
+std::string_view StringPool::getString(const hash_t hash) const noexcept {
   return getString(IString(hash));
 }
 
@@ -33,4 +31,4 @@ bool StringPool::hasString(const IString& str) const noexcept {
   std::shared_lock lock(m_mutex);
   return m_strings.contains(str);
 }
-}
+}  // namespace core

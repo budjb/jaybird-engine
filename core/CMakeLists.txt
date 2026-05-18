@@ -11,7 +11,6 @@ add_library(jaybird_core STATIC
         include/Common.hpp
         src/memory/Buffer.cpp
         include/memory/Buffer.hpp
-        src/memory/Allocator.cpp
         include/memory/Allocator.hpp
         src/SpinLock.cpp
         include/SpinLock.hpp
@@ -19,6 +18,7 @@ add_library(jaybird_core STATIC
         include/memory/MemoryArena.hpp
         src/container/Vector.cpp
         include/container/Vector.hpp
-        include/container/Iterator.hpp)
+        include/container/Iterator.hpp
+)
 
 target_include_directories(jaybird_core PUBLIC "include")

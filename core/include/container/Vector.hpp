@@ -109,7 +109,8 @@ class Vector {
    *
    * @param allocator An optional instance of the allocator to use for memory management.
    */
-  explicit Vector(const allocator_type& allocator = allocator_type()) noexcept(std::is_nothrow_copy_constructible_v<allocator_type>)
+  explicit Vector(const allocator_type& allocator = allocator_type()) noexcept(
+      std::is_nothrow_copy_constructible_v<allocator_type>)
       : m_data(nullptr), m_allocator(allocator) {}
 
   /**
@@ -121,8 +122,8 @@ class Vector {
    * before it needs to grow its internal storage.
    * @param allocator An optional instance of the allocator to use for memory management.
    */
-  explicit Vector(const size_type capacity,
-                  const allocator_type& allocator = allocator_type()) noexcept(std::is_nothrow_copy_constructible_v<allocator_type>)
+  explicit Vector(const size_type capacity, const allocator_type& allocator = allocator_type()) noexcept(
+      std::is_nothrow_copy_constructible_v<allocator_type>)
       : Vector(allocator) {
     reserve(capacity);
   }

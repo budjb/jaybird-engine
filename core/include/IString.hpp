@@ -34,5 +34,7 @@ class IString {
 
 template <>
 struct std::hash<core::IString> {
-  std::size_t operator()(const core::IString& s) const noexcept { return std::hash<core::hash_t>{}(s.hash()); }
+  std::size_t operator()(const core::IString& s) const noexcept {
+    return std::hash<core::hash_t>{}(s.hash());
+  }
 };

@@ -8,3 +8,7 @@ trim_trailing_whitespace = true
 [*.{h,c,cpp,hpp}]
 indent_style = space
 indent_size = 4
+
+[{*.cmake,CMakeLists.txt}]
+indent_size = 2
+ij_continuation_indent_size = 4

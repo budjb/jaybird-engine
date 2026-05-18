@@ -180,5 +180,4 @@ Bin* MemoryPool::findBin(const std::size_t size, const std::size_t alignment) no
 
   return nullptr;
 }
-
 }  // namespace core::memory

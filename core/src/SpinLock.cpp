@@ -32,11 +32,13 @@ void SpinLock::lock_shared() noexcept {
     }
   }
 }
+
 void SpinLock::unlock_shared() noexcept {
   if (m_locked.fetch_sub(1, std::memory_order_release) == 1) {
     m_locked.notify_all();
   }
 }
+
 bool SpinLock::try_lock_shared() noexcept {
   int current = m_locked.load(std::memory_order_relaxed);
   if (current == -1) {

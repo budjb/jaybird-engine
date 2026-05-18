@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>
 #include <concepts>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <new>
@@ -244,13 +244,13 @@ class PoolAllocator {
    * and will use that pool for all memory operations.
    */
   template <class U>
-  PoolAllocator(const PoolAllocator<U>& other) noexcept : m_pool(other.pool()) {}
+  explicit PoolAllocator(const PoolAllocator<U>& other) noexcept : m_pool(other.pool()) {}
 
   /**
    * @brief Rebind structure for the Allocator class. This structure allows for rebinding the allocator to a different
    * type, while still sharing the same memory pool. The @c other type alias within this structure defines the type of
    * allocator that can be used to manage objects of the new type.
-
+   *
    * @tparam U The type of objects that the rebound Allocator will manage. This type can be different from the type
    * managed by this Allocator, as long as both Allocator objects share the same memory pool.
    */

@@ -23,6 +23,6 @@ class RTTIRegistry {
   RTTIRegistry() = default;
 
   std::shared_mutex m_mutex;
-  std::unordered_map<IString, std::unique_ptr<IType> > m_types;
+  std::unordered_map<IString, std::unique_ptr<IType>> m_types;
 };
 }  // namespace core::rtti

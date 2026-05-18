@@ -19,4 +19,4 @@ constexpr hash_t fnv1a_64(const std::string_view str) noexcept {
 
   return hash;
 }
-}
+}  // namespace core

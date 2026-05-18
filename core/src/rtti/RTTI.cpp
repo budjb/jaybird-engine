@@ -7,13 +7,21 @@ IType::IType(const IString& name, const std::size_t size, const TypeKind kind) n
 IType::IType(const IString& name, const std::size_t size, const std::size_t alignment, const TypeKind kind) noexcept
     : m_name(name), m_size(size), m_alignment(alignment), m_kind(kind) {}
 
-std::size_t IType::size() const noexcept { return m_size; }
+std::size_t IType::size() const noexcept {
+  return m_size;
+}
 
-std::size_t IType::alignment() const noexcept { return m_alignment; }
+std::size_t IType::alignment() const noexcept {
+  return m_alignment;
+}
 
-TypeKind IType::kind() const noexcept { return m_kind; }
+TypeKind IType::kind() const noexcept {
+  return m_kind;
+}
 
-IString IType::name() const noexcept { return m_name; }
+IString IType::name() const noexcept {
+  return m_name;
+}
 
 void* IType::create() const {
   void* memory = operator new(m_size, static_cast<std::align_val_t>(m_alignment));
@@ -31,9 +39,13 @@ void IType::destroy(void* memory) const noexcept {
   operator delete(memory, static_cast<std::align_val_t>(m_alignment));
 }
 
-bool IType::operator==(const IType& type) const noexcept { return m_name == type.m_name; }
+bool IType::operator==(const IType& type) const noexcept {
+  return m_name == type.m_name;
+}
 
-bool IType::operator!=(const IType& type) const noexcept { return m_name != type.m_name; }
+bool IType::operator!=(const IType& type) const noexcept {
+  return m_name != type.m_name;
+}
 
 IClass::IClass(const IString& name, const std::size_t size) noexcept : IType(name, size, TypeKind::CLASS) {}
 

@@ -381,5 +381,4 @@ inline MemoryPool defaultMemoryPool({
     BinConfig::create<128>(50000),
     BinConfig::create<256>(25000),
 });
-
 }  // namespace core::memory
