@@ -111,7 +111,7 @@ class Vector {
    */
   explicit Vector(const allocator_type& allocator = allocator_type()) noexcept(
       std::is_nothrow_copy_constructible_v<allocator_type>)
-      : m_data(nullptr), m_allocator(allocator) {}
+      : m_data(nullptr), m_size(0), m_capacity(0), m_allocator(allocator) {}
 
   /**
    * @brief Constructs a new Vector object with a specified initial capacity and an optional custom allocator.
@@ -144,7 +144,7 @@ class Vector {
       reserve(other.m_size);
 
       for (size_type i = 0; i < other.m_size; ++i) {
-        traits::construct(m_allocator, m_data + i, other.m_data + i);
+        traits::construct(m_allocator, m_data + i, other.at(i));
       }
 
       m_size = other.m_size;
@@ -188,7 +188,7 @@ class Vector {
       }
     }
 
-    assign_from(other);
+    copyFrom(other);
 
     return *this;
   }
@@ -511,12 +511,20 @@ class Vector {
   void copyFrom(const Vector& other) {
     clear();
 
+    if (other.m_size == 0) {
+      return;
+    }
+
     if (other.m_size > m_capacity) {
       reallocate(other.m_size);
     }
 
+    if (other.m_data == nullptr || m_data == nullptr) {
+      throw std::logic_error("Invalid vector state: non-zero size with null storage");
+    }
+
     for (size_type i = 0; i < other.m_size; ++i) {
-      traits::construct(m_allocator, m_data + i, other.m_data + i);
+      traits::construct(m_allocator, m_data + i, other.at(i));
     }
     m_size = other.m_size;
   }
@@ -534,12 +542,20 @@ class Vector {
   void moveFrom(Vector& other) {
     clear();
 
+    if (other.m_size == 0) {
+      return;
+    }
+
     if (other.m_size > m_capacity) {
       reallocate(other.m_size);
     }
 
+    if (other.m_data == nullptr || m_data == nullptr) {
+      throw std::logic_error("Invalid vector state: non-zero size with null storage");
+    }
+
     for (size_type i = 0; i < other.m_size; ++i) {
-      traits::construct(m_allocator, m_data + i, std::move(other.m_data + i));
+      traits::construct(m_allocator, m_data + i, std::move(other.at(i)));
       traits::destroy(other.m_allocator, other.m_data + i);
     }
 
@@ -568,20 +584,30 @@ class Vector {
    *
    * @param capacity
    */
-  void reallocate(const size_type capacity) noexcept {
-    if (capacity <= m_size) {
+  void reallocate(const size_type capacity) {
+    if (capacity == m_capacity) {
       return;
     }
 
-    auto* newData = traits::allocate(m_allocator, capacity);
-
-    for (size_type i = 0; i < m_size; ++i) {
-      traits::construct(m_allocator, newData + i, std::move_if_noexcept(m_data + i));
+    if (capacity == 0) {
+      reset();
+      return;
     }
 
-    traits::deallocate(m_allocator, m_data, m_capacity);
+    auto* data = traits::allocate(m_allocator, capacity);
+    const size_type size = m_size < capacity ? m_size : capacity;
 
-    m_data = newData;
+    for (size_type i = 0; i < m_size; ++i) {
+      traits::construct(m_allocator, data + i, std::move_if_noexcept(at(i)));
+      traits::destroy(m_allocator, m_data + i);
+    }
+
+    if (m_data != nullptr) {
+      traits::deallocate(m_allocator, m_data, m_capacity);
+    }
+
+    m_data = data;
+    m_size = size;
     m_capacity = capacity;
   }
 
@@ -650,7 +676,7 @@ class Vector {
    * constructed and are accessible in the vector. The size of the vector may be less than or equal to the capacity of
    * the vector, which is the total amount of memory allocated for storing elements.
    */
-  size_type m_size{};
+  size_type m_size;
 
   /**
    * @brief The total capacity of the vector, which is the amount of memory allocated for storing elements. The capacity
@@ -661,7 +687,7 @@ class Vector {
    * The capacity is allocated and deallocated using the allocator provided to the vector, and is used to determine when
    * the vector needs to reallocate its internal storage to accommodate changes in size.
    */
-  size_type m_capacity{};
+  size_type m_capacity;
 
   /**
    * @brief The allocator used by the vector for memory management. This allocator is responsible for allocating and
