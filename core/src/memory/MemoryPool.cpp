@@ -23,7 +23,7 @@ BinConfig::BinConfig(const std::size_t blocks, const std::size_t blockSize, cons
 
 Bin::Bin(const BinConfig& config) noexcept : m_config(config) {
 #ifndef NDEBUG
-  assert(m_config->size() > MINIMUM_ALIGNMENT && (m_config->size() & m_config->size() - 1) == 0 &&
+  assert(m_config.size > MINIMUM_ALIGNMENT && (m_config.size & m_config.size - 1) == 0 &&
          "core::memory:Bin::Bin(): block size must be a power of two and greater than the size of a byte");
 #endif
   grow();
