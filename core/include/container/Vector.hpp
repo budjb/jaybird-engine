@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Iterator.hpp"
 #include "memory/Allocator.hpp"
 
 namespace core::container {
@@ -27,14 +28,79 @@ template <typename T, memory::Allocator Alloc = memory::HeapAllocator<T>>
 class Vector {
  public:
   /**
+   * @brief A type alias for the allocator type used by the vector for memory management (STL).
+   */
+  using allocator_type = Alloc;
+
+  /**
    * @brief A type alias for the allocator traits of the specified allocator type. This alias provides access to the
    * properties and member types of the allocator, such as the pointer type, reference type, and value type.
    *
    * The allocator traits are used to ensure that the vector is compatible with the requirements of the C++ Standard
    * Library's allocator model, and to allow for the use of custom allocators that satisfy the Allocator concept.
-   *
    */
-  using AllocatorTraits = std::allocator_traits<Alloc>;
+  using traits = std::allocator_traits<allocator_type>;
+
+  /**
+   * @brief A type alias for the value type of elements of the vector (STL).
+   */
+  using value_type = traits::value_type;
+
+  /**
+   * @brief A type alias for the size type used by the vector to represent sizes and capacities (STL).
+   */
+  using size_type = traits::size_type;
+
+  /**
+   * @brief A type alias for the difference type used by the vector to represent pointer differences and iterator
+   * distances (STL).
+   */
+  using difference_type = traits::difference_type;
+
+  /**
+   * @brief A type alias for the reference type used by the vector to represent references to elements (STL).
+   */
+  using reference = traits::reference;
+
+  /**
+   * @brief A type alias for the const reference type used by the vector to represent read-only references to elements
+   * (STL).
+   */
+  using const_reference = traits::const_reference;
+
+  /**
+   * @brief A type alias for the pointer type used by the vector to represent pointers to elements (STL).
+   */
+  using pointer = traits::pointer;
+
+  /**
+   * @brief A type alias for the const pointer type used by the vector to represent read-only pointers to elements
+   * (STL).
+   */
+  using const_pointer = traits::const_pointer;
+
+  /**
+   * @brief Type aliases for the iterator types used by the vector to represent iterators over the elements (STL).
+   */
+  using iterator = Iterator<value_type>;
+
+  /**
+   * @brief Type alias for the const iterator type used by the vector to represent read-only iterators over the
+   * elements (STL).
+   */
+  using const_iterator = const Iterator<value_type>;
+
+  /**
+   * @brief Type aliases for the reverse iterator types used by the vector to represent reverse iterators over the
+   * elements (STL).
+   */
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
+  /**
+   * @brief Type alias for the const reverse iterator type used by the vector to represent read-only reverse iterators
+   * over the elements (STL).
+   */
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   /**
    * @brief Constructs a new, empty Vector object with an optional custom allocator.
@@ -43,7 +109,7 @@ class Vector {
    *
    * @param allocator An optional instance of the allocator to use for memory management.
    */
-  explicit Vector(const Alloc& allocator = Alloc()) noexcept(std::is_nothrow_copy_constructible_v<Alloc>)
+  explicit Vector(const allocator_type& allocator = allocator_type()) noexcept(std::is_nothrow_copy_constructible_v<allocator_type>)
       : m_data(nullptr), m_allocator(allocator) {}
 
   /**
@@ -55,8 +121,8 @@ class Vector {
    * before it needs to grow its internal storage.
    * @param allocator An optional instance of the allocator to use for memory management.
    */
-  explicit Vector(const std::size_t capacity,
-                  const Alloc& allocator = Alloc()) noexcept(std::is_nothrow_copy_constructible_v<Alloc>)
+  explicit Vector(const size_type capacity,
+                  const allocator_type& allocator = allocator_type()) noexcept(std::is_nothrow_copy_constructible_v<allocator_type>)
       : Vector(allocator) {
     reserve(capacity);
   }
@@ -72,12 +138,12 @@ class Vector {
    *
    * @param other The Vector object to copy.
    */
-  Vector(const Vector& other) : Vector(AllocatorTraits::select_on_container_copy_construction(other.m_allocator)) {
+  Vector(const Vector& other) : Vector(traits::select_on_container_copy_construction(other.m_allocator)) {
     if (other.m_size) {
       reserve(other.m_size);
 
-      for (std::size_t i = 0; i < other.m_size; ++i) {
-        AllocatorTraits::construct(m_allocator, m_data + i, other.m_data[i]);
+      for (size_type i = 0; i < other.m_size; ++i) {
+        traits::construct(m_allocator, m_data + i, other.m_data + i);
       }
 
       m_size = other.m_size;
@@ -91,7 +157,7 @@ class Vector {
    *
    * @param other The Vector object to move.
    */
-  Vector(Vector&& other) noexcept(std::is_nothrow_move_constructible_v<Alloc>)
+  Vector(Vector&& other) noexcept(std::is_nothrow_move_constructible_v<allocator_type>)
       : m_data(std::exchange(other.m_data, nullptr)),
         m_size(std::exchange(other.m_size, 0)),
         m_capacity(std::exchange(other.m_capacity, 0)),
@@ -111,11 +177,11 @@ class Vector {
       return *this;
     }
 
-    if constexpr (AllocatorTraits::propagate_on_container_copy_assignment::value) {
+    if constexpr (traits::propagate_on_container_copy_assignment::value) {
       reset();
       m_allocator = other.m_allocator;
     } else {
-      if constexpr (AllocatorTraits::is_always_equal::value) {
+      if constexpr (traits::is_always_equal::value) {
         reset();
       } else {
       }
@@ -135,19 +201,19 @@ class Vector {
    * @param other The Vector object to move-assign from.
    * @return A reference to the target Vector object after the move assignment.
    */
-  Vector& operator=(Vector&& other) noexcept(AllocatorTraits::propagate_on_container_move_assignment::value ||
-                                             AllocatorTraits::is_always_equal::value) {
+  Vector& operator=(Vector&& other) noexcept(traits::propagate_on_container_move_assignment::value ||
+                                             traits::is_always_equal::value) {
     if (this == &other) {
       return *this;
     }
 
-    if constexpr (AllocatorTraits::propagate_on_container_move_assignment::value) {
+    if constexpr (traits::propagate_on_container_move_assignment::value) {
       reset();
       m_allocator = std::move(other.m_allocator);
       m_data = std::exchange(other.m_data, nullptr);
       m_size = std::exchange(other.m_size, 0);
       m_capacity = std::exchange(other.m_capacity, 0);
-    } else if constexpr (AllocatorTraits::is_always_equal::value || m_allocator == other.m_allocator) {
+    } else if constexpr (traits::is_always_equal::value || m_allocator == other.m_allocator) {
       reset();
       m_data = std::exchange(other.m_data, nullptr);
       m_size = std::exchange(other.m_size, 0);
@@ -181,7 +247,7 @@ class Vector {
    * @throws std::out_of_range If the index is out of bounds (i.e., if it is greater than or equal to the size of the
    * vector).
    */
-  T& at(const std::size_t index) {
+  reference at(const size_type index) {
     if (index >= m_size) {
       throw std::out_of_range("Index out of range");
     }
@@ -201,7 +267,7 @@ class Vector {
    * @throws std::out_of_range If the index is out of bounds (i.e., if it is greater than or equal to the size of the
    * vector).
    */
-  const T& at(const std::size_t index) const {
+  const_reference at(const size_type index) const {
     if (index >= m_size) {
       throw std::out_of_range("Index out of range");
     }
@@ -221,7 +287,7 @@ class Vector {
    * @param newSize The new size of the vector. This is the number of elements that the vector should contain after the
    * resize operation.
    */
-  void resize(const std::size_t newSize) {
+  void resize(const size_type newSize) {
     if (newSize < m_size) {
       destroy(newSize, m_size);
       m_size = newSize;
@@ -232,10 +298,10 @@ class Vector {
       reallocate(newSize);
     }
 
-    std::size_t i = m_size;
+    size_type i = m_size;
     try {
       for (; i < newSize; ++i) {
-        AllocatorTraits::construct(m_allocator, m_data + i);
+        traits::construct(m_allocator, m_data + i);
       }
       m_size = newSize;
     } catch (...) {
@@ -257,7 +323,7 @@ class Vector {
    * @throws std::out_of_range If the index is out of bounds (i.e., if it is greater than or equal to the size of the
    * vector).
    */
-  T& operator[](const std::size_t index) {
+  reference operator[](const size_type index) {
     return at(index);
   }
 
@@ -274,7 +340,7 @@ class Vector {
    * @throws std::out_of_range If the index is out of bounds (i.e., if it is greater than or equal to the size of the
    * vector).
    */
-  const T& operator[](const std::size_t index) const {
+  const_reference operator[](const size_type index) const {
     return at(index);
   }
 
@@ -287,7 +353,7 @@ class Vector {
    *
    * @return The number of elements currently stored in the vector.
    */
-  [[nodiscard]] std::size_t size() const noexcept {
+  [[nodiscard]] size_type size() const noexcept {
     return m_size;
   }
 
@@ -299,8 +365,32 @@ class Vector {
    *
    * @return The total capacity of the vector, which is the amount of memory allocated for storing elements.
    */
-  [[nodiscard]] std::size_t capacity() const noexcept {
+  [[nodiscard]] size_type capacity() const noexcept {
     return m_capacity;
+  }
+
+  /**
+   * @brief Returns the maximum number of elements that the vector can hold, which is typically determined by the
+   * maximum value of size_type or the limitations of the allocator. This value represents the theoretical maximum
+   * size of the vector, and may be less than the actual maximum size that can be achieved in practice due to system
+   * limitations or other factors.
+   *
+   * @return The maximum number of elements that the vector can hold, which is typically determined by the maximum value
+   * of size_type or the limitations of the allocator.
+   */
+  [[nodiscard]] size_type max_size() const noexcept {
+    return traits::max_size(m_allocator);
+  }
+
+  /**
+   * @brief Returns true if the vector is empty (i.e., if it contains no elements), and false otherwise. An empty vector
+   * has a size of zero, and may still have a non-zero capacity if memory has been allocated for the vector but no
+   * elements have been constructed.
+   *
+   * @return true if the vector is empty (i.e., if it contains no elements), and false otherwise.
+   */
+  [[nodiscard]] bool empty() const noexcept {
+    return m_size == 0;
   }
 
   /**
@@ -317,9 +407,9 @@ class Vector {
    * @param capacity The new capacity of the vector. This is the minimum number of elements that the vector should be
    * able to hold after the reserve operation.
    * @throws std::length_error If the new capacity exceeds the maximum size that the vector can support, which is
-   * typically determined by the maximum value of std::size_t or the limitations of the allocator.
+   * typically determined by the maximum value of size_type or the limitations of the allocator.
    */
-  void reserve(const std::size_t capacity) {
+  void reserve(const size_type capacity) {
     if (capacity > m_capacity) {
       reallocate(capacity);
     }
@@ -367,8 +457,46 @@ class Vector {
    *
    * @return A reference to the allocator used by the vector for memory management.
    */
-  [[nodiscard]] Alloc& allocator() const noexcept {
+  [[nodiscard]] allocator_type& allocator() const noexcept {
     return m_allocator;
+  }
+
+  /**
+   * @brief Returns an iterator to the first element in the vector.
+   *
+   * @return An iterator to the first element in the vector.
+   */
+  iterator begin() noexcept {
+    return iterator(m_data);
+  }
+
+  /**
+   * @brief Returns a const iterator to the first element in the vector.
+   *
+   * @return A const iterator to the first element in the vector.
+   */
+  const_iterator begin() const noexcept {
+    return iterator(m_data);
+  }
+
+  /**
+   * @brief Returns an iterator to the past-the-end element in the vector. This iterator does not point to a valid
+   * element, but can be used to determine the end of the vector when iterating through its elements.
+   *
+   * @return An iterator to the past-the-end element in the vector.
+   */
+  iterator end() noexcept {
+    return iterator(m_data + m_size);
+  }
+
+  /**
+   * @brief Returns a const iterator to the past-the-end element in the vector. This iterator does not point to a valid
+   * element, but can be used to determine the end of the vector when iterating through its elements.
+   *
+   * @return A const iterator to the past-the-end element in the vector.
+   */
+  const_iterator end() const noexcept {
+    return iterator(m_data + m_size);
   }
 
  private:
@@ -386,8 +514,8 @@ class Vector {
       reallocate(other.m_size);
     }
 
-    for (std::size_t i = 0; i < other.m_size; ++i) {
-      AllocatorTraits::construct(m_allocator, m_data + i, other.m_data[i]);
+    for (size_type i = 0; i < other.m_size; ++i) {
+      traits::construct(m_allocator, m_data + i, other.m_data + i);
     }
     m_size = other.m_size;
   }
@@ -400,7 +528,7 @@ class Vector {
    *
    * @param other The Vector object to move from.
    * @throws std::length_error If the size of the source Vector exceeds the maximum size that the target Vector can
-   * support, which is typically determined by the maximum value of std::size_t or the limitations of the allocator.
+   * support, which is typically determined by the maximum value of size_type or the limitations of the allocator.
    */
   void moveFrom(Vector& other) {
     clear();
@@ -409,14 +537,14 @@ class Vector {
       reallocate(other.m_size);
     }
 
-    for (std::size_t i = 0; i < other.m_size; ++i) {
-      AllocatorTraits::construct(m_allocator, m_data + i, std::move(other.m_data[i]));
-      AllocatorTraits::destroy(other.m_allocator, other.m_data + i);
+    for (size_type i = 0; i < other.m_size; ++i) {
+      traits::construct(m_allocator, m_data + i, std::move(other.m_data + i));
+      traits::destroy(other.m_allocator, other.m_data + i);
     }
 
     m_size = other.m_size;
 
-    AllocatorTraits::deallocate(other.m_allocator, other.m_data, other.m_capacity);
+    traits::deallocate(other.m_allocator, other.m_data, other.m_capacity);
 
     other.m_data = nullptr;
     other.m_size = 0;
@@ -439,18 +567,18 @@ class Vector {
    *
    * @param capacity
    */
-  void reallocate(const std::size_t capacity) noexcept {
+  void reallocate(const size_type capacity) noexcept {
     if (capacity <= m_size) {
       return;
     }
 
-    auto* newData = AllocatorTraits::allocate(m_allocator, capacity);
+    auto* newData = traits::allocate(m_allocator, capacity);
 
-    for (std::size_t i = 0; i < m_size; ++i) {
-      AllocatorTraits::construct(m_allocator, newData + i, std::move_if_noexcept(m_data[i]));
+    for (size_type i = 0; i < m_size; ++i) {
+      traits::construct(m_allocator, newData + i, std::move_if_noexcept(m_data + i));
     }
 
-    AllocatorTraits::deallocate(m_allocator, m_data, m_capacity);
+    traits::deallocate(m_allocator, m_data, m_capacity);
 
     m_data = newData;
     m_capacity = capacity;
@@ -469,7 +597,7 @@ class Vector {
 
     clear();
 
-    AllocatorTraits::deallocate(m_allocator, m_data, m_capacity);
+    traits::deallocate(m_allocator, m_data, m_capacity);
 
     m_data = nullptr;
     m_size = 0;
@@ -501,9 +629,9 @@ class Vector {
    * @param end The index of the first element to not destroy. This index is exclusive, meaning that the element at this
    * index will not be destroyed, and all elements up to, but not including, this index will be destroyed.
    */
-  void destroy(const std::size_t begin, const std::size_t end) noexcept {
-    for (std::size_t i = begin; i < end; ++i) {
-      AllocatorTraits::destroy(m_allocator, m_data + i);
+  void destroy(const size_type begin, const size_type end) noexcept {
+    for (size_type i = begin; i < end; ++i) {
+      traits::destroy(m_allocator, m_data + i);
     }
   }
 
@@ -521,7 +649,7 @@ class Vector {
    * constructed and are accessible in the vector. The size of the vector may be less than or equal to the capacity of
    * the vector, which is the total amount of memory allocated for storing elements.
    */
-  std::size_t m_size{};
+  size_type m_size{};
 
   /**
    * @brief The total capacity of the vector, which is the amount of memory allocated for storing elements. The capacity
@@ -532,7 +660,7 @@ class Vector {
    * The capacity is allocated and deallocated using the allocator provided to the vector, and is used to determine when
    * the vector needs to reallocate its internal storage to accommodate changes in size.
    */
-  std::size_t m_capacity{};
+  size_type m_capacity{};
 
   /**
    * @brief The allocator used by the vector for memory management. This allocator is responsible for allocating and
@@ -543,6 +671,6 @@ class Vector {
    * management strategies as needed. The allocator is stored as a member variable in the vector, allowing it to be
    * accessed and used for memory management operations throughout the vector's implementation.
    */
-  Alloc m_allocator;
+  allocator_type m_allocator;
 };
 }  // namespace core::container

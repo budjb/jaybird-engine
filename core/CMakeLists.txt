@@ -18,6 +18,7 @@ add_library(jaybird_core STATIC
         src/memory/MemoryArena.cpp
         include/memory/MemoryArena.hpp
         src/container/Vector.cpp
-        include/container/Vector.hpp)
+        include/container/Vector.hpp
+        include/container/Iterator.hpp)
 
 target_include_directories(jaybird_core PUBLIC "include")
