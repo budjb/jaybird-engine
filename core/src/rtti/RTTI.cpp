@@ -1,6 +1,26 @@
 #include "rtti/RTTI.hpp"
 
+#include <condition_variable>
+#include <any>
+
 namespace core::rtti {
+IContainer::IContainer(const IType* inner) noexcept : m_inner(inner) {}
+
+const IType* IContainer::inner() const noexcept {
+  return m_inner;
+}
+
+IArray::IArray(const IType* inner) noexcept : IContainer(inner) {}
+
+std::size_t IArray::length(const void* array) const noexcept {
+  auto* vector = static_cast<const std::vector<std::any>*>(array);
+  if (!array) {
+    return 0;
+  }
+
+  return sizeof(array) / inner()->size();
+}
+
 IType::IType(const IString& name, const std::size_t size, const TypeKind kind) noexcept
     : IType(name, size, alignof(std::max_align_t), kind) {}
 
@@ -37,6 +57,10 @@ void* IType::create() const {
 void IType::destroy(void* memory) const noexcept {
   destruct(memory);
   operator delete(memory, static_cast<std::align_val_t>(m_alignment));
+}
+
+IArray IType::asArray() const noexcept {
+  return IArray(this);
 }
 
 bool IType::operator==(const IType& type) const noexcept {

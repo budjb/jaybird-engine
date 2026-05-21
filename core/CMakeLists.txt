@@ -16,9 +16,10 @@ add_library(jaybird_core STATIC
         include/SpinLock.hpp
         src/memory/MemoryArena.cpp
         include/memory/MemoryArena.hpp
-        src/container/Vector.cpp
         include/container/Vector.hpp
         include/container/Iterator.hpp
+        include/container/IVector.hpp
+        include/container/VectorModifier.hpp
 )
 
 target_include_directories(jaybird_core PUBLIC "include")

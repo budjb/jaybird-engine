@@ -73,3 +73,26 @@ TEST_CASE("Equality and inequality compare underlying pointers", "[iterator]") {
   REQUIRE_FALSE(first == other);
   REQUIRE(first != other);
 }
+
+TEST_CASE("Iterator supports random access operations", "[iterator]") {
+  int values[] = {4, 5, 6, 7};
+  core::container::Iterator first(values);
+
+  const auto third = first + 2;
+
+  REQUIRE(*third == 6);
+  REQUIRE(third - first == 2);
+  REQUIRE(third[1] == 7);
+  REQUIRE(first < third);
+  REQUIRE(third > first);
+}
+
+TEST_CASE("Mutable iterator converts to const iterator", "[iterator]") {
+  int values[] = {8, 9};
+  core::container::Iterator mutableIt(values);
+  core::container::Iterator<const int> constIt(mutableIt);
+
+  REQUIRE(*constIt == 8);
+  REQUIRE(constIt == mutableIt);
+}
+

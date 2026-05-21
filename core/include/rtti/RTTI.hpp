@@ -1,8 +1,34 @@
 #pragma once
 
+#include <vector>
+
 #include "IString.hpp"
 
 namespace core::rtti {
+class IType;
+
+class IContainer {
+ public:
+  explicit IContainer(const IType* inner) noexcept;
+
+  virtual ~IContainer() = default;
+
+  [[nodiscard]] const IType* inner() const noexcept;
+
+ private:
+  const IType* m_inner;
+};
+
+class IArray : public IContainer {
+ public:
+  explicit IArray(const IType* inner) noexcept;
+  ~IArray() override = default;
+
+  [[nodiscard]] std::size_t length(const void* array) const noexcept;
+
+  // [[nodiscard]] void* at(std::size_t index) const;
+};
+
 /**
  * @brief Enumeration representing the kind of type in the RTTI system.
  */
@@ -40,6 +66,8 @@ class IType {
 
   explicit IType(const IString& name, std::size_t size, std::size_t alignment, TypeKind kind) noexcept;
 
+  virtual ~IType() = default;
+
   [[nodiscard]] std::size_t size() const noexcept;
 
   [[nodiscard]] std::size_t alignment() const noexcept;
@@ -47,8 +75,6 @@ class IType {
   [[nodiscard]] TypeKind kind() const noexcept;
 
   [[nodiscard]] IString name() const noexcept;
-
-  virtual ~IType() = default;
 
   virtual bool assign(const IType* srcType, void* dst, void* src) const = 0;
 
@@ -60,12 +86,14 @@ class IType {
 
   virtual void destruct(void* memory) const noexcept = 0;
 
+  [[nodiscard]] IArray asArray() const noexcept;
+
   bool operator==(const IType& type) const noexcept;
 
   bool operator!=(const IType& type) const noexcept;
 
  private:
-  const IString& m_name;
+  const IString m_name;
   const std::size_t m_size;
   const std::size_t m_alignment;
   const TypeKind m_kind;
