@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "container/Vector.hpp"
-#include "container/VectorModifier.hpp"
 
 namespace {
 struct Widget {

@@ -259,100 +259,473 @@ class Vector : public IVector {
    */
   [[nodiscard]] const_reference operator[](size_type index) const noexcept;
 
+  /**
+   * @brief Returns a reference to the first element in the vector. If the vector is empty a std::out_of_range exception
+   * will be thrown.
+   *
+   * @return A reference to the first element in the vector.
+   * @throws std::out_of_range If the vector is empty.
+   */
   [[nodiscard]] reference front();
 
+  /**
+   * @brief Returns a const reference to the first element in the vector. If the vector is empty a std::out_of_range
+   * exception will be thrown.
+   *
+   * @return A const reference to the first element in the vector.
+   * @throws std::out_of_range If the vector is empty.
+   */
   [[nodiscard]] const_reference front() const;
 
+  /**
+   * @brief Returns a reference to the last element in the vector. If the vector is empty a std::out_of_range exception
+   * will be thrown.
+   *
+   * @return A reference to the last element in the vector.
+   * @throws std::out_of_range If the vector is empty.
+   */
   [[nodiscard]] reference back();
 
+  /**
+   * @brief Returns a const reference to the last element in the vector. If the vector is empty a std::out_of_range
+   * exception will be thrown.
+   *
+   * @return A const reference to the last element in the vector.
+   * @throws std::out_of_range If the vector is empty.
+   */
   [[nodiscard]] const_reference back() const;
 
+  /**
+   * @brief Returns a pointer to the underlying array serving as element storage. The returned pointer is such that
+   * range [data(), data() + size()) is valid and the elements in this range are stored contiguously.
+   *
+   * @return A pointer to the underlying array serving as element storage, or nullptr if the vector has no elements.
+   */
   [[nodiscard]] pointer data() noexcept;
 
+  /**
+   * @brief Returns a const pointer to the underlying array serving as element storage. The returned pointer is such
+   * that range [data(), data() + size()) is valid and the elements in this range are stored contiguously.
+   *
+   * @return A const pointer to the underlying array serving as element storage, or nullptr if the vector has no
+   * elements.
+   */
   [[nodiscard]] const_pointer data() const noexcept;
 
+  /**
+   * @brief Assigns new contents to the vector, replacing its current contents, and modifying its size accordingly. The
+   * new contents are initialized as copies of the given value.
+   *
+   * @param count The number of elements to assign to the vector. The vector will be resized to contain exactly this
+   * many elements after the assignment.
+   * @param value The value to assign to the elements of the vector. Each element in the vector will be assigned a copy
+   * of this value.
+   */
   void assign(size_type count, const value_type& value);
 
+  /**
+   * @brief Assigns new contents to the vector, replacing its current contents, and modifying its size accordingly. The
+   * new contents are initialized with the values in the range [first, last).
+   *
+   * @tparam InputIt The type of the input iterators.
+   * @param first An input iterator pointing to the first element in the range to assign from.
+   * @param last An input iterator pointing to one past the last element in the range to assign from. The elements in
+   * the range [first, last) will be copied into the vector, replacing its current contents.
+   */
   template <std::input_iterator InputIt>
   void assign(InputIt first, InputIt last);
 
+  /**
+   * @brief Assigns new contents to the vector, replacing its current contents, and modifying its size accordingly. The
+   * new contents are initialized with the values in the given initializer list.
+   *
+   * @param values An initializer list containing the values to assign to the vector. The elements in this initializer
+   * list will be copied into the vector, replacing its current contents.
+   */
   void assign(std::initializer_list<value_type> values);
 
+  /**
+   * @brief Returns an iterator to the first element in the vector. If the vector is empty, this will return the same
+   * value as end().
+   *
+   * @return An iterator to the first element in the vector, or end() if the vector is empty.
+   */
   [[nodiscard]] iterator begin() noexcept;
 
+  /**
+   * @brief Returns a const iterator to the first element in the vector. If the vector is empty, this will return the
+   * same value as end().
+   *
+   * @return A const iterator to the first element in the vector, or end() if the vector is empty.
+   */
   [[nodiscard]] const_iterator begin() const noexcept;
 
+  /**
+   * @brief Returns a const iterator to the first element in the vector. If the vector is empty, this will return the
+   * same value as end().
+   *
+   * @return A const iterator to the first element in the vector, or end() if the vector is empty.
+   */
   [[nodiscard]] const_iterator cbegin() const noexcept;
 
+  /**
+   * @brief Returns an iterator to the element following the last element in the vector. This element acts as a
+   * placeholder; it is not a valid element, and it should not be dereferenced. If the vector is empty, this will return
+   * the same value as begin().
+   *
+   * @return An iterator to the element following the last element in the vector, or begin() if the vector is empty.
+   */
   [[nodiscard]] iterator end() noexcept;
 
+  /**
+   * @brief Returns a const iterator to the element following the last element in the vector. This element acts as a
+   * placeholder; it is not a valid element, and it should not be dereferenced. If the vector is empty, this will return
+   * the same value as begin().
+   *
+   * @return A const iterator to the element following the last element in the vector, or begin() if the vector is
+   * empty.
+   */
   [[nodiscard]] const_iterator end() const noexcept;
 
+  /**
+   * @brief Returns a const iterator to the element following the last element in the vector. This element acts as a
+   * placeholder; it is not a valid element, and it should not be dereferenced. If the vector is empty, this will return
+   * the same value as begin().
+   *
+   * @return A const iterator to the element following the last element in the vector, or begin() if the vector is
+   * empty.
+   */
   [[nodiscard]] const_iterator cend() const noexcept;
 
+  /**
+   * @brief Returns a reverse iterator to the first element of the reversed vector. This iterator points to the last
+   * element in the vector, and iterating from rbegin() to rend() will traverse the vector in reverse order. If the
+   * vector is empty, rbegin() will return the same value as rend().
+   *
+   * @return A reverse iterator to the first element of the reversed vector, or rend() if the vector is empty.
+   */
   [[nodiscard]] reverse_iterator rbegin() noexcept;
 
+  /**
+   * @brief Returns a const reverse iterator to the first element of the reversed vector. This iterator points to the
+   * last element in the vector, and iterating from rbegin() to rend() will traverse the vector in reverse order. If the
+   * vector is empty, rbegin() will return the same value as rend().
+   *
+   * @return A const reverse iterator to the first element of the reversed vector, or rend() if the vector is empty.
+   */
   [[nodiscard]] const_reverse_iterator rbegin() const noexcept;
 
+  /**
+   * @brief Returns a const reverse iterator to the first element of the reversed vector. This iterator points to the
+   * last element in the vector, and iterating from rbegin() to rend() will traverse the vector in reverse order. If the
+   * vector is empty, rbegin() will return the same value as rend().
+   *
+   * @return A const reverse iterator to the first element of the reversed vector, or rend() if the vector is empty.
+   */
   [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
 
+  /**
+   * @brief Returns a reverse iterator to the element following the last element of the reversed vector. This element
+   * acts as a placeholder; it is not a valid element, and it should not be dereferenced. If the vector is empty, rend()
+   * will return the same value as rbegin().
+   *
+   * @return A reverse iterator to the element following the last element of the reversed vector, or rbegin() if the
+   * vector is empty.
+   */
   [[nodiscard]] reverse_iterator rend() noexcept;
 
+  /**
+   * @brief Returns a const reverse iterator to the element following the last element of the reversed vector. This
+   * element acts as a placeholder; it is not a valid element, and it should not be dereferenced. If the vector is
+   * empty, rend() will return the same value as rbegin().
+   *
+   * @return A const reverse iterator to the element following the last element of the reversed vector, or rbegin() if
+   * the vector is empty.
+   */
   [[nodiscard]] const_reverse_iterator rend() const noexcept;
 
+  /**
+   * @brief Returns a const reverse iterator to the element following the last element of the reversed vector. This
+   * element acts as a placeholder; it is not a valid element, and it should not be dereferenced. If the vector is
+   * empty, rend() will return the same value as rbegin().
+   *
+   * @return A const reverse iterator to the element following the last element of the reversed vector, or rbegin() if
+   * the vector is empty.
+   */
   [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
+  /**
+   * @brief Constructs a new element in place at the end of the vector, using the provided arguments to construct the
+   * element. The provided arguments are forwarded to the constructor of the element type, allowing for efficient
+   * construction of new elements directly in the vector's storage.
+   *
+   * This method will ensure that the vector has enough capacity to accommodate the new element, and it will handle any
+   * necessary reallocation and copying of existing elements if the current capacity is insufficient. After the new
+   * element is constructed, it will be added to the end of the vector, and the size of the vector will be increased by
+   * one.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place.
+   * @return A reference to the newly constructed element at the end of the vector. This reference can be used to access
+   * or modify the new element after it has been added to the vector.
+   */
   template <typename... Args>
   reference emplaceBack(Args&&... args);
 
-  template <typename... Args>
-  reference emplace_back(Args&&... args) {
-    return emplaceBack(std::forward<Args>(args)...);
-  }
-
+  /**
+   * @brief Adds a new element to the end of the vector by copying the provided value. This method will ensure that the
+   * vector has enough capacity to accommodate the new element, and it will handle any necessary reallocation and
+   * copying of existing elements if the current capacity is insufficient. After the new element is added, the size of
+   * the vector will be increased by one.
+   *
+   * @param value The value to copy into the new element at the end of the vector. This value will be copied, so it
+   * should be a type that is copyable.
+   */
   void pushBack(const_reference value);
 
-  void push_back(const_reference value) {
-    pushBack(value);
-  }
-
+  /**
+   * @brief Adds a new element to the end of the vector by moving the provided value. This method will ensure that the
+   * vector has enough capacity to accommodate the new element, and it will handle any necessary reallocation and
+   * copying of existing elements if the current capacity is insufficient. After the new element is added, the size of
+   * the vector will be increased by one.
+   *
+   * @param value The value to move into the new element at the end of the vector. This value will be moved, so it
+   * should be a type that is moveable.
+   */
   void pushBack(value_type&& value);
 
-  void push_back(value_type&& value) {
-    pushBack(std::move(value));
-  }
-
+  /**
+   * @brief Removes the last element from the vector. This method will destroy the last element in the vector and reduce
+   * the size of the vector by one. If the vector is empty, this method will have no effect. After this method is
+   * called, the last element will no longer be part of the vector, and any access to it will be undefined behavior.
+   */
   void popBack();
 
-  void pop_back() {
-    popBack();
-  }
-
+  /**
+   * @brief Constructs a new element in place at the specified position in the vector, using the provided arguments to
+   * construct the element. The provided arguments are forwarded to the constructor of the element type, allowing for
+   * efficient construction of new elements directly in the vector's storage.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param position An iterator pointing to the position in the vector where the new element should be constructed. The
+   * new element will be inserted before the element currently at this position.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place.
+   * @return An iterator pointing to the newly constructed element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
   template <typename... Args>
   iterator emplace(const_iterator position, Args&&... args);
 
+  /**
+   * @brief Inserts a new element into the vector at the specified position by copying the provided value. This method
+   * will ensure that the vector has enough capacity to accommodate the new element, and it will handle any necessary
+   * reallocation and copying of existing elements if the current capacity is insufficient. After the new element is
+   * added, the size of the vector will be increased by one.
+   *
+   * @param position An iterator pointing to the position in the vector where the new element should be inserted. The
+   * new element will be inserted before the element currently at this position.
+   * @param value The value to copy into the new element at the specified position in the vector. This value will be
+   * copied, so it should be a type that is copyable.
+   * @return An iterator pointing to the newly inserted element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
   iterator insert(const_iterator position, const_reference value);
 
+  /**
+   * @brief Inserts a new element into the vector at the specified position by moving the provided value. This method
+   * will ensure that the vector has enough capacity to accommodate the new element, and it will handle any necessary
+   * reallocation and copying of existing elements if the current capacity is insufficient. After the new element is
+   * added, the size of the vector will be increased by one.
+   *
+   * @param position An iterator pointing to the position in the vector where the new element should be inserted. The
+   * new element will be inserted before the element currently at this position.
+   * @param value The value to move into the new element at the specified position in the vector. This value will be
+   * moved, so it should be a type that is moveable.
+   * @return An iterator pointing to the newly inserted element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
   iterator insert(const_iterator position, value_type&& value);
 
+  /**
+   * @brief Inserts count copies of the given value into the vector at the specified position. This method will ensure
+   * that the vector has enough capacity to accommodate the new elements, and it will handle any necessary reallocation
+   * and copying of existing elements if the current capacity is insufficient. After the new elements are added, the
+   * size of the vector will be increased by count.
+   *
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param count The number of copies of the value to insert into the vector. The vector will be resized to contain
+   * exactly this many new elements after the insertion.
+   * @param value The value to copy into the new elements at the specified position in the vector. This value will be
+   * copied, so it should be a type that is copyable.
+   * @return An iterator pointing to the first of the newly inserted elements in the vector. This iterator can be used
+   * to access or modify the new elements after they have been added to the vector.
+   */
   iterator insert(const_iterator position, size_type count, const value_type& value);
 
+  /**
+   * @brief Inserts new elements into the vector at the specified position by copying the values from the range [first,
+   * last). This method will ensure that the vector has enough capacity to accommodate the new elements, and it will
+   * handle any necessary reallocation and copying of existing elements if the current capacity is insufficient. After
+   * the new elements are added, the size of the vector will be increased by the number of elements in the range [first,
+   * last).
+   *
+   * @tparam InputIt The type of the input iterators.
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param first An input iterator pointing to the first element in the range to copy from. The elements in the range
+   * [first, last) will be copied into the vector, replacing its current contents.
+   * @param last An input iterator pointing to one past the last element in the range to copy from. The elements in the
+   * range [first, last) will be copied into the vector, replacing its current contents.
+   * @return An iterator pointing to the first of the newly inserted elements in the vector. This iterator can be used
+   * to access or modify the new elements after they have been added to the vector.
+   */
   template <std::input_iterator InputIt>
   iterator insert(const_iterator position, InputIt first, InputIt last);
 
+  /**
+   * @brief Inserts new elements into the vector at the specified position by copying the values from the given
+   * initializer list. This method will ensure that the vector has enough capacity to accommodate the new elements, and
+   * it will handle any necessary reallocation and copying of existing elements if the current capacity is insufficient.
+   * After the new elements are added, the size of the vector will be increased by the number of elements in the
+   * initializer list.
+   *
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param values An initializer list containing the values to copy into the vector. The elements in this initializer
+   * list will be copied into the vector, replacing its current contents.
+   * @return An iterator pointing to the first of the newly inserted elements in the vector. This iterator can be used
+   * to access or modify the new elements after they have been added to the vector.
+   */
   iterator insert(const_iterator position, std::initializer_list<value_type> values);
 
+  /**
+   * @brief Removes the element at the specified position in the vector. This method will destroy the element at the
+   * given position and reduce the size of the vector by one. The elements following the erased element will be moved to
+   * fill the gap left by the erased element, and the order of the remaining elements will be preserved. If the position
+   * is out of range (i.e., not a valid iterator pointing to an element in the vector), the behavior is undefined. After
+   * this method is called, the element at the specified position will no longer be part of the vector, and any access
+   * to it will be undefined behavior.
+   *
+   * @param position An iterator pointing to the element in the vector that should be removed. This should be a valid
+   * iterator pointing to an element in the vector; otherwise, the behavior is undefined.
+   * @return An iterator pointing to the element that followed the erased element in the vector before the call to
+   * erase. If the erased element was the last element in the vector, this will return end().
+   * @throws std::out_of_range If the position is out of range (i.e., not a valid iterator pointing to an element in the
+   * vector).
+   */
   iterator erase(const_iterator position);
 
+  /**
+   * @brief Removes the elements in the range [first, last) from the vector. This method will destroy the elements in
+   * the given range and reduce the size of the vector by the number of elements erased. The elements following the
+   * erased elements will be moved to fill the gap left by the erased elements, and the order of the remaining elements
+   * will be preserved. If the range [first, last) is out of range (i.e., not valid iterators pointing to elements in
+   * the vector), the behavior is undefined. After this method is called, the elements in the specified range will no
+   * longer be part of the vector, and any access to them will be undefined behavior.
+   *
+   * @param first An iterator pointing to the first element in the range to be removed from the vector. This should be a
+   * valid iterator pointing to an element in the vector; otherwise, the behavior is undefined.
+   * @param last An iterator pointing to one past the last element in the range to be removed from the vector. This
+   * should be a valid iterator pointing to an element in the vector, and it should be greater than or equal to first;
+   * otherwise, the behavior is undefined.
+   * @return An iterator pointing to the element that followed the last erased element in the vector before the call to
+   * erase. If the last erased element was the last element in the vector, this will return end().
+   * @throws std::out_of_range If the range [first, last) is out of range (i.e., not valid iterators pointing to
+   * elements in the vector).
+   */
   iterator erase(const_iterator first, const_iterator last);
 
+  /**
+   * @brief Resizes the vector to contain newSize elements. If newSize is greater than the current size of the vector,
+   * new elements will be default-constructed and added to the end of the vector until the size reaches newSize. If
+   * newSize is less than the current size of the vector, the elements at the end of the vector will be destroyed until
+   * the size reaches newSize. If newSize is equal to the current size of the vector, this method will have no effect.
+   * After this method is called, the size of the vector will be newSize, and the elements in the vector will be
+   * modified accordingly based on whether the size was increased or decreased.
+   */
   using IVector::resize;
 
+  /**
+   * @brief Resizes the vector to contain newSize elements. If newSize is greater than the current size of the vector,
+   * new elements will be copy-constructed from the provided value and added to the end of the vector until the size
+   * reaches newSize. If newSize is less than the current size of the vector, the elements at the end of the vector will
+   * be destroyed until the size reaches newSize. If newSize is equal to the current size of the vector, this method
+   * will have no effect. After this method is called, the size of the vector will be newSize, and the elements in the
+   * vector will be modified accordingly based on whether the size was increased or decreased.
+   *
+   * @param newSize The new size of the vector. If this value is greater than the current size of the vector, new
+   * elements will be added; if it is less than the current size, elements will be removed. If it is equal to the
+   * current size, the vector will remain unchanged.
+   * @param value The value to copy into the new elements if the vector is resized to be larger. This value will be
+   * copied, so it should be a type that is copyable.
+   */
   void resize(size_type newSize, const_reference value);
 
 #pragma endregion Element Accessors
 
 #pragma region STL
+  /**
+   * @brief Constructs a new element in place at the end of the vector, using the provided arguments to construct the
+   * element. The provided arguments are forwarded to the constructor of the element type, allowing for efficient
+   * construction of new elements directly in the vector's storage.
+   *
+   * This method will ensure that the vector has enough capacity to accommodate the new element, and it will handle any
+   * necessary reallocation and copying of existing elements if the current capacity is insufficient. After the new
+   * element is constructed, it will be added to the end of the vector, and the size of the vector will be increased by
+   * one.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place.
+   * @return A reference to the newly constructed element at the end of the vector. This reference can be used to access
+   * or modify the new element after it has been added to the vector.
+   */
+  template <typename... Args>
+  reference emplace_back(Args&&... args) {
+    return emplaceBack(std::forward<Args>(args)...);
+  }
+
+  /**
+   * @brief Adds a new element to the end of the vector by copying the provided value. This method will ensure that the
+   * vector has enough capacity to accommodate the new element, and it will handle any necessary reallocation and
+   * copying of existing elements if the current capacity is insufficient. After the new element is added, the size of
+   * the vector will be increased by one.
+   *
+   * @param value The value to copy into the new element at the end of the vector. This value will be copied, so it
+   * should be a type that is copyable.
+   */
+  void push_back(const_reference value) {
+    pushBack(value);
+  }
+
+  /**
+   * @brief Adds a new element to the end of the vector by moving the provided value. This method will ensure that the
+   * vector has enough capacity to accommodate the new element, and it will handle any necessary reallocation and
+   * copying of existing elements if the current capacity is insufficient. After the new element is added, the size of
+   * the vector will be increased by one.
+   *
+   * @param value The value to move into the new element at the end of the vector. This value will be moved, so it
+   * should be a type that is moveable.
+   */
+  void push_back(value_type&& value) {
+    pushBack(std::move(value));
+  }
+
+  /**
+   * @brief Removes the last element from the vector. This method will destroy the last element in the vector and reduce
+   * the size of the vector by one. If the vector is empty, this method will have no effect. After this method is
+   * called, the last element will no longer be part of the vector, and any access to it will be undefined behavior.
+   */
+  void pop_back() {
+    popBack();
+  }
+
   /**
    * @brief Returns a copy of the allocator used by the vector.
    *
@@ -363,32 +736,133 @@ class Vector : public IVector {
   }
 #pragma endregion STL
 
+  /**
+   * @brief Exchanges the contents of this vector with those of another vector. After this operation, the contents of
+   * this vector will be replaced by the contents of the other vector, and the contents of the other vector will be
+   * replaced by the contents of this vector.
+   *
+   * This method will swap the internal storage and size information of the two vectors, allowing for efficient exchange
+   * of their contents without the need for copying individual elements. The behavior of this method is undefined if the
+   * allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the allocator traits do
+   * not allow for propagation on container swap).
+   *
+   * @param other The other vector to swap contents with. This should be a vector of the same type and with a compatible
+   * allocator; otherwise, the behavior is undefined.
+   */
   void swap(Vector& other) noexcept(traits::propagate_on_container_swap::value || traits::is_always_equal::value);
 
+  /**
+   * @brief Exchanges the contents of two vectors. After this operation, the contents of the left vector will be
+   * replaced by the contents of the right vector, and the contents of the right vector will be replaced by the contents
+   * of the left vector.
+   *
+   * @param left The first vector to swap contents with. This should be a vector of the same type and with a compatible
+   * allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to swap contents with. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   */
   friend void swap(Vector& left, Vector& right) noexcept(noexcept(left.swap(right))) {
     left.swap(right);
   }
 
+  /**
+   * @brief Compares two vectors for equality. This operator returns true if the two vectors have the same size and
+   * contain the same elements in the same order; otherwise, it returns false. The behavior of this operator is
+   * undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the
+   * allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for equality. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for equality. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the two vectors are equal (i.e., they have the same size and contain the same elements in the same
+   * order), or false otherwise.
+   */
   friend bool operator==(const Vector& left, const Vector& right) {
     return left.size() == right.size() && std::equal(left.begin(), left.end(), right.begin());
   }
 
+  /**
+   * @brief Compares two vectors for inequality. This operator returns true if the two vectors do not have the same size
+   * or do not contain the same elements in the same order; otherwise, it returns false. The behavior of this operator
+   * is undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the
+   * allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for inequality. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for inequality. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the two vectors are not equal (i.e., they do not have the same size or do not contain the same
+   * elements in the same order), or false otherwise.
+   */
   friend bool operator!=(const Vector& left, const Vector& right) {
     return !(left == right);
   }
 
+  /**
+   * @brief Compares two vectors for lexicographical order. This operator returns true if the elements of the left
+   * vector are lexicographically less than the elements of the right vector; otherwise, it returns false. The behavior
+   * of this operator is undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare
+   * equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the elements of the left vector are lexicographically less than the elements of the right vector,
+   * or false otherwise.
+   */
   friend bool operator<(const Vector& left, const Vector& right) {
     return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end());
   }
 
+  /**
+   * @brief Compares two vectors for lexicographical order. This operator returns true if the elements of the left
+   * vector are lexicographically less than or equal to the elements of the right vector; otherwise, it returns false.
+   * The behavior of this operator is undefined if the allocators of the two vectors are not compatible (i.e., if they
+   * do not compare equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the elements of the left vector are lexicographically less than or equal to the elements of the
+   * right vector, or false otherwise.
+   */
   friend bool operator<=(const Vector& left, const Vector& right) {
     return !(right < left);
   }
 
+  /**
+   * @brief Compares two vectors for lexicographical order. This operator returns true if the elements of the left
+   * vector are lexicographically greater than the elements of the right vector; otherwise, it returns false. The
+   * behavior of this operator is undefined if the allocators of the two vectors are not compatible (i.e., if they do
+   * not compare equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the elements of the left vector are lexicographically greater than the elements of the right
+   * vector, or false otherwise.
+   */
   friend bool operator>(const Vector& left, const Vector& right) {
     return right < left;
   }
 
+  /**
+   * @brief Compares two vectors for lexicographical order. This operator returns true if the elements of the left
+   * vector are lexicographically greater than or equal to the elements of the right vector; otherwise, it returns
+   * false. The behavior of this operator is undefined if the allocators of the two vectors are not compatible (i.e., if
+   * they do not compare equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param left The first vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @param right The second vector to compare for lexicographical order. This should be a vector of the same type and
+   * with a compatible allocator; otherwise, the behavior is undefined.
+   * @return true if the elements of the left vector are lexicographically greater than or equal to the elements of the
+   * right vector, or false otherwise.
+   */
   friend bool operator>=(const Vector& left, const Vector& right) {
     return !(left < right);
   }
@@ -403,47 +877,350 @@ class Vector : public IVector {
   [[nodiscard]] std::size_t maxSize() const noexcept override;
 
  protected:
-#pragma region Virtuals
+  /**
+   * @brief Constructs a new element in place at the specified destination in the vector's storage. This method is
+   * responsible for constructing an element of the vector's value type at the given memory location, using the
+   * allocator's construct method.
+   *
+   * The behavior of this method is undefined if the destination does not point to a valid memory location within the
+   * vector's storage or if the memory at the destination is not properly aligned for the element type. After this
+   * method is called, the memory at the destination will contain a validly constructed element of the vector's value
+   * type, and it can be accessed and used as part of the vector's contents.
+   *
+   * @param destination A pointer to the memory location where the new element should be constructed. This should point
+   * to a valid memory location within the vector's storage, and it should be properly aligned for the element type;
+   * otherwise, the behavior is undefined.
+   */
   void constructAt(void* destination) noexcept override;
+
+  /**
+   * @brief Constructs a new element in place at the specified destination in the vector's storage, using the provided
+   * source value. This method is responsible for constructing an element of the vector's value type at the given memory
+   * location, using the allocator's construct method and the provided source value.
+   *
+   * @param destination A pointer to the memory location where the new element should be constructed. This should point
+   * to a valid memory location within the vector's storage, and it should be properly aligned for the element type;
+   * otherwise, the behavior is undefined.
+   * @param source A pointer to the value that should be used to construct the new element at the destination. This
+   * should point to a valid value of the vector's element type; otherwise, the behavior is undefined.
+   */
+  void copyConstructAt(void* destination, const void* source) override;
+
+  /**
+   * @brief Constructs a new element in place at the specified destination in the vector's storage, using the provided
+   * source value. This method is responsible for constructing an element of the vector's value type at the given memory
+   * location, using the allocator's construct method and the provided source value.
+   *
+   * The behavior of this method is undefined if the destination does not point to a valid memory location within the
+   * vector's storage or if the memory at the destination is not properly aligned for the element type. After this
+   * method is called, the memory at the destination will contain a validly constructed element of the vector's value
+   * type, initialized with the provided source value, and it can be accessed and used as part of the vector's contents.
+   *
+   * @param destination A pointer to the memory location where the new element should be constructed. This should point
+   * to a valid memory location within the vector's storage, and it should be properly aligned for the element type;
+   * otherwise, the behavior is undefined.
+   * @param source A pointer to the value that should be used to construct the new element at the destination. This
+   * should point to a valid value of the vector's element type; otherwise, the behavior is undefined.
+   */
   void constructAt(void* destination, void* source) noexcept override;
+
+  /**
+   * @brief Destroys the element at the specified memory location in the vector's storage. This method is responsible
+   * for destroying an element of the vector's value type at the given memory location, using the allocator's destroy
+   * method.
+   *
+   * @param element A pointer to the memory location where the element to be destroyed is located.
+   */
   void destroyAt(void* element) noexcept override;
+
+  /**
+   * @brief Allocates raw storage for the specified number of elements in the vector. This method is responsible for
+   * allocating uninitialized memory that can hold the specified number of elements of the vector's value type, using
+   * the allocator's allocate method.
+   *
+   * @param capacity The number of elements for which to allocate storage. This should be a non-negative value, and the
+   * behavior is undefined if it exceeds the maximum size allowed by the allocator.
+   * @return A pointer to the allocated raw storage that can hold the specified number of elements. This pointer should
+   * point to a valid memory location that is properly aligned for the element type, and it should be used to construct
+   * elements in place using the constructAt methods. The memory returned by this method is uninitialized, and it should
+   * be properly deallocated using the deallocateStorage method when it is no longer needed.
+   */
   void* allocateStorage(std::size_t capacity) override;
+
+  /**
+   * @brief Deallocates raw storage that was previously allocated for the vector's elements. This method is responsible
+   * for deallocating memory that was allocated using the allocateStorage method, using the allocator's deallocate
+   * method.
+   *
+   * @param data  A pointer to the raw storage that should be deallocated. This should point to a valid memory location
+   * that was previously allocated using the allocateStorage method; otherwise, the behavior is undefined.
+   * @param capacity The number of elements for which the storage was allocated. This should be the same value that was
+   * used when the storage was allocated; otherwise, the behavior is undefined.
+   */
   void deallocateStorage(void* data, std::size_t capacity) noexcept override;
-#pragma endregion Virtuals
 
  private:
+  /**
+   * @brief Constructs a new vector by copying the contents of another vector, using the specified allocator. This
+   * constructor is responsible for creating a new vector that contains the same elements as the other vector, but it
+   * uses the provided allocator for memory management instead of the allocator of the other vector. The behavior of
+   * this constructor is undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare
+   * equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param other The other vector to copy from. This should be a vector of the same type and with a compatible
+   * allocator; otherwise, the behavior is undefined. After this constructor is called, the new vector will contain the
+   * same elements as the other vector, but it will use the provided allocator for memory management.
+   * @param allocator The allocator to use for the new vector. This allocator will be used for memory management in the
+   * new vector, and it should be compatible with the allocator of the other vector; otherwise, the behavior is
+   * undefined. After this constructor is called, the new vector will use this allocator for all memory management
+   * operations.
+   */
   Vector(const Vector& other, const allocator_type& allocator);
 
+  /**
+   * @brief Determines the appropriate allocator to use for copy assignment from another vector. This method takes into
+   * account the allocator of the other vector and the allocator traits to determine whether the current allocator
+   * should be used, whether the other allocator should be used, or whether a new allocator should be created for the
+   * copy assignment operation.
+   *
+   * @param other The other vector from which to copy assign. This should be a vector of the same type and with a
+   * compatible allocator; otherwise, the behavior is undefined.
+   * @return The allocator that should be used for the copy assignment operation. This will be either a copy of the
+   * current allocator, a copy of the other vector's allocator, or a new allocator created for the copy assignment,
+   * depending on the allocator traits and the relationship between the two allocators.
+   */
   [[nodiscard]] allocator_type copyAssignmentAllocator(const Vector& other) const;
 
+  /**
+   * @brief Replaces the contents of this vector with the contents of another vector. This method is responsible for
+   * replacing the internal storage and size information of this vector with that of the other vector, effectively
+   * making this vector contain the same elements as the other vector. The behavior of this method is undefined if the
+   * allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the allocator traits do
+   * not allow for propagation on container swap).
+   *
+   * @param other The other vector whose contents should replace the contents of this vector. This should be a vector of
+   * the same type and with a compatible allocator; otherwise, the behavior is undefined.
+   */
   void replaceWith(Vector& other);
 
+  /**
+   * @brief Exchanges the internal storage and size information of this vector with that of another vector. This method
+   * is responsible for swapping the raw storage pointers, size, and capacity of the two vectors, allowing for efficient
+   * exchange of their contents without the need for copying individual elements. The behavior of this method is
+   * undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the
+   * allocator traits do not allow for propagation on container swap).
+   *
+   * @param other The other vector to swap storage with. This should be a vector of the same type and with a compatible
+   * allocator; otherwise, the behavior is undefined.
+   */
   void swapStorage(Vector& other) noexcept;
 
+  /**
+   * @brief Exchanges the internal storage, size information, and allocator of this vector with that of another vector.
+   * This method is responsible for swapping the raw storage pointers, size, capacity, and allocator of the two vectors,
+   * allowing for efficient exchange of their contents and allocator without the need for copying individual elements.
+   * The behavior of this method is undefined if the allocators of the two vectors are not compatible (i.e., if they do
+   * not compare equal or if the allocator traits do not allow for propagation on container swap).
+   *
+   * @param other The other vector to swap storage and allocator with. This should be a vector of the same type and with
+   * a compatible allocator; otherwise, the behavior is undefined.
+   */
   void swapAll(Vector& other) noexcept(std::is_nothrow_swappable_v<allocator_type>);
 
+  /**
+   * @brief Adopts the internal storage and size information of another vector. This method is responsible for taking
+   * ownership of the raw storage pointer, size, and capacity of the other vector and making this vector use that
+   * storage as its own. After this method is called, this vector will contain the same elements as the other vector,
+   * and the other vector will be left in a valid but unspecified state (typically empty). The behavior of this method
+   * is undefined if the allocators of the two vectors are not compatible (i.e., if they do not compare equal or if the
+   * allocator traits do not allow for propagation on container swap).
+   *
+   * @param other The other vector whose storage should be adopted by this vector. This should be a vector of the same
+   * type and with a compatible allocator; otherwise, the behavior is undefined. After this method is called, this
+   * vector will take ownership of the storage of the other vector, and the other vector will be left in a valid but
+   * unspecified state (typically empty).
+   */
   void adoptStorage(Vector& other) noexcept;
 
+  /**
+   * @brief Checks whether the given index is within the valid range of indices for the vector. This method is
+   * responsible for verifying that the provided index is less than the current size of the vector, ensuring that any
+   * access to elements at that index will be valid. If the index is out of range (i.e., greater than or equal to the
+   * size of the vector), this method will throw a std::out_of_range exception, indicating that the index is invalid for
+   * accessing elements in the vector. This method is typically used internally by element access methods (such as
+   * operator[] and at()) to ensure safe access to the elements of the vector.
+   *
+   * @param index The index to check for validity. This should be a non-negative value, and the behavior is undefined if
+   * it is negative. If this index is greater than or equal to the current size of the vector, this method will throw a
+   * std::out_of_range exception.
+   */
   void checkIndex(size_type index) const;
 
+  /**
+   * @brief Checks whether the addition of two size_type values would overflow. This method is responsible for verifying
+   * that the sum of the two provided size_type values does not exceed the maximum value representable by size_type,
+   * which would indicate an overflow. If the addition of the two values would overflow, this method will throw a
+   * std::overflow_error exception, indicating that the operation cannot be performed safely. This method is typically
+   * used internally by methods that need to calculate new sizes or capacities for the vector, ensuring that they do not
+   * perform arithmetic operations that would result in overflow and lead to undefined behavior.
+   *
+   * @param lhs The first size_type value to add. This should be a non-negative value, and the behavior is undefined if
+   * it is negative.
+   * @param rhs The second size_type value to add. This should be a non-negative value, and the behavior is undefined
+   * if it is negative. If the sum of lhs and rhs exceeds the maximum value representable by size_type, this method will
+   * throw a std::overflow_error exception.
+   * @return The sum of lhs and rhs if it does not overflow. If the addition overflows, this method will throw a
+   * std::overflow_error exception instead of returning a value.
+   */
   [[nodiscard]] size_type checkedAdd(size_type lhs, size_type rhs) const;
 
+  /**
+   * @brief Ensures that the vector has enough capacity to accommodate the addition of a specified number of elements.
+   * This method is responsible for checking whether the current capacity of the vector is sufficient to hold the
+   * existing elements plus the additional number of elements specified by the parameter. If the current capacity is
+   * insufficient, this method will trigger a reallocation of the vector's storage to increase its capacity to
+   * accommodate the new elements. The behavior of this method is undefined if the additional number of elements is
+   * negative or if the resulting capacity would exceed the maximum size allowed by the allocator.
+   *
+   * @param additional The number of additional elements that need to be accommodated in the vector. This should be a
+   * non-negative value, and the behavior is undefined if it is negative. If the current capacity of the vector is
+   * insufficient to hold the existing elements plus this additional number of elements, this method will trigger a
+   * reallocation to increase the vector's capacity.
+   */
   void ensureGrowthFor(size_type additional);
 
+  /**
+   * @brief Calculates the recommended capacity for the vector based on a specified minimum capacity. This method is
+   * responsible for determining an appropriate new capacity for the vector when it needs to grow, based on the provided
+   * minimum capacity. The recommended capacity is typically calculated using a growth strategy (such as doubling the
+   * current capacity) to ensure that the vector can accommodate future additions without needing to reallocate again
+   * immediately. The behavior of this method is undefined if the minimum capacity is negative or if the resulting
+   * recommended capacity would exceed the maximum size allowed by the allocator.
+   *
+   * @param minimum The minimum capacity that the recommended capacity should be at least equal to. This should be a
+   * non-negative value, and the behavior is undefined if it is negative. The recommended capacity returned by this
+   * method will be greater than or equal to this minimum value, ensuring that the vector can accommodate at least this
+   * many elements after growth.
+   * @return The recommended capacity for the vector, which will be greater than or equal to the provided minimum
+   * capacity. This recommended capacity is calculated based on a growth strategy to allow for efficient future
+   * additions to the vector without needing immediate reallocation again. If the minimum capacity is negative or if the
+   * resulting recommended capacity would exceed the maximum size allowed by the allocator, this method may throw an
+   * exception or result in undefined behavior.
+   */
   [[nodiscard]] size_type recommendedCapacity(size_type minimum) const;
 
+  /**
+   * @brief Calculates the new capacity for the vector when inserting a specified number of additional elements. This
+   * method is responsible for determining the new capacity that the vector should have when it needs to grow to
+   * accommodate the addition of a specified number of elements. The new capacity is typically calculated using a growth
+   * strategy (such as doubling the current capacity) to ensure that the vector can accommodate future additions without
+   * needing to reallocate again immediately. The behavior of this method is undefined if the additional number of
+   * elements is negative or if the resulting new capacity would exceed the maximum size allowed by the allocator.
+   *
+   * @param additional The number of additional elements that need to be accommodated in the vector. This should be a
+   * non-negative value, and the behavior is undefined if it is negative. The new capacity returned by this method will
+   * be calculated based on the current capacity and this additional number of elements, using a growth strategy to
+   * allow for efficient future additions to the vector without needing immediate reallocation again. If the additional
+   * number of elements is negative or if the resulting new capacity would exceed the maximum size allowed by the
+   * allocator, this method may throw an exception or result in undefined behavior.
+   * @return The new capacity for the vector, which will be calculated based on the current capacity and the provided
+   * additional number of elements. This new capacity is determined using a growth strategy to ensure that the vector
+   * can accommodate future additions without needing immediate reallocation again. If the additional number of elements
+   * is negative or if the resulting new capacity would exceed the maximum size allowed by the allocator, this method
+   * may throw an exception or result in undefined behavior.
+   */
   [[nodiscard]] size_type insertCapacity(size_type additional) const;
 
+  /**
+   * @brief Reallocates the vector's storage to a new capacity and constructs a new element in place at the specified
+   * index using the provided arguments. This method is responsible for reallocating the vector's storage to accommodate
+   * a new capacity, and then constructing a new element at the specified index using the provided arguments. The
+   * behavior of this method is undefined if the index is greater than the current size of the vector or if the new
+   * capacity is less than the current size of the vector. After this method is called, the vector will have the new
+   * capacity, and a new element will be constructed at the specified index using the provided arguments.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param index The index at which to construct the new element. This should be a non-negative value, and the behavior
+   * is undefined if it is greater than the current size of the vector.
+   * @param newCapacity The new capacity to which the vector's storage should be reallocated. This should be a
+   * non-negative value, and the behavior is undefined if it is less than the current size of the vector.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place at the specified index after the reallocation.
+   * @return An iterator pointing to the newly constructed element at the specified index after the reallocation. This
+   * iterator can be used to access or modify the new element after it has been added to the vector.
+   */
   template <typename... Args>
   iterator reallocateAndEmplace(size_type index, size_type newCapacity, Args&&... args);
 
+  /**
+   * @brief Rebuilds the vector's storage to a new capacity and constructs a new element in place at the specified index
+   * using the provided arguments. This method is responsible for rebuilding the vector's storage to accommodate a new
+   * capacity, which may involve allocating new storage, moving existing elements to the new storage, and then
+   * constructing a new element at the specified index using the provided arguments. The behavior of this method is
+   * undefined if the index is greater than the current size of the vector or if the new capacity is less than the
+   * current size of the vector. After this method is called, the vector will have the new capacity, and a new element
+   * will be constructed at the specified index using the provided arguments, with existing elements moved as necessary
+   * to accommodate the new element and the new capacity.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param index The index at which to construct the new element. This should be a non-negative value, and the behavior
+   * is undefined if it is greater than the current size of the vector.
+   * @param newCapacity The new capacity to which the vector's storage should be rebuilt. This should be a non-negative
+   * value, and the behavior is undefined if it is less than the current size of the vector.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place at the specified index after the rebuilding of the
+   * storage.
+   * @return An iterator pointing to the newly constructed element at the specified index after the rebuilding of the
+   * storage. This iterator can be used to access or modify the new element after it has been added to the vector.
+   */
   template <typename... Args>
   iterator rebuildAndEmplace(size_type index, size_type newCapacity, Args&&... args);
 
+  /**
+   * @brief Determines whether a single element can be inserted in place at the end of the vector without needing to
+   * reallocate or move existing elements. This method checks whether the current capacity of the vector is sufficient
+   * to accommodate one more element, and whether the insertion can be performed without needing to move existing
+   * elements (i.e., if the insertion is at the end of the vector). If this method returns true, it indicates that a
+   * single element can be inserted in place at the end of the vector without needing to reallocate or move existing
+   * elements; if it returns false, it indicates that a reallocation or movement of existing elements would be necessary
+   * to insert a single element at the end of the vector.
+   *
+   * @return true if a single element can be inserted in place at the end of the vector without needing to reallocate or
+   * move existing elements, or false otherwise.
+   */
   static consteval bool canShiftSingleInsertInPlace();
 
+  /**
+   * @brief Calculates the index in the vector corresponding to a given iterator position. This method is responsible
+   * for determining the index of the element in the vector that corresponds to the provided iterator position. The
+   * behavior of this method is undefined if the provided iterator position does not point to a valid element within the
+   * vector or if it points to an element that is not part of the vector's storage. If the allowEnd parameter is true,
+   * this method may also allow the position to point to one past the last element of the vector (i.e., the end
+   * iterator), in which case it would return the index equal to the current size of the vector. If the allowEnd
+   * parameter is false, the position must point to a valid element within the vector, and the method will return the
+   * corresponding index of that element. This method is typically used internally by methods that need to convert
+   * iterator positions to indices for accessing or modifying elements in the vector.
+   *
+   * @param position The iterator position for which to calculate the corresponding index in the vector. This should be
+   * a valid iterator pointing to an element within the vector's storage, or (if allowEnd is true) it may also point to
+   * one past the last element of the vector; otherwise, the behavior is undefined.
+   * @param allowEnd A boolean flag indicating whether the position is allowed to point to one past the last element of
+   * the vector (i.e., the end iterator). If this is true, the method may return an index equal to the current size of
+   * the vector if the position points to the end iterator; if this is false, the position must point to a valid element
+   * within the vector, and the method will return the corresponding index of that element.
+   * @return The index in the vector corresponding to the given iterator position. This will be a non-negative value
+   * less than the current size of the vector if allowEnd is false, or it may be equal to the current size of the vector
+   * if allowEnd is true and the position points to the end iterator. If the position does not point to a valid element
+   * within the vector or (if allowEnd is false) if it points to the end iterator, the behavior of this method is
+   * undefined.
+   */
   [[nodiscard]] size_type indexForPosition(const_iterator position, bool allowEnd) const;
 
+  /**
+   * @brief The allocator used by the vector to manage memory for its elements.
+   */
   allocator_type m_allocator;
 };
 
@@ -960,6 +1737,16 @@ std::size_t Vector<T, Alloc>::maxSize() const noexcept {
 template <typename T, typename Alloc>
 void Vector<T, Alloc>::constructAt(void* destination) noexcept {
   traits::construct(m_allocator, static_cast<pointer>(destination));
+}
+
+template <typename T, typename Alloc>
+void Vector<T, Alloc>::copyConstructAt(void* destination, const void* source) {
+  if constexpr (std::is_copy_constructible_v<value_type>) {
+    const_reference ref = *static_cast<const_pointer>(source);
+    traits::construct(m_allocator, static_cast<pointer>(destination), ref);
+  } else {
+    throw std::logic_error("Vector element type is not copy constructible");
+  }
 }
 
 template <typename T, typename Alloc>

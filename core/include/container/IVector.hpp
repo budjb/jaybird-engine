@@ -9,7 +9,7 @@ namespace core::container {
  * @brief Forward declaration of the VectorModifier class, which is a friend of IVector and is used to manipulate the
  * internal state of IVector.
  */
-class VectorModifier;
+class PolymorphicVector;
 
 /**
  * @brief IVector is a non-templated base class for Vector that holds the raw data and metadata for a vector-like
@@ -29,7 +29,7 @@ class IVector {
    * members of IVector. This is necessary because VectorModifier needs to be able to manipulate the internal state of
    * IVector, such as resizing the vector or accessing the raw data buffer, in order to provide its functionality.
    */
-  friend VectorModifier;
+  friend PolymorphicVector;
 
   /**
    * @brief Destructor. Does not deallocate memory or destroy elements, as the derived Vector class is responsible for
@@ -281,6 +281,18 @@ class IVector {
    * the destination.
    */
   virtual void constructAt(void* destination, void* source) noexcept = 0;
+
+  /**
+   * @brief Constructs an element at the specified destination by copying from a const source.
+   *
+   * This hook is used when an operation must preserve the source object, such as inserting or appending an element via
+   * a polymorphic view. Unlike the mutable-source overload of @c constructAt , this operation must not modify the
+   * source element.
+   *
+   * @param destination A pointer to the uninitialized memory where the new element should be constructed.
+   * @param source A pointer to an existing const element that should be copied into the destination.
+   */
+  virtual void copyConstructAt(void* destination, const void* source) = 0;
 
   /**
    * @brief Destroys the element at the specified location. This method is used by the derived Vector class when it
