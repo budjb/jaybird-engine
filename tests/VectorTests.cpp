@@ -1,6 +1,7 @@
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
+#include <memory_resource>
 #include <stdexcept>
 #include <vector>
 
@@ -59,17 +60,20 @@ class StatefulAllocator {
   template <typename U>
   friend class StatefulAllocator;
 
-  explicit StatefulAllocator(int* state = nullptr) noexcept : m_state(state) {}
+  explicit StatefulAllocator(std::pmr::memory_resource* resource = std::pmr::get_default_resource(),
+                             int* state = nullptr) noexcept
+      : m_resource(resource), m_state(state) {}
 
   template <typename U>
-  explicit StatefulAllocator(const StatefulAllocator<U>& other) noexcept : m_state(other.state()) {}
+  explicit StatefulAllocator(const StatefulAllocator<U>& other) noexcept
+      : m_resource(other.resource()), m_state(other.state()) {}
 
   [[nodiscard]] T* allocate(const std::size_t n) {
-    return std::allocator<T>{}.allocate(n);
+    return static_cast<T*>(m_resource->allocate(n * sizeof(T), alignof(T)));
   }
 
   void deallocate(T* ptr, const std::size_t n) noexcept {
-    std::allocator<T>{}.deallocate(ptr, n);
+    m_resource->deallocate(ptr, n * sizeof(T), alignof(T));
   }
 
   [[nodiscard]] StatefulAllocator select_on_container_copy_construction() const noexcept {
@@ -80,9 +84,13 @@ class StatefulAllocator {
     return m_state;
   }
 
+  [[nodiscard]] std::pmr::memory_resource* resource() const noexcept {
+    return m_resource;
+  }
+
   template <typename U>
   [[nodiscard]] bool operator==(const StatefulAllocator<U>& other) const noexcept {
-    return m_state == other.state();
+    return m_state == other.state() && m_resource == other.resource();
   }
 
   template <typename U>
@@ -91,6 +99,7 @@ class StatefulAllocator {
   }
 
  private:
+  std::pmr::memory_resource* m_resource;
   int* m_state;
 };
 
@@ -301,8 +310,10 @@ TEST_CASE("Vector move assignment preserves destination allocator when pool allo
   int stateA = 1;
   int stateB = 2;
 
-  const Allocator allocatorA(&stateA);
-  const Allocator allocatorB(&stateB);
+  std::pmr::monotonic_buffer_resource resourceA;
+  std::pmr::monotonic_buffer_resource resourceB;
+  const Allocator allocatorA(&resourceA, &stateA);
+  const Allocator allocatorB(&resourceB, &stateB);
 
   AllocatorVector source(allocatorA);
   source.push_back(11);

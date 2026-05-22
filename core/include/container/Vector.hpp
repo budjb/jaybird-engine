@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
@@ -27,6 +28,7 @@ class Vector : public IVector {
  public:
   using allocator_type = Alloc;
   using traits = std::allocator_traits<allocator_type>;
+  using byte_allocator_type = traits::template rebind_alloc<std::byte>;
   using value_type = traits::value_type;
   using size_type = traits::size_type;
   using difference_type = traits::difference_type;
@@ -46,6 +48,12 @@ class Vector : public IVector {
   static_assert(std::is_same_v<size_type, std::size_t>,
                 "Vector currently requires allocators that use std::size_t for size_type");
   static_assert(std::is_same_v<value_type, T>, "Vector allocator value_type must match the Vector element type");
+  static_assert(std::is_constructible_v<byte_allocator_type, allocator_type>,
+                "Vector allocator must be rebindable to std::byte from the element allocator instance");
+  static_assert(
+      requires(const byte_allocator_type& allocator) {
+        { allocator.resource() } -> std::same_as<std::pmr::memory_resource*>;
+      }, "Vector allocator rebound to std::byte must expose resource() returning std::pmr::memory_resource*");
 
   /**
    * @brief Default constructor. Constructs an empty vector with the default allocator. The default allocator is used to
@@ -497,13 +505,6 @@ class Vector : public IVector {
   void pushBack(value_type&& value);
 
   /**
-   * @brief Removes the last element from the vector. This method will destroy the last element in the vector and reduce
-   * the size of the vector by one. If the vector is empty, this method will have no effect. After this method is
-   * called, the last element will no longer be part of the vector, and any access to it will be undefined behavior.
-   */
-  void popBack();
-
-  /**
    * @brief Constructs a new element in place at the specified position in the vector, using the provided arguments to
    * construct the element. The provided arguments are forwarded to the constructor of the element type, allowing for
    * efficient construction of new elements directly in the vector's storage.
@@ -521,6 +522,23 @@ class Vector : public IVector {
   iterator emplace(const_iterator position, Args&&... args);
 
   /**
+   * @brief Constructs a new element in place at the specified position in the vector, using the provided arguments to
+   * construct the element. The provided arguments are forwarded to the constructor of the element type, allowing for
+   * efficient construction of new elements directly in the vector's storage.
+   *
+   * @tparam Args The types of the arguments to forward to the constructor of the element type. These can be any types
+   * that are compatible with the constructor of the element type.
+   * @param position An iterator pointing to the position in the vector where the new element should be constructed. The
+   * new element will be inserted before the element currently at this position.
+   * @param args The arguments to forward to the constructor of the element type. These will be perfectly forwarded,
+   * allowing for efficient construction of the new element in place.
+   * @return An iterator pointing to the newly constructed element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
+  template <typename... Args>
+  iterator emplace(iterator position, Args&&... args);
+
+  /**
    * @brief Inserts a new element into the vector at the specified position by copying the provided value. This method
    * will ensure that the vector has enough capacity to accommodate the new element, and it will handle any necessary
    * reallocation and copying of existing elements if the current capacity is insufficient. After the new element is
@@ -534,6 +552,21 @@ class Vector : public IVector {
    * modify the new element after it has been added to the vector.
    */
   iterator insert(const_iterator position, const_reference value);
+
+  /**
+   * @brief Inserts a new element into the vector at the specified position by copying the provided value. This method
+   * will ensure that the vector has enough capacity to accommodate the new element, and it will handle any necessary
+   * reallocation and copying of existing elements if the current capacity is insufficient. After the new element is
+   * added, the size of the vector will be increased by one.
+   *
+   * @param position An iterator pointing to the position in the vector where the new element should be inserted. The
+   * new element will be inserted before the element currently at this position.
+   * @param value The value to copy into the new element at the specified position in the vector. This value will be
+   * copied, so it should be a type that is copyable.
+   * @return An iterator pointing to the newly inserted element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
+  iterator insert(iterator position, const_reference value);
 
   /**
    * @brief Inserts a new element into the vector at the specified position by moving the provided value. This method
@@ -551,6 +584,21 @@ class Vector : public IVector {
   iterator insert(const_iterator position, value_type&& value);
 
   /**
+   * @brief Inserts a new element into the vector at the specified position by moving the provided value. This method
+   * will ensure that the vector has enough capacity to accommodate the new element, and it will handle any necessary
+   * reallocation and copying of existing elements if the current capacity is insufficient. After the new element is
+   * added, the size of the vector will be increased by one.
+   *
+   * @param position An iterator pointing to the position in the vector where the new element should be inserted. The
+   * new element will be inserted before the element currently at this position.
+   * @param value The value to move into the new element at the specified position in the vector. This value will be
+   * moved, so it should be a type that is moveable.
+   * @return An iterator pointing to the newly inserted element in the vector. This iterator can be used to access or
+   * modify the new element after it has been added to the vector.
+   */
+  iterator insert(iterator position, value_type&& value);
+
+  /**
    * @brief Inserts count copies of the given value into the vector at the specified position. This method will ensure
    * that the vector has enough capacity to accommodate the new elements, and it will handle any necessary reallocation
    * and copying of existing elements if the current capacity is insufficient. After the new elements are added, the
@@ -566,6 +614,22 @@ class Vector : public IVector {
    * to access or modify the new elements after they have been added to the vector.
    */
   iterator insert(const_iterator position, size_type count, const value_type& value);
+
+  /**
+   * @brief Inserts count copies of the given value into the vector at the specified position. This method will ensure
+   * that the vector has enough capacity to accommodate the new elements, and it will handle any necessary reallocation
+   * and copying of existing elements if the current capacity is insufficient. After the new elements are added, the
+   * size of the vector will be increased by count.
+   *
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param count The number of copies of the value to insert into the vector. The vector will be resized to contain
+   * exactly this many new elements after the insertion.
+   * @param value The value to copy into the new elements at the specified position in the vector. This value will be
+   * copied, so it should be a type that is copyable.
+   * @return
+   */
+  iterator insert(iterator position, size_type count, const value_type& value);
 
   /**
    * @brief Inserts new elements into the vector at the specified position by copying the values from the range [first,
@@ -588,6 +652,26 @@ class Vector : public IVector {
   iterator insert(const_iterator position, InputIt first, InputIt last);
 
   /**
+   * @brief Inserts new elements into the vector at the specified position by copying the values from the range [first,
+   * last). This method will ensure that the vector has enough capacity to accommodate the new elements, and it will
+   * handle any necessary reallocation and copying of existing elements if the current capacity is insufficient. After
+   * the new elements are added, the size of the vector will be increased by the number of elements in the range [first,
+   * last).
+   *
+   * @tparam InputIt The type of the input iterators.
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param first An input iterator pointing to the first element in the range to copy from. The elements in the range
+   * [first, last) will be copied into the vector, replacing its current contents.
+   * @param last An input iterator pointing to one past the last element in the range to copy from. The elements in the
+   * range [first, last) will be copied into the vector, replacing its current contents.
+   * @return An iterator pointing to the first of the newly inserted elements in the vector. This iterator can be used
+   * to access or modify the new elements after they have been added to the vector.
+   */
+  template <std::input_iterator InputIt>
+  iterator insert(iterator position, InputIt first, InputIt last);
+
+  /**
    * @brief Inserts new elements into the vector at the specified position by copying the values from the given
    * initializer list. This method will ensure that the vector has enough capacity to accommodate the new elements, and
    * it will handle any necessary reallocation and copying of existing elements if the current capacity is insufficient.
@@ -602,6 +686,22 @@ class Vector : public IVector {
    * to access or modify the new elements after they have been added to the vector.
    */
   iterator insert(const_iterator position, std::initializer_list<value_type> values);
+
+  /**
+   * @brief Inserts new elements into the vector at the specified position by copying the values from the given
+   * initializer list. This method will ensure that the vector has enough capacity to accommodate the new elements, and
+   * it will handle any necessary reallocation and copying of existing elements if the current capacity is insufficient.
+   * After the new elements are added, the size of the vector will be increased by the number of elements in the
+   * initializer list.
+   *
+   * @param position An iterator pointing to the position in the vector where the new elements should be inserted. The
+   * new elements will be inserted before the element currently at this position.
+   * @param values An initializer list containing the values to copy into the vector. The elements in this initializer
+   * list will be copied into the vector, replacing its current contents.
+   * @return An iterator pointing to the first of the newly inserted elements in the vector. This iterator can be used
+   * to access or modify the new elements after they have been added to the vector.
+   */
+  iterator insert(iterator position, std::initializer_list<value_type> values);
 
   /**
    * @brief Removes the element at the specified position in the vector. This method will destroy the element at the
@@ -619,6 +719,21 @@ class Vector : public IVector {
    * vector).
    */
   iterator erase(const_iterator position);
+
+  /**
+   * @brief Removes the element at the specified position in the vector. This method will destroy the element at the
+   * given position and reduce the size of the vector by one. The elements following the erased element will be moved to
+   * fill the gap left by the erased element, and the order of the remaining elements will be preserved. If the position
+   * is out of range (i.e., not a valid iterator pointing to an element in the vector), the behavior is undefined. After
+   * this method is called, the element at the specified position will no longer be part of the vector, and any access
+   * to it will be undefined behavior.
+   *
+   * @param position An iterator pointing to the element in the vector that should be removed. This should be a valid
+   * iterator pointing to an element in the vector; otherwise, the behavior is undefined.
+   * @return An iterator pointing to the element that followed the erased element in the vector before the call to
+   * erase. If the erased element was the last element in the vector, this will return end().
+   */
+  iterator erase(iterator position);
 
   /**
    * @brief Removes the elements in the range [first, last) from the vector. This method will destroy the elements in
@@ -639,6 +754,24 @@ class Vector : public IVector {
    * elements in the vector).
    */
   iterator erase(const_iterator first, const_iterator last);
+
+  /**
+   * @brief Removes the elements in the range [first, last) from the vector. This method will destroy the elements in
+   * the given range and reduce the size of the vector by the number of elements erased. The elements following the
+   * erased elements will be moved to fill the gap left by the erased elements, and the order of the remaining elements
+   * will be preserved. If the range [first, last) is out of range (i.e., not valid iterators pointing to elements in
+   * the vector), the behavior is undefined. After this method is called, the elements in the specified range will no
+   * longer be part of the vector, and any access to them will be undefined behavior.
+   *
+   * @param first An iterator pointing to the first element in the range to be removed from the vector. This should be a
+   * valid iterator pointing to an element in the vector; otherwise, the behavior is undefined.
+   * @param last An iterator pointing to one past the last element in the range to be removed from the vector. This
+   * should be a valid iterator pointing to an element in the vector, and it should be greater than or equal to first;
+   * otherwise, the behavior is undefined.
+   * @return An iterator pointing to the element that followed the last erased element in the vector before the call to
+   * erase. If the last erased element was the last element in the vector, this will return end().
+   */
+  iterator erase(iterator first, iterator last);
 
   /**
    * @brief Resizes the vector to contain newSize elements. If newSize is greater than the current size of the vector,
@@ -959,6 +1092,11 @@ class Vector : public IVector {
    */
   void deallocateStorage(void* data, std::size_t capacity) noexcept override;
 
+  [[nodiscard]] std::pmr::polymorphic_allocator<> getByteAllocator() const noexcept override {
+    const byte_allocator_type byteAllocator(m_allocator);
+    return std::pmr::polymorphic_allocator<>{byteAllocator.resource()};
+  }
+
  private:
   /**
    * @brief Constructs a new vector by copying the contents of another vector, using the specified allocator. This
@@ -1270,7 +1408,7 @@ Vector<T, Alloc>::Vector(Vector&& other, const allocator_type& allocator) : Vect
   }
 
   reserve(other.m_size);
-  size_type i = 0;
+  std::size_t i = 0;
 
   try {
     auto p = reinterpret_cast<pointer>(m_data);
@@ -1281,6 +1419,7 @@ Vector<T, Alloc>::Vector(Vector&& other, const allocator_type& allocator) : Vect
     m_size = other.m_size;
   } catch (...) {
     auto p = reinterpret_cast<pointer>(m_data);
+    // TODO: wtf is going on here???
     for (; i > 0; --i) {
       traits::destroy(m_allocator, p + (i - 1));
     }
@@ -1539,15 +1678,6 @@ void Vector<T, Alloc>::pushBack(value_type&& value) {
 }
 
 template <typename T, typename Alloc>
-void Vector<T, Alloc>::popBack() {
-  if (empty()) {
-    throw std::out_of_range("Vector is empty");
-  }
-  --m_size;
-  std::destroy_at(reinterpret_cast<pointer>(m_data) + m_size);
-}
-
-template <typename T, typename Alloc>
 template <typename... Args>
 Vector<T, Alloc>::iterator Vector<T, Alloc>::emplace(const_iterator position, Args&&... args) {
   const size_type index = indexForPosition(position, true);
@@ -1578,13 +1708,29 @@ Vector<T, Alloc>::iterator Vector<T, Alloc>::emplace(const_iterator position, Ar
 }
 
 template <typename T, typename Alloc>
+template <typename... Args>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::emplace(iterator position, Args&&... args) {
+  return emplace(const_iterator(position), std::forward<Args>(args)...);
+}
+
+template <typename T, typename Alloc>
 Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(const_iterator position, const_reference value) {
   return emplace(position, value);
 }
 
 template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(iterator position, const_reference value) {
+  return insert(const_iterator(position), value);
+}
+
+template <typename T, typename Alloc>
 Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(const_iterator position, value_type&& value) {
   return emplace(position, std::move(value));
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(iterator position, value_type&& value) {
+  return insert(const_iterator(position), std::move(value));
 }
 
 template <typename T, typename Alloc>
@@ -1612,6 +1758,11 @@ Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(const_iterator position, con
 
   replaceWith(tmp);
   return iterator(reinterpret_cast<pointer>(m_data) + index);
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(iterator position, const size_type count, const value_type& value) {
+  return insert(const_iterator(position), count, value);
 }
 
 template <typename T, typename Alloc>
@@ -1644,14 +1795,30 @@ Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(const_iterator position, Inp
 }
 
 template <typename T, typename Alloc>
+template <std::input_iterator InputIt>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(iterator position, InputIt first, InputIt last) {
+  return insert(const_iterator(position), first, last);
+}
+
+template <typename T, typename Alloc>
 Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(const_iterator position, std::initializer_list<value_type> values) {
   return insert(position, values.begin(), values.end());
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::insert(iterator position, std::initializer_list<value_type> values) {
+  return insert(const_iterator(position), values);
 }
 
 template <typename T, typename Alloc>
 Vector<T, Alloc>::iterator Vector<T, Alloc>::erase(const_iterator position) {
   const size_type index = indexForPosition(position, false);
   return erase(cbegin() + static_cast<difference_type>(index), cbegin() + static_cast<difference_type>(index + 1));
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::erase(iterator position) {
+  return erase(const_iterator(position));
 }
 
 template <typename T, typename Alloc>
@@ -1694,6 +1861,11 @@ Vector<T, Alloc>::iterator Vector<T, Alloc>::erase(const_iterator first, const_i
 
   replaceWith(tmp);
   return iterator(reinterpret_cast<pointer>(m_data) + beginIndex);
+}
+
+template <typename T, typename Alloc>
+Vector<T, Alloc>::iterator Vector<T, Alloc>::erase(iterator first, iterator last) {
+  return erase(const_iterator(first), const_iterator(last));
 }
 
 template <typename T, typename Alloc>

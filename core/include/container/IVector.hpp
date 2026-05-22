@@ -9,7 +9,7 @@ namespace core::container {
  * @brief Forward declaration of the VectorModifier class, which is a friend of IVector and is used to manipulate the
  * internal state of IVector.
  */
-class PolymorphicVector;
+class RawVector;
 
 /**
  * @brief IVector is a non-templated base class for Vector that holds the raw data and metadata for a vector-like
@@ -29,7 +29,7 @@ class IVector {
    * members of IVector. This is necessary because VectorModifier needs to be able to manipulate the internal state of
    * IVector, such as resizing the vector or accessing the raw data buffer, in order to provide its functionality.
    */
-  friend PolymorphicVector;
+  friend RawVector;
 
   /**
    * @brief Destructor. Does not deallocate memory or destroy elements, as the derived Vector class is responsible for
@@ -61,6 +61,27 @@ class IVector {
   }
 
   /**
+   * @brief Returns the size of each element in bytes. This is used to calculate the total size of the memory needed for
+   * the vector's storage, and it is determined by the type of elements that the derived Vector class will manage.
+   *
+   * @return The size of each element in bytes.
+   */
+  [[nodiscard]] std::size_t elementSize() const noexcept {
+    return m_elementSize;
+  }
+
+  /**
+   * @brief Returns the alignment requirement for the elements in bytes. This is used to ensure that the memory
+   * allocated for the vector's storage is properly aligned for the type of elements that the derived Vector class will
+   * manage.
+   *
+   * @return The alignment requirement for the elements in bytes.
+   */
+  [[nodiscard]] std::size_t alignment() const noexcept {
+    return m_alignment;
+  }
+
+  /**
    * @brief Returns the maximum number of elements that the vector can hold, as determined by the allocator's max_size()
    * method.
    *
@@ -77,6 +98,19 @@ class IVector {
    */
   [[nodiscard]] bool empty() const noexcept {
     return m_size == 0;
+  }
+
+  /**
+   * @brief Removes the last element from the vector. This method will destroy the last element in the vector and reduce
+   * the size of the vector by one. If the vector is empty, this method will have no effect. After this method is
+   * called, the last element will no longer be part of the vector, and any access to it will be undefined behavior.
+   */
+  void popBack() {
+    if (empty()) {
+      throw std::out_of_range("Vector is empty");
+    }
+    --m_size;
+    destroyAt(getElementAddress(m_data, m_size));
   }
 
   /**
@@ -343,7 +377,27 @@ class IVector {
    */
   virtual void deallocateStorage(void* data, std::size_t capacity) noexcept = 0;
 
+  /**
+   * @brief Returns the polymorphic allocator used by the vector for allocating memory. This method is used by the
+   * derived Vector class to access the allocator that it uses for managing the vector's storage.
+   *
+   * @return The polymorphic allocator used by the vector for allocating memory.
+   */
+  [[nodiscard]] virtual std::pmr::polymorphic_allocator<> getByteAllocator() const noexcept = 0;
+
 #pragma endregion Virtuals
+
+  /**
+   * @brief Returns a pointer to the raw data buffer that holds the vector's elements. This method allows access to the
+   * raw memory where the elements are stored, and it can be used by the caller to read or manipulate the elements
+   * directly. The derived Vector class will manage this data pointer and ensure that it is properly allocated and
+   * deallocated as needed, while the IVector simply provides a common storage mechanism for this information.
+   *
+   * @return A pointer to the raw data buffer that holds the vector's elements.
+   */
+  [[nodiscard]] void* byteData() const noexcept {
+    return m_data;
+  }
 
   /**
    * @brief Resizes the vector to contain the specified number of elements, using the provided constructor function to
@@ -501,6 +555,40 @@ class IVector {
   }
 
   /**
+   * @brief Calculates the recommended capacity for the vector when resizing or growing. This method implements a growth
+   * strategy that typically doubles the capacity when more space is needed, while also ensuring that the capacity does
+   * not exceed the maximum allowed by the allocator.
+   *
+   * The method takes a minimum required capacity as input and returns a recommended capacity that is greater than or
+   * equal to the minimum, following the growth strategy. This allows the vector to efficiently manage its storage and
+   * minimize the number of reallocations needed as elements are added or removed.
+   *
+   * @param minimum The minimum required capacity in terms of the number of elements. The returned recommended capacity
+   * will be at least this value.
+   * @return The recommended capacity in terms of the number of elements, which is greater than or equal to the minimum
+   * and follows the growth strategy.
+   */
+  [[nodiscard]] std::size_t computeCapacity(const std::size_t minimum) const {
+    const auto max = maxSize();
+
+    if (minimum > max) {
+      throw std::length_error("Vector capacity exceeds max size");
+    }
+
+    std::size_t result = m_capacity == 0 ? 1 : m_capacity;
+
+    while (result < minimum) {
+      const std::size_t doubled = result > max / 2 ? max : result * 2;
+      if (doubled <= result) {
+        return minimum;
+      }
+      result = doubled;
+    }
+
+    return result;
+  }
+
+  /**
    * @brief The raw data pointer that holds the vector's elements. The derived Vector class is responsible for
    * allocating and managing this memory, as well as constructing and destroying the elements. The IVector simply
    * provides a common storage mechanism for this data, allowing the Vector to operate on it without needing to know the
@@ -546,40 +634,5 @@ class IVector {
    * IVector will use it to provide a common storage mechanism for the vector's data and metadata.
    */
   std::size_t m_alignment;
-
- private:
-  /**
-   * @brief Calculates the recommended capacity for the vector when resizing or growing. This method implements a growth
-   * strategy that typically doubles the capacity when more space is needed, while also ensuring that the capacity does
-   * not exceed the maximum allowed by the allocator.
-   *
-   * The method takes a minimum required capacity as input and returns a recommended capacity that is greater than or
-   * equal to the minimum, following the growth strategy. This allows the vector to efficiently manage its storage and
-   * minimize the number of reallocations needed as elements are added or removed.
-   *
-   * @param minimum The minimum required capacity in terms of the number of elements. The returned recommended capacity
-   * will be at least this value.
-   * @return The recommended capacity in terms of the number of elements, which is greater than or equal to the minimum
-   * and follows the growth strategy.
-   */
-  [[nodiscard]] std::size_t computeCapacity(const std::size_t minimum) const {
-    const auto max = maxSize();
-
-    if (minimum > max) {
-      throw std::length_error("Vector capacity exceeds max size");
-    }
-
-    std::size_t result = m_capacity == 0 ? 1 : m_capacity;
-
-    while (result < minimum) {
-      const std::size_t doubled = result > max / 2 ? max : result * 2;
-      if (doubled <= result) {
-        return minimum;
-      }
-      result = doubled;
-    }
-
-    return result;
-  }
 };
 }  // namespace core::container

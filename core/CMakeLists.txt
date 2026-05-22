@@ -19,8 +19,10 @@ add_library(jaybird_core STATIC
         include/container/Vector.hpp
         include/container/Iterator.hpp
         include/container/IVector.hpp
-        include/container/PolymorphicVector.hpp
-        include/container/PolymorphicIterator.hpp
+        include/container/RawVector.hpp
+        include/container/RawIterator.hpp
+        include/container/RTTIVector.hpp
+        include/container/Container.hpp
 )
 
 target_include_directories(jaybird_core PUBLIC "include")
