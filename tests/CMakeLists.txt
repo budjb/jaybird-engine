@@ -24,7 +24,7 @@ target_include_directories(core_tests PRIVATE
 
 target_link_libraries(core_tests PRIVATE
         Catch2::Catch2WithMain
-        jaybird_core
+        jaybird-engine-core
 )
 
 list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)

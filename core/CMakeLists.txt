@@ -1,4 +1,4 @@
-add_library(jaybird_core STATIC
+add_library(jaybird-engine-core STATIC
         src/INamePool.cpp
         src/IName.cpp
         src/rtti/TypeRegistry.cpp
@@ -21,4 +21,4 @@ add_library(jaybird_core STATIC
         include/rtti/Iterator.hpp
 )
 
-target_include_directories(jaybird_core PUBLIC "include")
+target_include_directories(jaybird-engine-core PUBLIC "include")

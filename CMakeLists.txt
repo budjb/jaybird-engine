@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(CTest)
 
 add_subdirectory(core)
-add_subdirectory(app)
 
 if (BUILD_TESTING)
   add_subdirectory(tests)
