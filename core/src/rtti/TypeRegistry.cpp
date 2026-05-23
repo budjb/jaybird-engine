@@ -1,14 +1,14 @@
-#include "rtti/RTTIRegistry.hpp"
+#include "rtti/TypeRegistry.hpp"
 
 #include <mutex>
 
 namespace core::rtti {
-RTTIRegistry* RTTIRegistry::get() {
-  static RTTIRegistry instance;
+TypeRegistry* TypeRegistry::get() {
+  static TypeRegistry instance;
   return &instance;
 }
 
-IType* RTTIRegistry::getType(const IName& name) {
+IType* TypeRegistry::getType(const IName& name) const {
   std::shared_lock lock(m_mutex);
 
   if (m_types.contains(name)) {
@@ -17,14 +17,14 @@ IType* RTTIRegistry::getType(const IName& name) {
   return nullptr;
 }
 
-IClassType* RTTIRegistry::getClass(const IName& name) {
+IClassType* TypeRegistry::getClass(const IName& name) const {
   if (auto* type = getType(name); type && type->kind() == TypeKind::CLASS) {
     return reinterpret_cast<IClassType*>(type);
   }
   return nullptr;
 }
 
-bool RTTIRegistry::registerType(std::unique_ptr<IType>&& type) {
+bool TypeRegistry::registerType(std::unique_ptr<IType>&& type) {
   std::unique_lock lock(m_mutex);
   if (m_types.contains(type->name())) {
     return false;
@@ -33,7 +33,7 @@ bool RTTIRegistry::registerType(std::unique_ptr<IType>&& type) {
   return m_types.insert({type->name(), std::move(type)}).second;
 }
 
-bool RTTIRegistry::hasType(const IName& name) noexcept {
+bool TypeRegistry::hasType(const IName& name) const noexcept {
   std::shared_lock lock(m_mutex);
   return m_types.contains(name);
 }

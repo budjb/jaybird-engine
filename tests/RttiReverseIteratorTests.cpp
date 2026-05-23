@@ -158,3 +158,41 @@ TEST_CASE("Given an RTTI reverse iterator, when indexed, then elements are read 
   REQUIRE(*static_cast<int*>(it[2]) == 10);
   REQUIRE(it == arrayType->rbegin(&values));
 }
+
+TEST_CASE(
+    "Given an RTTI reverse iterator, when base get and implicit pointer conversion are used, then they map to reverse "
+    "semantics",
+    "[rtti][reverse_iterator]") {
+  IArrayType* arrayType = asArrayType(intArrayType());
+  std::vector values{10, 20, 30};
+
+  const ReverseIterator<> it = arrayType->rbegin(&values);
+
+  void* asBase = it.base();
+  void* asGet = it.get();
+  void* asImplicit = it;
+
+  REQUIRE(asBase == values.data() + values.size());
+  REQUIRE(asGet == values.data() + values.size() - 1);
+  REQUIRE(asImplicit == values.data() + values.size() - 1);
+}
+
+TEST_CASE(
+    "Given an RTTI reverse iterator, when negative offsets and scalar-minus-reverse-iterator arithmetic are used, then "
+    "movement remains correct",
+    "[rtti][reverse_iterator]") {
+  IArrayType* arrayType = asArrayType(intArrayType());
+  std::vector values{10, 20, 30, 40};
+
+  ReverseIterator<> it = arrayType->rbegin(&values) + 1;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
+
+  it += -1;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 40);
+
+  it -= -2;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 20);
+
+  const ReverseIterator<> shifted = 1 - it;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(shifted)) == 30);
+}

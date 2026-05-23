@@ -1,8 +1,39 @@
 #pragma once
 
+#include <string>
+
 #include "IContainerType.hpp"
 
 namespace core::rtti {
+// TODO: move these
+template <TypeKind>
+constexpr std::string_view typePrefix() {
+  return "";
+}
+
+// TODO: move these
+template <>
+constexpr std::string_view typePrefix<TypeKind::ARRAY>() {
+  return "array:";
+}
+
+// TODO: move these
+template <TypeKind T>
+std::string typePrefix(const std::string_view str) {
+  const auto prefix = typePrefix<T>();
+
+  if (prefix.empty()) {
+    return "";
+  }
+
+  return std::string(prefix).append(str);
+}
+
+template <TypeKind T>
+std::string typePrefix(const IName& name) {
+  return typePrefix<T>(std::string_view(name));
+}
+
 template <typename>
 class Iterator;
 

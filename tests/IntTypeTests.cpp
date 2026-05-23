@@ -1,8 +1,12 @@
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
+#include <memory>
 #include <new>
+#include <string>
 
+#include "Hash.hpp"
+#include "INamePool.hpp"
 #include "rtti/types/IntType.hpp"
 
 namespace {
@@ -13,6 +17,12 @@ using core::rtti::TypeKind;
 
 IType* asType(IntType& value) {
   return &value;
+}
+
+std::string uniqueNameText(const char* prefix) {
+  static std::size_t counter = 0;
+  ++counter;
+  return std::string(prefix) + "_" + std::to_string(counter);
 }
 
 }  // namespace
@@ -110,4 +120,64 @@ TEST_CASE(
 
   REQUIRE(*firstType == *sameNameType);
   REQUIRE(*firstType != *differentNameType);
+}
+
+TEST_CASE(
+    "Given non-explicit IName constructors in RTTI code, when assigned from a string literal and std::string, then the "
+    "same hash is produced",
+    "[rtti][int_type]") {
+  const std::string text = uniqueNameText("iname_implicit_ctor");
+
+  const IName fromLiteral = text.c_str();
+  const IName fromString = std::string(text);
+
+  REQUIRE(fromLiteral.hash() == core::fnv1a_64(text));
+  REQUIRE(fromString.hash() == core::fnv1a_64(text));
+  REQUIRE(fromLiteral == fromString);
+}
+
+TEST_CASE(
+    "Given non-explicit IName constructors in RTTI code, when passed to a function by value, then implicit conversion "
+    "works for string literal and std::string",
+    "[rtti][int_type]") {
+  const std::string text = uniqueNameText("iname_implicit_param");
+
+  auto hashOf = [](const IName name) { return name.hash(); };
+
+  REQUIRE(hashOf(text.c_str()) == core::fnv1a_64(text));
+  REQUIRE(hashOf(std::string(text)) == core::fnv1a_64(text));
+}
+
+TEST_CASE("Given an IntType without a registered array companion, when asArray is called, then nullptr is returned",
+          "[rtti][int_type]") {
+  core::INamePool& pool = core::INamePool::get();
+  const IName name = pool.addName(uniqueNameText("as_array_missing"));
+  IntType concrete(name);
+
+  REQUIRE(asType(concrete)->asArray() == nullptr);
+}
+
+TEST_CASE(
+    "Given an IntType and its matching array type registered in TypeRegistry, when asArray is called, then the array "
+    "descriptor is returned",
+    "[rtti][int_type]") {
+  using core::rtti::IArrayType;
+  using core::rtti::IntArrayType;
+  using core::rtti::TypeRegistry;
+
+  core::INamePool& pool = core::INamePool::get();
+  const std::string baseText = uniqueNameText("as_array_base");
+  const IName baseName = pool.addName(baseText);
+  const IName arrayName = pool.addName(std::string("array:") + baseText);
+
+  auto baseType = std::make_unique<IntType>(baseName);
+  IntType* basePtr = baseType.get();
+  auto arrayType = std::make_unique<IntArrayType>(arrayName, basePtr);
+  IArrayType* expectedArray = arrayType.get();
+
+  TypeRegistry* registry = TypeRegistry::get();
+  REQUIRE(registry->registerType(std::move(baseType)));
+  REQUIRE(registry->registerType(std::move(arrayType)));
+
+  REQUIRE(asType(*basePtr)->asArray() == expectedArray);
 }

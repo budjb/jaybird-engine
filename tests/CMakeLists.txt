@@ -8,8 +8,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(core_tests
+        INameTests.cpp
+        INamePoolTests.cpp
         IntTypeTests.cpp
         IntArrayTypeTests.cpp
+        TypeRegistryTests.cpp
         RttiIteratorTests.cpp
         RttiReverseIteratorTests.cpp
 )

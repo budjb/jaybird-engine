@@ -1,8 +1,8 @@
 add_library(jaybird_core STATIC
         src/INamePool.cpp
         src/IName.cpp
-        src/rtti/RTTIRegistry.cpp
-        include/rtti/RTTIRegistry.hpp
+        src/rtti/TypeRegistry.cpp
+        include/rtti/TypeRegistry.hpp
         src/rtti/types/IntType.cpp
         include/rtti/types/IntType.hpp
         src/SpinLock.cpp

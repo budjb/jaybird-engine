@@ -148,3 +148,41 @@ TEST_CASE("Given an RTTI iterator, when indexed with operator[], then elements a
   REQUIRE(*static_cast<int*>(it[2]) == 300);
   REQUIRE(it == arrayType->begin(&values));
 }
+
+TEST_CASE(
+    "Given an RTTI iterator, when base get and implicit pointer conversion are used, then all pointer views are "
+    "consistent",
+    "[rtti][iterator]") {
+  IArrayType* arrayType = asArrayType(intArrayType());
+  std::vector values{11, 22, 33};
+
+  const Iterator<> it = arrayType->begin(&values);
+
+  void* asBase = it.base();
+  void* asGet = it.get();
+  void* asImplicit = it;
+
+  REQUIRE(asBase == values.data());
+  REQUIRE(asGet == values.data());
+  REQUIRE(asImplicit == values.data());
+}
+
+TEST_CASE(
+    "Given an RTTI iterator, when negative offsets and scalar-minus-iterator arithmetic are used, then movement "
+    "remains correct",
+    "[rtti][iterator]") {
+  IArrayType* arrayType = asArrayType(intArrayType());
+  std::vector values{10, 20, 30, 40};
+
+  Iterator<> it = arrayType->begin(&values) + 2;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
+
+  it += -1;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 20);
+
+  it -= -1;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
+
+  const Iterator<> shifted = 1 - it;
+  REQUIRE(*static_cast<int*>(static_cast<void*>(shifted)) == 20);
+}

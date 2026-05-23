@@ -7,6 +7,10 @@ IName::IName(const hash_t hash) noexcept : m_hash(hash) {}
 
 IName::IName(const std::string_view str) noexcept : IName(fnv1a_64(str)) {}
 
+IName::IName(const std::string& str) noexcept : IName(fnv1a_64(str)) {}
+
+IName::IName(const char* str) noexcept : IName(fnv1a_64(str)) {}
+
 bool IName::empty() const noexcept {
   return m_hash == 0;
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace core {
@@ -24,7 +25,7 @@ class IName {
    *
    * @param hash The hash value of the interned string name.
    */
-  explicit IName(hash_t hash) noexcept;
+  IName(hash_t hash) noexcept;
 
   /**
    * @brief Constructs an IName by computing the hash value of the given string view, which should be a valid interned
@@ -33,7 +34,24 @@ class IName {
    * @param str The string view of the interned string name to be hashed and stored in the IName instance.
    * @note The constructor does not register the provided string with the interned name pool.
    */
-  explicit IName(std::string_view str) noexcept;
+  IName(std::string_view str) noexcept;
+
+  /**
+   * @brief Constructs an IName by computing the hash value of the given string, which should be a valid interned
+   * string.
+   *
+   * @param str The string of the interned string name to be hashed and stored in the IName instance.
+   * @note The constructor does not register the provided string with the interned name pool.
+   */
+  IName(const std::string& str) noexcept;
+
+  /**
+   * @brief Constructs an IName by computing the hash value of the given C-style string, which should be a valid
+   * interned string.
+   *
+   * @param str The C-style string of the interned string name to be hashed and stored in the IName instance.
+   */
+  IName(const char* str) noexcept;
 
   /**
    * @brief Returns whether this IName instance represents an empty or invalid name, which is determined by checking if
