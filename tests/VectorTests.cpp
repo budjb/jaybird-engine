@@ -105,7 +105,8 @@ class StatefulAllocator {
 
 }  // namespace
 
-TEST_CASE("Vector supports basic growth and element access", "[vector]") {
+TEST_CASE("Given a Vector<int>, when values are pushed and read, then growth and element access behave correctly",
+          "[vector]") {
   core::container::Vector<int> values;
 
   values.push_back(10);
@@ -122,7 +123,10 @@ TEST_CASE("Vector supports basic growth and element access", "[vector]") {
   REQUIRE_THROWS_AS(values.at(3), std::out_of_range);
 }
 
-TEST_CASE("Vector size fill and capacity constructors follow standard-style semantics", "[vector]") {
+TEST_CASE(
+    "Given Vector size and fill constructors, when instances are created, then size, values, and reserved capacity "
+    "match expectations",
+    "[vector]") {
   const core::container::Vector<int> sized(3);
   const core::container::Vector<int> filled(4, 9);
   auto reserved = core::container::Vector<int>();
@@ -140,7 +144,10 @@ TEST_CASE("Vector size fill and capacity constructors follow standard-style sema
   REQUIRE(reserved.capacity() >= 6);
 }
 
-TEST_CASE("Vector range constructor and assign overloads consume ranges", "[vector]") {
+TEST_CASE(
+    "Given range-based construction and assign overloads, when sequences are applied, then vector contents are "
+    "replaced in order",
+    "[vector]") {
   constexpr std::array source = {2, 4, 6, 8};
   core::container::Vector<int> values(source.begin(), source.end());
 
@@ -164,7 +171,8 @@ TEST_CASE("Vector range constructor and assign overloads consume ranges", "[vect
   REQUIRE(values[4] == 5);
 }
 
-TEST_CASE("Vector initializer list and iterators expose contents in order", "[vector]") {
+TEST_CASE("Given a Vector initialized from a list, when iterators are used, then traversal reflects insertion order",
+          "[vector]") {
   const core::container::Vector<int> values{1, 2, 3, 4};
 
   REQUIRE(values.size() == 4);
@@ -175,7 +183,10 @@ TEST_CASE("Vector initializer list and iterators expose contents in order", "[ve
   REQUIRE(*(values.crbegin() + 1) == 3);
 }
 
-TEST_CASE("Vector resize shrink and pop_back update size correctly", "[vector]") {
+TEST_CASE(
+    "Given a Vector<Widget>, when resize pop_back and shrink_to_fit are called, then size and capacity update "
+    "consistently",
+    "[vector]") {
   core::container::Vector<Widget> values;
 
   values.resize(3, Widget(7));
@@ -196,7 +207,9 @@ TEST_CASE("Vector resize shrink and pop_back update size correctly", "[vector]")
   REQUIRE(values.capacity() == values.size());
 }
 
-TEST_CASE("Vector insert and erase preserve ordering", "[vector]") {
+TEST_CASE(
+    "Given a Vector<int>, when single insert and erase operations are applied, then element ordering is preserved",
+    "[vector]") {
   core::container::Vector<int> values{1, 3, 4};
 
   auto inserted = values.insert(values.begin() + 1, 2);
@@ -219,7 +232,10 @@ TEST_CASE("Vector insert and erase preserve ordering", "[vector]") {
   REQUIRE(values.front() == 4);
 }
 
-TEST_CASE("Vector insert overloads support counts and ranges", "[vector]") {
+TEST_CASE(
+    "Given a Vector<int>, when insert count range and initializer-list overloads are used, then all inserted elements "
+    "appear at expected positions",
+    "[vector]") {
   core::container::Vector<int> values{1, 5};
   constexpr std::array middle = {3, 4};
 
@@ -238,7 +254,10 @@ TEST_CASE("Vector insert overloads support counts and ranges", "[vector]") {
   REQUIRE(values[7] == 7);
 }
 
-TEST_CASE("Vector in-place insert and erase keep storage when capacity is sufficient", "[vector]") {
+TEST_CASE(
+    "Given sufficient reserved capacity, when insert and erase are performed, then storage remains stable and values "
+    "shift correctly",
+    "[vector]") {
   auto values = core::container::Vector<int>(8);
   values.assign({1, 2, 4, 5});
   values.reserve(8);
@@ -258,7 +277,10 @@ TEST_CASE("Vector in-place insert and erase keep storage when capacity is suffic
   REQUIRE(values[2] == 5);
 }
 
-TEST_CASE("Vector copy operations produce deep copies", "[vector]") {
+TEST_CASE(
+    "Given a Vector<int>, when copy construction and copy assignment are used, then each vector owns independent "
+    "element storage",
+    "[vector]") {
   core::container::Vector<int> original{1, 2, 3};
   core::container::Vector copied(original);
   core::container::Vector<int> assigned;
@@ -273,7 +295,9 @@ TEST_CASE("Vector copy operations produce deep copies", "[vector]") {
   REQUIRE(assigned[1] == 8);
 }
 
-TEST_CASE("Vector supports move-only element types", "[vector]") {
+TEST_CASE(
+    "Given a Vector of move-only elements, when values are emplaced and erased, then move semantics are preserved",
+    "[vector]") {
   core::container::Vector<MoveOnly> values;
 
   values.emplace_back(1);
@@ -289,7 +313,9 @@ TEST_CASE("Vector supports move-only element types", "[vector]") {
   REQUIRE(*values[0].value == 2);
 }
 
-TEST_CASE("Vector copy construction cleans up correctly when element copy throws", "[vector]") {
+TEST_CASE(
+    "Given a Vector with throwing copy behavior, when copy construction fails, then source remains valid and unchanged",
+    "[vector]") {
   core::container::Vector<ThrowOnCopy> source;
   source.emplace_back(1);
   source.emplace_back(2);
@@ -303,7 +329,10 @@ TEST_CASE("Vector copy construction cleans up correctly when element copy throws
   ThrowOnCopy::copiesBeforeThrow = -1;
 }
 
-TEST_CASE("Vector move assignment preserves destination allocator when pool allocators differ", "[vector][allocator]") {
+TEST_CASE(
+    "Given vectors with different stateful allocators, when move assignment occurs, then destination receives elements "
+    "and source is emptied",
+    "[vector][allocator]") {
   using Allocator = StatefulAllocator<int>;
   using AllocatorVector = core::container::Vector<int, Allocator>;
 
@@ -331,7 +360,10 @@ TEST_CASE("Vector move assignment preserves destination allocator when pool allo
   REQUIRE(source.empty());
 }
 
-TEST_CASE("Vector supports comparison and swap operations", "[vector]") {
+TEST_CASE(
+    "Given comparable vectors, when comparison and swap operations are executed, then relational results and swapped "
+    "contents are correct",
+    "[vector]") {
   core::container::Vector<int> left{1, 2, 3};
   core::container::Vector<int> same{1, 2, 3};
   core::container::Vector<int> greater{1, 2, 4};

@@ -14,7 +14,7 @@ class RTTIRegistry {
 
   IType* getType(const IString& name);
 
-  IClass* getClass(const IString& name);
+  IClassType* getClass(const IString& name);
 
   bool registerType(std::unique_ptr<IType>&& type);
   bool hasType(const IString& name) noexcept;

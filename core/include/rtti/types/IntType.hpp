@@ -2,18 +2,13 @@
 #include "rtti/RTTI.hpp"
 
 namespace core::rtti {
-class IntType : TType<int> {
+class IntType : public TType<int> {
  public:
-  IntType(const IString& name, TypeKind kind);
+  explicit IntType(const IString& name);
+};
 
-  ~IntType() override = default;
-
-  bool assign(const IType* srcType, void* dst, void* src) const override;
-
-  bool construct(void* memory) const noexcept override;
-
-  void destruct(void* memory) const noexcept override;
-
-  bool assign(int* destination, const int* source) const override;
+class IntArrayType : public TArrayType<int> {
+ public:
+  explicit IntArrayType(const IString& name, const TType<int>* inner);
 };
 }  // namespace core::rtti

@@ -1,5 +1,4 @@
 add_library(jaybird_core STATIC
-        src/rtti/RTTI.cpp
         src/StringPool.cpp
         src/IString.cpp
         src/rtti/RTTIRegistry.cpp
@@ -21,8 +20,20 @@ add_library(jaybird_core STATIC
         include/container/IVector.hpp
         include/container/RawVector.hpp
         include/container/RawIterator.hpp
-        include/container/RTTIVector.hpp
         include/container/Container.hpp
+        include/rtti/IType.hpp
+        include/rtti/TypeKind.hpp
+        src/rtti/IType.cpp
+        src/rtti/IContainerType.cpp
+        include/rtti/IContainerType.hpp
+        src/rtti/IArrayType.cpp
+        include/rtti/IArrayType.hpp
+        include/rtti/TType.hpp
+        src/rtti/IClassType.cpp
+        include/rtti/IClassType.hpp
+        include/rtti/TArrayType.cpp
+        include/rtti/TArrayType.hpp
+        include/rtti/Iterator.hpp
 )
 
 target_include_directories(jaybird_core PUBLIC "include")

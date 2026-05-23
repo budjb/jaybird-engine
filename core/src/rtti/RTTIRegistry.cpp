@@ -17,9 +17,9 @@ IType* RTTIRegistry::getType(const IString& name) {
   return nullptr;
 }
 
-IClass* RTTIRegistry::getClass(const IString& name) {
+IClassType* RTTIRegistry::getClass(const IString& name) {
   if (auto* type = getType(name); type && type->kind() == TypeKind::CLASS) {
-    return reinterpret_cast<IClass*>(type);
+    return reinterpret_cast<IClassType*>(type);
   }
   return nullptr;
 }

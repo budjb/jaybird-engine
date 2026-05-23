@@ -8,21 +8,25 @@ struct Item {
 };
 }  // namespace
 
-TEST_CASE("Iterator dereference returns current element", "[iterator]") {
+TEST_CASE("Given an Iterator pointing at an array, when dereferenced, then the first element is returned",
+          "[container][iterator]") {
   int values[] = {10, 20, 30};
   const core::container::Iterator it(values);
 
   REQUIRE(*it == 10);
 }
 
-TEST_CASE("Iterator arrow returns pointer to current element", "[iterator]") {
+TEST_CASE("Given an Iterator over structs, when arrow operator is used, then the current member is accessible",
+          "[container][iterator]") {
   Item values[] = {{7}, {9}};
   const core::container::Iterator it(values);
 
   REQUIRE(it->value == 7);
 }
 
-TEST_CASE("Pre-increment advances iterator and returns self", "[iterator]") {
+TEST_CASE(
+    "Given an Iterator, when pre-incremented, then it points to the next element and the iterator itself is returned",
+    "[container][iterator]") {
   int values[] = {1, 2, 3};
   core::container::Iterator it(values);
 
@@ -32,7 +36,8 @@ TEST_CASE("Pre-increment advances iterator and returns self", "[iterator]") {
   REQUIRE(*it == 2);
 }
 
-TEST_CASE("Post-increment returns previous iterator and advances", "[iterator]") {
+TEST_CASE("Given an Iterator, when post-incremented, then the old position is returned and the iterator advances",
+          "[container][iterator]") {
   int values[] = {1, 2, 3};
   core::container::Iterator it(values);
 
@@ -42,7 +47,10 @@ TEST_CASE("Post-increment returns previous iterator and advances", "[iterator]")
   REQUIRE(*it == 2);
 }
 
-TEST_CASE("Pre-decrement moves iterator back and returns self", "[iterator]") {
+TEST_CASE(
+    "Given an Iterator past the first element, when pre-decremented, then it points to the previous element and "
+    "the iterator itself is returned",
+    "[container][iterator]") {
   int values[] = {1, 2, 3};
   core::container::Iterator it(values + 2);
 
@@ -52,7 +60,10 @@ TEST_CASE("Pre-decrement moves iterator back and returns self", "[iterator]") {
   REQUIRE(*it == 2);
 }
 
-TEST_CASE("Post-decrement returns previous iterator and moves back", "[iterator]") {
+TEST_CASE(
+    "Given an Iterator not at the front, when post-decremented, then the old position is returned and the iterator "
+    "moves back",
+    "[container][iterator]") {
   int values[] = {1, 2, 3};
   core::container::Iterator it(values + 2);
 
@@ -62,7 +73,9 @@ TEST_CASE("Post-decrement returns previous iterator and moves back", "[iterator]
   REQUIRE(*it == 2);
 }
 
-TEST_CASE("Equality and inequality compare underlying pointers", "[iterator]") {
+TEST_CASE(
+    "Given two Iterators at the same and different positions, when compared, then equality reflects pointer identity",
+    "[container][iterator]") {
   int values[] = {1, 2, 3};
   core::container::Iterator first(values);
   core::container::Iterator same(values);
@@ -74,7 +87,9 @@ TEST_CASE("Equality and inequality compare underlying pointers", "[iterator]") {
   REQUIRE(first != other);
 }
 
-TEST_CASE("Iterator supports random access operations", "[iterator]") {
+TEST_CASE(
+    "Given an Iterator, when random access operators are applied, then elements are reached at the correct offset",
+    "[container][iterator]") {
   int values[] = {4, 5, 6, 7};
   core::container::Iterator first(values);
 
@@ -87,7 +102,8 @@ TEST_CASE("Iterator supports random access operations", "[iterator]") {
   REQUIRE(third > first);
 }
 
-TEST_CASE("Mutable iterator converts to const iterator", "[iterator]") {
+TEST_CASE("Given a mutable Iterator, when converted to a const Iterator, then both point to the same element",
+          "[container][iterator]") {
   int values[] = {8, 9};
   core::container::Iterator mutableIt(values);
   core::container::Iterator<const int> constIt(mutableIt);
@@ -95,4 +111,3 @@ TEST_CASE("Mutable iterator converts to const iterator", "[iterator]") {
   REQUIRE(*constIt == 8);
   REQUIRE(constIt == mutableIt);
 }
-

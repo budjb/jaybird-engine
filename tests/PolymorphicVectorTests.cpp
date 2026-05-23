@@ -47,7 +47,10 @@ using namespace core::container;
 // RawIterator
 // ---------------------------------------------------------------------------
 
-TEST_CASE("RawIterator basic pointer/arithmetic behavior", "[raw_iterator]") {
+TEST_CASE(
+    "Given a RawIterator over integer storage, when pointer and arithmetic APIs are used, then offsets and "
+    "dereferences are correct",
+    "[raw_iterator]") {
   int arr[4] = {10, 20, 30, 40};
   RawIterator it(arr, sizeof(int));
 
@@ -67,7 +70,9 @@ TEST_CASE("RawIterator basic pointer/arithmetic behavior", "[raw_iterator]") {
 // RawVector<int> core behavior
 // ---------------------------------------------------------------------------
 
-TEST_CASE("RawVector starts empty", "[raw_vector]") {
+TEST_CASE(
+    "Given a newly created RawVector<int>, when queried, then it reports empty state and correct element metadata",
+    "[raw_vector]") {
   const TestVector<int> values;
 
   REQUIRE(values.empty());
@@ -75,7 +80,9 @@ TEST_CASE("RawVector starts empty", "[raw_vector]") {
   REQUIRE(values.elementSize() == sizeof(int));
 }
 
-TEST_CASE("RawVector pushBack/at/front/back/data", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when values are pushed and accessed, then front back index and data pointers are valid",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int a = 7;
   constexpr int b = 9;
@@ -91,12 +98,16 @@ TEST_CASE("RawVector pushBack/at/front/back/data", "[raw_vector]") {
   REQUIRE(values.data() != nullptr);
 }
 
-TEST_CASE("RawVector pushBack rejects null source", "[raw_vector]") {
+TEST_CASE("Given a RawVector<int>, when pushBack receives a null source, then invalid_argument is thrown",
+          "[raw_vector]") {
   TestVector<int> values;
   REQUIRE_THROWS_AS(values.pushBack(nullptr), std::invalid_argument);
 }
 
-TEST_CASE("RawVector at/back/popBack validate bounds", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when out-of-range access and empty pop operations are requested, then bounds errors are "
+    "reported",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int a = 1;
   values.pushBack(&a);
@@ -108,7 +119,10 @@ TEST_CASE("RawVector at/back/popBack validate bounds", "[raw_vector]") {
   REQUIRE_THROWS_AS(values.back(), std::out_of_range);
 }
 
-TEST_CASE("RawVector begin/end and reverse endpoints", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when iterator endpoints are requested, then begin end rbegin and rend map to expected "
+    "addresses",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int a = 1;
   constexpr int b = 2;
@@ -121,7 +135,10 @@ TEST_CASE("RawVector begin/end and reverse endpoints", "[raw_vector]") {
   REQUIRE(values.rend().base().data() == values.begin().data());
 }
 
-TEST_CASE("RawVector reserve/shrinkToFit/resize/clear", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when reserve resize shrinkToFit and clear are called, then capacity and size transitions "
+    "are correct",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int a = 3;
   constexpr int b = 4;
@@ -145,7 +162,10 @@ TEST_CASE("RawVector reserve/shrinkToFit/resize/clear", "[raw_vector]") {
   REQUIRE(values.empty());
 }
 
-TEST_CASE("RawVector assign count and range", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when assign count and assign range overloads are used, then contents are replaced with "
+    "provided sequence",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int seed = 99;
   values.pushBack(&seed);
@@ -163,7 +183,8 @@ TEST_CASE("RawVector assign count and range", "[raw_vector]") {
   REQUIRE(*static_cast<int*>(values[3]) == 4);
 }
 
-TEST_CASE("RawVector assign validates pointers", "[raw_vector]") {
+TEST_CASE("Given a RawVector<int>, when assign receives invalid pointers, then invalid_argument is thrown",
+          "[raw_vector]") {
   TestVector<int> values;
   constexpr int src[2] = {1, 2};
 
@@ -172,7 +193,10 @@ TEST_CASE("RawVector assign validates pointers", "[raw_vector]") {
   REQUIRE_THROWS_AS(values.assign(nullptr, src), std::invalid_argument);
 }
 
-TEST_CASE("RawVector insert single/count/range", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when single count and range insert overloads are applied, then elements are inserted in "
+    "the right order",
+    "[raw_vector]") {
   TestVector<int> values;
   constexpr int a = 1;
   constexpr int c = 3;
@@ -198,7 +222,9 @@ TEST_CASE("RawVector insert single/count/range", "[raw_vector]") {
   REQUIRE(*static_cast<int*>(values[6]) == 5);
 }
 
-TEST_CASE("RawVector erase single and range", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when single and range erase operations are called, then targeted elements are removed",
+    "[raw_vector]") {
   TestVector<int> values;
   const int data[5] = {1, 2, 3, 4, 5};
   values.assign(data, data + 5);
@@ -212,7 +238,10 @@ TEST_CASE("RawVector erase single and range", "[raw_vector]") {
   REQUIRE(*static_cast<int*>(values[2]) == 5);
 }
 
-TEST_CASE("RawVector emplaceBack/emplace callback APIs", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<int>, when emplaceBack and emplace callbacks construct elements, then inserted values match "
+    "callback writes",
+    "[raw_vector]") {
   TestVector<int> values;
 
   values.emplaceBack([](void* dest) { *static_cast<int*>(dest) = 10; });
@@ -225,7 +254,8 @@ TEST_CASE("RawVector emplaceBack/emplace callback APIs", "[raw_vector]") {
   REQUIRE(*static_cast<int*>(values[2]) == 30);
 }
 
-TEST_CASE("RawVector emplace APIs reject null callback", "[raw_vector]") {
+TEST_CASE("Given a RawVector<int>, when emplace APIs receive a null callback, then invalid_argument is thrown",
+          "[raw_vector]") {
   TestVector<int> values;
   const std::function<void(void*)> nullCtor;
 
@@ -238,7 +268,10 @@ TEST_CASE("RawVector emplace APIs reject null callback", "[raw_vector]") {
 // RawVector<Point> non-trivial element coverage
 // ---------------------------------------------------------------------------
 
-TEST_CASE("RawVector supports non-trivial element type", "[raw_vector]") {
+TEST_CASE(
+    "Given a RawVector<Point>, when non-trivial elements are pushed resized and erased, then object values remain "
+    "correct",
+    "[raw_vector]") {
   TestVector<Point> values;
   const Point a{1, 2};
   const Point b{3, 4};

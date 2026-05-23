@@ -7,47 +7,27 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(iterator_tests
+add_executable(core_tests
         IteratorTests.cpp
-)
-
-add_executable(vector_tests
         VectorTests.cpp
-)
-
-add_executable(polymorphic_vector_tests
         PolymorphicVectorTests.cpp
+        IntTypeTests.cpp
+        IntArrayTypeTests.cpp
+        RttiIteratorTests.cpp
+        RttiReverseIteratorTests.cpp
 )
 
-target_include_directories(iterator_tests PRIVATE
+target_include_directories(core_tests PRIVATE
         ${PROJECT_SOURCE_DIR}/core/include
+        ${PROJECT_SOURCE_DIR}/tests
 )
 
-target_link_libraries(iterator_tests PRIVATE
-        Catch2::Catch2WithMain
-)
-
-target_include_directories(vector_tests PRIVATE
-        ${PROJECT_SOURCE_DIR}/core/include
-)
-
-target_link_libraries(vector_tests PRIVATE
-        Catch2::Catch2WithMain
-        jaybird_core
-)
-
-target_include_directories(polymorphic_vector_tests PRIVATE
-        ${PROJECT_SOURCE_DIR}/core/include
-)
-
-target_link_libraries(polymorphic_vector_tests PRIVATE
+target_link_libraries(core_tests PRIVATE
         Catch2::Catch2WithMain
         jaybird_core
 )
 
 list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
 include(Catch)
-catch_discover_tests(iterator_tests)
-catch_discover_tests(vector_tests)
-catch_discover_tests(polymorphic_vector_tests)
+catch_discover_tests(core_tests)
 
