@@ -8,9 +8,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(core_tests
-        IteratorTests.cpp
-        VectorTests.cpp
-        PolymorphicVectorTests.cpp
         IntTypeTests.cpp
         IntArrayTypeTests.cpp
         RttiIteratorTests.cpp

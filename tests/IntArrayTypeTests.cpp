@@ -8,7 +8,7 @@
 #include "RttiTestUtils.hpp"
 
 namespace {
-using core::IString;
+using core::IName;
 using core::rtti::IArrayType;
 using core::rtti::IntArrayType;
 using core::rtti::IType;
@@ -24,7 +24,7 @@ TEST_CASE(
     "[rtti][int_array_type]") {
   const IType* type = asType(intArrayType());
 
-  REQUIRE(type->name() == IString("int[]"));
+  REQUIRE(type->name() == IName("int[]"));
   REQUIRE(type->size() == sizeof(std::vector<int>));
   REQUIRE(type->alignment() == alignof(std::vector<int>));
   REQUIRE(type->kind() == TypeKind::ARRAY);
@@ -191,8 +191,8 @@ TEST_CASE(
     "Given two IntArrayTypes sharing a name and one with a different name, when compared with == and !=, then "
     "identity is determined by descriptor name",
     "[rtti][int_array_type]") {
-  IntArrayType sameName(IString("int[]"), &intElementType());
-  IntArrayType differentName(IString("other[]"), &intElementType());
+  IntArrayType sameName(IName("int[]"), &intElementType());
+  IntArrayType differentName(IName("other[]"), &intElementType());
 
   const IType* singletonType = asType(intArrayType());
   const IType* sameNameType = asType(sameName);

@@ -9,7 +9,7 @@ enum class TypeKind : std::size_t {
   /**
    * @brief Represents an interned string type.
    */
-  ISTRING,
+  NAME,
 
   /**
    * @brief Represents a class type with member variables and functions.

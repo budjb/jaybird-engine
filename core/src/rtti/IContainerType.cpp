@@ -1,7 +1,7 @@
 #include "rtti/IContainerType.hpp"
 
 namespace core::rtti {
-IContainerType::IContainerType(const IString& name, const std::size_t size, const std::size_t alignment,
+IContainerType::IContainerType(const IName& name, const std::size_t size, const std::size_t alignment,
                        const IType* inner) noexcept
     : IType(name, size, alignment, TypeKind::ARRAY), m_inner(inner) {}
 

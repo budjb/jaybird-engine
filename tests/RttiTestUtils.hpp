@@ -5,12 +5,12 @@
 namespace tests::rtti {
 
 inline core::rtti::IntType& intElementType() {
-  static core::rtti::IntType type(core::IString("int"));
+  static core::rtti::IntType type(core::IName("int"));
   return type;
 }
 
 inline core::rtti::IntArrayType& intArrayType() {
-  static core::rtti::IntArrayType type(core::IString("int[]"), &intElementType());
+  static core::rtti::IntArrayType type(core::IName("int[]"), &intElementType());
   return type;
 }
 

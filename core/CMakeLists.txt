@@ -1,26 +1,12 @@
 add_library(jaybird_core STATIC
-        src/StringPool.cpp
-        src/IString.cpp
+        src/INamePool.cpp
+        src/IName.cpp
         src/rtti/RTTIRegistry.cpp
         include/rtti/RTTIRegistry.hpp
         src/rtti/types/IntType.cpp
         include/rtti/types/IntType.hpp
-        src/memory/MemoryPool.cpp
-        include/memory/MemoryPool.hpp
-        include/Common.hpp
-        src/memory/Buffer.cpp
-        include/memory/Buffer.hpp
-        include/memory/Allocator.hpp
         src/SpinLock.cpp
         include/SpinLock.hpp
-        src/memory/MemoryArena.cpp
-        include/memory/MemoryArena.hpp
-        include/container/Vector.hpp
-        include/container/Iterator.hpp
-        include/container/IVector.hpp
-        include/container/RawVector.hpp
-        include/container/RawIterator.hpp
-        include/container/Container.hpp
         include/rtti/IType.hpp
         include/rtti/TypeKind.hpp
         src/rtti/IType.cpp
@@ -31,7 +17,6 @@ add_library(jaybird_core STATIC
         include/rtti/TType.hpp
         src/rtti/IClassType.cpp
         include/rtti/IClassType.hpp
-        include/rtti/TArrayType.cpp
         include/rtti/TArrayType.hpp
         include/rtti/Iterator.hpp
 )

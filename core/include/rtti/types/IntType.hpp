@@ -4,11 +4,11 @@
 namespace core::rtti {
 class IntType : public TType<int> {
  public:
-  explicit IntType(const IString& name);
+  explicit IntType(const IName& name);
 };
 
 class IntArrayType : public TArrayType<int> {
  public:
-  explicit IntArrayType(const IString& name, const TType<int>* inner);
+  explicit IntArrayType(const IName& name, const TType<int>* inner);
 };
 }  // namespace core::rtti
