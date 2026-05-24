@@ -2,6 +2,8 @@
 
 #include <mutex>
 
+#include "rtti/IType.hpp"
+
 namespace core::rtti {
 TypeRegistry* TypeRegistry::get() {
   static TypeRegistry instance;
@@ -24,13 +26,18 @@ IClassType* TypeRegistry::getClass(const IName& name) const {
   return nullptr;
 }
 
-bool TypeRegistry::registerType(std::unique_ptr<IType>&& type) {
+IType* TypeRegistry::registerType(std::unique_ptr<IType>&& type) {
   std::unique_lock lock(m_mutex);
   if (m_types.contains(type->name())) {
-    return false;
+    // TODO: log? throw?
+    return nullptr;
   }
 
-  return m_types.insert({type->name(), std::move(type)}).second;
+  if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
+    return it->second.get();
+  }
+
+  return nullptr;
 }
 
 bool TypeRegistry::hasType(const IName& name) const noexcept {

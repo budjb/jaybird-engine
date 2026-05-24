@@ -81,31 +81,39 @@ class IType {
   virtual void assign(void* dst, const void* src) = 0;
 
   /**
-   * @brief Creates a new instance of the type and returns a pointer to the allocated memory.
+   * @brief Allocates memory for an instance of the type. The actual allocation logic is defined in derived classes, as
+   * it may involve specific memory management strategies depending on the type.
    *
-   * The returned pointer will point to a default-constructed instance of the type, and it is the caller's
-   * responsibility to manage the memory and ensure that it is properly freed when no longer needed.
+   * The type is not constructed as part of this allocation process; it only allocates raw memory that can hold an
+   * instance of the type.
    *
-   * @return A pointer to the allocated memory containing a default-constructed instance of the type.
+   * The caller is responsible for managing the allocated memory and ensuring that it is properly freed when no longer
+   * needed.
+   *
+   * @return A pointer to the allocated memory for an instance of the type.
    */
-  virtual void* create() = 0;
+  virtual void* allocate() = 0;
 
   /**
-   * @brief Frees the memory allocated for an instance of the type.
+   * @brief Frees the memory allocated for an instance of the type. The actual deallocation logic is defined in derived
+   * classes, as it may involve specific memory management strategies depending on the type.
    *
-   * The memory pointed to by the parameter should have been allocated by the create() function of this type, and it is
-   * the caller's responsibility to ensure that the memory is properly freed when no longer needed. The behavior is
-   * undefined if the memory pointer is null or if it does not point to a valid instance of the type.
+   * The type is not destructed as part of this allocation process; it only allocates raw memory that can hold an
+   * instance of the type.
    *
-   * @param memory A pointer to the memory that should be freed. This memory should have been allocated by the create()
-   * function of this type.
+   * The provided memory pointer should have been allocated by the allocate() function of this type, and it is the
+   * caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   *
+   * @param ptr A pointer to the memory that should be freed.
    */
-  virtual void free(void* memory) = 0;
+  virtual void deallocate(void* ptr) = 0;
 
   /**
    * @brief Constructs an instance of the type in the provided memory location. The memory should be pre-allocated and
-   * large enough to hold an instance of the type. The behavior is undefined if the memory pointer is null or if it does
-   * not point to a valid memory location that can hold an instance of the type.
+   * large enough to hold an instance of the type.
+   *
+   * The behavior is undefined if the memory pointer does not point to a valid memory location that can hold an instance
+   * of the type.
    *
    * @param memory A pointer to the memory where the instance should be constructed. This memory should be pre-allocated
    * and large enough to hold an instance of the type.
@@ -113,15 +121,34 @@ class IType {
   virtual void construct(void* memory) noexcept = 0;
 
   /**
-   * @brief Destroys an instance of the type located at the provided memory location. The memory should have been
-   * previously constructed using the construct() function of this type. The behavior is undefined if the memory pointer
-   * is null or if it does not point to a valid instance of the type that was previously constructed using the
-   * construct() function of this type.
+   * @brief Destructs an instance of the type located at the given memory location.
    *
-   * @param memory A pointer to the memory where the instance should be destroyed. This memory should have been
-   * previously constructed using the construct() function of this type.
+   * The behavior is undefined if the memory pointer does not point to a valid instance of the type or was already
+   * destructed.
+   *
+   * @param memory A pointer to the memory where the instance should be destructed.
    */
-  virtual void destroy(void* memory) noexcept = 0;
+  virtual void destruct(void* memory) noexcept = 0;
+
+  /**
+   * @brief Creates a new instance of the type by allocating the required memory and constructing the object using its
+   * default constructor.
+   *
+   * It is the caller's responsibility to manage the memory and ensure that it is properly freed when no longer needed.
+   *
+   * @return A pointer to the allocated memory containing a default-constructed instance of the type.
+   */
+  virtual void* create() = 0;
+
+  /**
+   * @brief Destroys the provided instance by calling its destructor and deallocating its memory.
+   *
+   * The memory pointed to by the parameter should have been allocated by the create() function of this type, and it is
+   * the caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   *
+   * @param memory A pointer to the memory that should be freed.
+   */
+  virtual void destroy(void* memory) = 0;
 
   /**
    * @brief Compares two instances of the type for equality. The behavior is undefined if either pointer does not point

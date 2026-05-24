@@ -28,11 +28,11 @@ enum class TypeKind : std::size_t {
   STRING,
 
   /**
-   * @brief Represents a simple type, such as an integer, float, or other primitive type that does not have member
+   * @brief Represents a fundamental type, such as an integer, float, or other primitive type that does not have member
    * variables or functions. This kind of type is typically used for basic data types that can be directly assigned and
    * do not require complex construction or destruction logic.
    */
-  SIMPLE,
+  FUNDAMENTAL,
 };
 
 }  // namespace core::rtti

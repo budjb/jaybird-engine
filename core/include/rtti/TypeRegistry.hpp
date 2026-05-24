@@ -5,9 +5,19 @@
 #include <unordered_map>
 
 #include "IName.hpp"
-#include "RTTI.hpp"
 
 namespace core::rtti {
+
+/**
+ * @brief Forward declaration of the IClassType interface, which represents class type information in the RTTI system.
+ */
+class IClassType;
+
+/**
+ * @brief Forward declaration of the IType interface, which represents type information in the RTTI system.
+ */
+class IType;
+
 /**
  * @brief The TypeRegistry class is a singleton that manages the registration and retrieval of type information in the
  * RTTI system. It provides methods for registering new types, retrieving type information by name, and checking for the
@@ -50,15 +60,14 @@ class TypeRegistry {
 
   /**
    * @brief Registers a new type in the type registry. This method takes ownership of the provided IType and adds it to
-   * the registry. If a type with the same name already exists in the registry, this method will return false and the
-   * provided type will not be added.
+   * the registry.
    *
    * @param type A unique pointer to the IType to register. The type's name will be used as the key in the registry, so
    * it must be unique.
-   * @return bool True if the type was successfully registered, or false if a type with the same name already exists in
-   * the registry.
+   * @return IType* A pointer to the registered IType if the registration was successful, or nullptr if a type with the
+   * same name already exists in the registry.
    */
-  bool registerType(std::unique_ptr<IType>&& type);
+  IType* registerType(std::unique_ptr<IType>&& type);
 
   /**
    * @brief Checks if a type with the given name exists in the type registry. This is a convenience method that allows

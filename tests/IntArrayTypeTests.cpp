@@ -67,7 +67,7 @@ TEST_CASE(
   REQUIRE(value->size() == 1);
   REQUIRE((*value)[0] == 33);
 
-  type->destroy(raw);
+  type->destruct(raw);
 }
 
 TEST_CASE(
@@ -88,7 +88,7 @@ TEST_CASE(
   REQUIRE((*value)[0] == 99);
   REQUIRE((*value)[1] == 100);
 
-  type->free(raw);
+  type->destroy(raw);
 }
 
 TEST_CASE(
@@ -183,8 +183,8 @@ TEST_CASE(
   const std::vector source{7, 8, 9};
   type->assign(nullptr, &source);
   type->construct(nullptr);
+  type->destruct(nullptr);
   type->destroy(nullptr);
-  type->free(nullptr);
 }
 
 TEST_CASE(

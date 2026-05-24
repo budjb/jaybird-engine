@@ -9,3 +9,6 @@
 #include "TType.hpp"
 #include "TypeKind.hpp"
 #include "TypeRegistry.hpp"
+#include "registration/Macros.hpp"
+#include "registration/TypeDefinition.hpp"
+#include "registration/TypeRegistrar.hpp"

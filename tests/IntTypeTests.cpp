@@ -35,7 +35,7 @@ TEST_CASE("Given an IntType, when accessed through IType, then name size alignme
   REQUIRE(type->name() == IName("int"));
   REQUIRE(type->size() == sizeof(int));
   REQUIRE(type->alignment() == alignof(int));
-  REQUIRE(type->kind() == TypeKind::SIMPLE);
+  REQUIRE(type->kind() == TypeKind::FUNDAMENTAL);
 }
 
 TEST_CASE("Given a source int, when assign is called through IType, then destination equals source",
@@ -65,12 +65,12 @@ TEST_CASE(
   REQUIRE(*value == 0);
 
   *value = 33;
-  type->destroy(raw);
+  type->destruct(raw);
 
   type->construct(raw);
   value = std::launder(static_cast<int*>(raw));
   REQUIRE(*value == 0);
-  type->destroy(raw);
+  type->destruct(raw);
 }
 
 TEST_CASE(
@@ -88,7 +88,7 @@ TEST_CASE(
   *value = 99;
   REQUIRE(*value == 99);
 
-  type->free(raw);
+  type->destroy(raw);
 }
 
 TEST_CASE(

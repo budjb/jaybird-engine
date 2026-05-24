@@ -28,23 +28,41 @@ class StubClassType final : public IClassType {
     *static_cast<int*>(dst) = *static_cast<const int*>(src);
   }
 
-  void* create() override {
-    return new int(0);
+  void* allocate() noexcept override {
+    return operator new(sizeof(int), static_cast<std::align_val_t>(alignof(int)));
   }
 
-  void free(void* memory) override {
-    delete static_cast<int*>(memory);
+  void deallocate(void* memory) noexcept override {
+    if (memory) {
+      operator delete(memory, sizeof(int), static_cast<std::align_val_t>(alignof(int)));
+    }
   }
 
   void construct(void* memory) noexcept override {
-    if (!memory) {
-      return;
+    if (memory) {
+      std::construct_at<int>(static_cast<int*>(memory));
     }
-    new (memory) int(0);
   }
 
-  void destroy(void* memory) noexcept override {
-    (void)memory;
+  void destruct(void* memory) noexcept override {
+    if (memory) {
+      std::destroy_at<int>(static_cast<int*>(memory));
+    }
+  }
+
+  void* create() override {
+    void* memory = allocate();
+    if (memory) {
+      construct(memory);
+    }
+    return memory;
+  }
+
+  void destroy(void* memory) override {
+    if (memory) {
+      destruct(memory);
+      deallocate(memory);
+    }
   }
 
   bool equals(const void* lhs, const void* rhs) const noexcept override {
@@ -58,7 +76,7 @@ class StubClassType final : public IClassType {
 IName uniqueName(const char* prefix) {
   static std::atomic<std::size_t> counter{0};
   const std::size_t id = counter.fetch_add(1, std::memory_order_relaxed) + 1;
-  return IName(std::string(prefix) + "_" + std::to_string(id));
+  return std::string(prefix) + "_" + std::to_string(id);
 }
 
 }  // namespace
@@ -95,7 +113,7 @@ TEST_CASE(
   REQUIRE(registry->registerType(std::move(type)));
   REQUIRE(registry->hasType(typeName));
   REQUIRE(registry->getType(typeName) == expected);
-  REQUIRE(registry->getType(typeName)->kind() == TypeKind::SIMPLE);
+  REQUIRE(registry->getType(typeName)->kind() == TypeKind::FUNDAMENTAL);
   REQUIRE(registry->getClass(typeName) == nullptr);
 }
 
@@ -167,7 +185,7 @@ TEST_CASE(
   REQUIRE_FALSE(registry->registerType(std::move(duplicateClassType)));
 
   REQUIRE(registry->getType(duplicatedName) == expected);
-  REQUIRE(registry->getType(duplicatedName)->kind() == TypeKind::SIMPLE);
+  REQUIRE(registry->getType(duplicatedName)->kind() == TypeKind::FUNDAMENTAL);
   REQUIRE(registry->getClass(duplicatedName) == nullptr);
 }
 

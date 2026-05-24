@@ -1,5 +1,6 @@
 #include "rtti/IType.hpp"
 
+#include "rtti/IArrayType.hpp"
 #include "rtti/TypeRegistry.hpp"
 
 namespace core::rtti {

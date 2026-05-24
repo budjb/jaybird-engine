@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <memory>
 
 #include "IType.hpp"
@@ -53,60 +52,93 @@ class TType : public IType {
   }
 
   /**
-   * @brief Creates a new instance of the type by allocating memory and constructing the object.
+   * @brief Allocates memory for an instance of type @code T@endcode.
    *
-   * The caller is responsible for freeing the allocated memory using the free() function when it is no longer needed.
+   * The type is not constructed as part of this allocation process; it only allocates raw memory that can hold an
+   * instance of the type.
    *
-   * @return A pointer to the allocated memory containing the newly created instance of the type.
+   * The caller is responsible for managing the allocated memory and ensuring that it is properly freed when no longer
+   * needed.
+   *
+   * @return A pointer to the allocated memory for an instance of the type.
    */
-  void* create() noexcept override {
-    void* memory = new std::byte[sizeof(T)];
-    construct(memory);
-    return memory;
+  void* allocate() noexcept override {
+    return operator new(sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
   }
 
   /**
-   * @brief Destructs and frees the memory allocated for an instance of the type.
+   * @brief Frees the memory allocated for an instance of type @code T@endcode.
    *
-   * The memory should have been allocated by the create() function of this type, and it is the caller's responsibility
-   * to ensure that the memory is properly freed when no longer needed. The behavior is undefined if the memory pointer
-   * is null or if it does not point to a valid instance of the type.
+   * The type is not destructed as part of this allocation process; it only allocates raw memory that can hold an
+   * instance of the type.
    *
-   * @param memory A pointer to the memory that should be freed. This memory should have been allocated by the create()
-   * function of this type.
+   * The provided memory pointer should have been allocated by the allocate() function of this type, and it is the
+   * caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   *
+   * @param memory A pointer to the memory that should be freed.
    */
-  void free(void* memory) noexcept override {
-    if (memory == nullptr) {
-      return;
-    }
-    destroy(memory);
-    delete[] static_cast<std::byte*>(memory);
+  void deallocate(void* memory) noexcept override {
+    operator delete(memory, sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
   }
 
   /**
-   * @brief Constructs an instance of the type at the given memory location.
+   * @brief Constructs an instance of type @c T in the provided memory location. The memory should be pre-allocated and
+   * large enough to hold an instance of the type.
    *
-   * The behavior is undefined if the memory pointer is null or if it does not point to a valid memory location that can
-   * hold an instance of the type.
+   * The behavior is undefined if the memory pointer does not point to a valid memory location that can hold an instance
+   * of the type.
    *
    * @param memory A pointer to the memory where the instance should be constructed. This memory should be pre-allocated
    * and large enough to hold an instance of the type.
    */
   void construct(void* memory) noexcept override {
-    std::construct_at<Type>(static_cast<Type*>(memory));
+    if (memory) {
+      std::construct_at<Type>(static_cast<Type*>(memory));
+    }
   }
 
   /**
-   * @brief Destroys an instance of the type located at the given memory location.
+   * @brief Destructs an instance of type @c T located at the given memory location.
    *
-   * The behavior is undefined if the memory pointer is null or if it does not point to a valid instance of the type
-   * that was previously constructed using the construct() function of this type.
+   * The behavior is undefined if the memory pointer does not point to a valid instance of type @c T or was already
+   * destructed.
    *
-   * @param memory A pointer to the memory where the instance should be destroyed. This memory should have been
-   * previously constructed using the construct() function of this type.
+   * @param memory A pointer to the memory where the instance should be destructed.
+   */
+  void destruct(void* memory) noexcept override {
+    std::destroy_at<T>(static_cast<T*>(memory));
+  }
+
+  /**
+   * @brief Creates a new instance of the type by allocating the required memory and constructing the object using its
+   * default constructor.
+   *
+   * It is the caller's responsibility to manage the memory and ensure that it is properly freed when no longer needed.
+   *
+   * @return A pointer to the allocated memory containing a default-constructed instance of the type.
+   */
+  void* create() noexcept override {
+    void* memory = allocate();
+    if (memory) {
+      construct(memory);
+    }
+    return memory;
+  }
+
+  /**
+   * @brief Destroys the provided instance by calling its destructor and deallocating its memory.
+   *
+   * The memory pointed to by the parameter should have been allocated by the create() function of this type, and it is
+   * the caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   *
+   * @param memory A pointer to the memory that should be freed. This memory should have been allocated by the create()
+   * function of this type.
    */
   void destroy(void* memory) noexcept override {
-    std::destroy_at<T>(static_cast<T*>(memory));
+    if (memory != nullptr) {
+      destruct(memory);
+      deallocate(memory);
+    }
   }
 
   /**
