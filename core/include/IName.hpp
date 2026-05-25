@@ -5,6 +5,8 @@
 #include <string>
 #include <string_view>
 
+#include "JaybirdCoreExport.hpp"
+
 namespace core {
 using hash_t = std::uint64_t;
 
@@ -13,7 +15,7 @@ using hash_t = std::uint64_t;
  * entities in the system, such as types, functions, or variables. It provides methods for converting between the
  * interned string and its hash value, as well as comparison operators for checking equality between IName instances.
  */
-class IName {
+class JAYBIRD_EXPORT IName {
  public:
   /**
    * @brief Constructs an IName with a hash value of 0, representing an empty or invalid name.

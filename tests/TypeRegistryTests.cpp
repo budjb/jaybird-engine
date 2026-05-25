@@ -110,7 +110,7 @@ TEST_CASE(
   auto type = std::make_unique<core::rtti::IntType>(typeName);
   IType* expected = type.get();
 
-  REQUIRE(registry->registerType(std::move(type)));
+  REQUIRE(registry->registerType(std::move(type)) == expected);
   REQUIRE(registry->hasType(typeName));
   REQUIRE(registry->getType(typeName) == expected);
   REQUIRE(registry->getType(typeName)->kind() == TypeKind::FUNDAMENTAL);
@@ -124,10 +124,10 @@ TEST_CASE("Given a duplicate type name, when registering a second type in TypeRe
 
   auto first = std::make_unique<core::rtti::IntType>(duplicatedName);
   IType* firstPtr = first.get();
-  REQUIRE(registry->registerType(std::move(first)));
+  REQUIRE(registry->registerType(std::move(first)) == firstPtr);
 
   auto duplicate = std::make_unique<core::rtti::IntType>(duplicatedName);
-  REQUIRE_FALSE(registry->registerType(std::move(duplicate)));
+  REQUIRE(registry->registerType(std::move(duplicate)) == nullptr);
 
   REQUIRE(registry->hasType(duplicatedName));
   REQUIRE(registry->getType(duplicatedName) == firstPtr);
@@ -143,7 +143,7 @@ TEST_CASE(
   IClassType* expectedClass = classType.get();
   IType* expectedType = expectedClass;
 
-  REQUIRE(registry->registerType(std::move(classType)));
+  REQUIRE(registry->registerType(std::move(classType)) == expectedType);
 
   IType* retrievedType = registry->getType(className);
   IClassType* retrievedClass = registry->getClass(className);
@@ -162,7 +162,7 @@ TEST_CASE(
 
   auto type = std::make_unique<core::rtti::IntType>(registeredName);
   IType* expected = type.get();
-  REQUIRE(registry->registerType(std::move(type)));
+  REQUIRE(registry->registerType(std::move(type)) == expected);
 
   const IName equivalentLookupName(registeredName.hash());
 
@@ -179,10 +179,10 @@ TEST_CASE(
 
   auto simpleType = std::make_unique<core::rtti::IntType>(duplicatedName);
   IType* expected = simpleType.get();
-  REQUIRE(registry->registerType(std::move(simpleType)));
+  REQUIRE(registry->registerType(std::move(simpleType)) == expected);
 
   auto duplicateClassType = std::make_unique<StubClassType>(duplicatedName);
-  REQUIRE_FALSE(registry->registerType(std::move(duplicateClassType)));
+  REQUIRE(registry->registerType(std::move(duplicateClassType)) == nullptr);
 
   REQUIRE(registry->getType(duplicatedName) == expected);
   REQUIRE(registry->getType(duplicatedName)->kind() == TypeKind::FUNDAMENTAL);
@@ -199,7 +199,7 @@ TEST_CASE(
 
   auto type = std::make_unique<core::rtti::IntType>(registeredName);
   IType* expected = type.get();
-  REQUIRE(TypeRegistry::get()->registerType(std::move(type)));
+  REQUIRE(TypeRegistry::get()->registerType(std::move(type)) == expected);
 
   REQUIRE(registry->getType(registeredName) == expected);
   REQUIRE_FALSE(registry->hasType(otherName));
@@ -282,7 +282,7 @@ TEST_CASE(
 
   auto type = std::make_unique<core::rtti::IntType>(name);
   IType* expected = type.get();
-  REQUIRE(registry->registerType(std::move(type)));
+  REQUIRE(registry->registerType(std::move(type)) == expected);
 
   constexpr int readerCount = 8;
   constexpr int iterationsPerReader = 5000;

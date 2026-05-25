@@ -1,9 +1,12 @@
 #pragma once
 
+#include <concepts>
+#include <cstring>
 #include <type_traits>
 
 #include "Specialization.hpp"
 #include "TypeRegistrar.hpp"
+#include "rtti/IClassType.hpp"
 #include "rtti/TType.hpp"
 #include "rtti/TypeRegistry.hpp"
 
@@ -31,15 +34,6 @@ template <typename T>
 class IFundamentalDefinition {
  public:
   /**
-   * @brief Converts the IFundamentalDefinition to a Specialization based on the name of the fundamental type @code
-   * T@endcode.
-   */
-  constexpr operator Specialization() const noexcept {
-    return Specialization::of<T>();
-  }
-
- private:
-  /**
    * @brief A concrete implementation of the IType interface for fundamental types.
    */
   class FundamentalType : public TType<T> {
@@ -56,6 +50,15 @@ class IFundamentalDefinition {
   };
 
   /**
+   * @brief Converts the IFundamentalDefinition to a Specialization based on the name of the fundamental type @code
+   * T@endcode.
+   */
+  constexpr operator Specialization() const noexcept {
+    return Specialization::of<T>();
+  }
+
+ private:
+  /**
    * @brief Declares the fundamental type information for the fundamental type @c T in the @code TypeRegistry@endcode.
    *
    * @param registry A non-const pointer to the @c TypeRegistry.
@@ -67,7 +70,7 @@ class IFundamentalDefinition {
   /**
    * @brief Defines the fundamental type information for the fundamental type @c T in the @code TypeRegistry@endcode.
    */
-  static inline TypeRegistrar s_registrar{&declare};
+  inline static TypeRegistrar s_registrar{&declare};
 };
 
 /**
@@ -87,18 +90,79 @@ class IClassDefinition {
    */
   using RegistrationContainer = AutoRegistration<Specialization::of<T>()>;
 
-  /**
-   * @brief Converts the IClassDefinition to a Specialization based on the name of the class type @code T@endcode.
-   *
-   * This conversion operator is compile-time compatible, which allows instances of the class to be used as a template
-   * type. This is very powerful, as it allows instances of the definition class to be created as template parameters
-   * instead of global variables, and thus their static, automatic registration with the @c TypeRegistrar can occur.
-   */
-  constexpr operator Specialization() const noexcept {
-    return Specialization::of<T>();
-  }
+  // TODO: implement this the way I want
+  class ClassType : public IClassType {
+   public:
+    using Type = T;
 
- private:
+    explicit ClassType(const IName& name) : IClassType(name, sizeof(Type), alignof(Type)) {}
+
+    void assign(void* destination, const void* source) override {
+      if (destination == nullptr) {
+        return;
+      }
+
+      if constexpr (std::is_trivially_copyable_v<Type>) {
+        std::memcpy(destination, source, sizeof(Type));
+      } else {
+        *static_cast<Type*>(destination) = *static_cast<const Type*>(source);
+      }
+    }
+
+    void* allocate() noexcept override {
+      return operator new(sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
+    }
+
+    void deallocate(void* memory) noexcept override {
+      operator delete(memory, sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
+    }
+
+    void construct(void* memory) noexcept override {
+      if (memory) {
+        std::construct_at<Type>(static_cast<Type*>(memory));
+      }
+    }
+
+    void destruct(void* memory) noexcept override {
+      if (memory) {
+        std::destroy_at<Type>(static_cast<Type*>(memory));
+      }
+    }
+
+    void* create() noexcept override {
+      void* memory = allocate();
+      if (memory) {
+        construct(memory);
+      }
+      return memory;
+    }
+
+    void destroy(void* memory) noexcept override {
+      if (memory != nullptr) {
+        destruct(memory);
+        deallocate(memory);
+      }
+    }
+
+    bool equals(const void* lhs, const void* rhs) const noexcept override {
+      if (lhs == nullptr || rhs == nullptr) {
+        return lhs == rhs;
+      }
+
+      if constexpr (std::is_trivially_copyable_v<Type>) {
+        return std::memcmp(lhs, rhs, sizeof(Type)) == 0;
+      }
+
+      if constexpr (requires(const Type& a, const Type& b) {
+                      { a == b } -> std::convertible_to<bool>;
+                    }) {
+        return *static_cast<const Type*>(lhs) == *static_cast<const Type*>(rhs);
+      }
+
+      return lhs == rhs;
+    }
+  };
+
   /**
    * @brief Declares the class type information for the class type @c T in the @c TypeRegistry.
    *
@@ -109,7 +173,19 @@ class IClassDefinition {
    * information.
    */
   static void declare(TypeRegistry* registry) {
-    s_classType = registry->registerType(std::make_unique<IClassType>(GetTypeName<T>, TypeKind::CLASS));
+    // TODO: replace this jankiness
+    // GetTypeName<T> may be either const char* or CString<N>.
+    // Both are implicitly convertible to IName via string_view.
+    if (auto* type = registry->registerType(std::make_unique<ClassType>([](auto&& name) constexpr {
+          if constexpr (requires { name.sv(); }) {
+            return IName(name.sv());
+          } else {
+            return IName(std::string_view(name));
+          }
+        }(GetTypeName<T>)));
+        type && type->kind() == TypeKind::CLASS) {
+      s_classType = static_cast<IClassType*>(type);
+    }
   }
 
   /**
@@ -126,10 +202,22 @@ class IClassDefinition {
   }
 
   /**
+   * @brief Converts the IClassDefinition to a Specialization based on the name of the class type @code T@endcode.
+   *
+   * This conversion operator is compile-time compatible, which allows instances of the class to be used as a template
+   * type. This is very powerful, as it allows instances of the definition class to be created as template parameters
+   * instead of global variables, and thus their static, automatic registration with the @c TypeRegistrar can occur.
+   */
+  constexpr operator Specialization() const noexcept {
+    return Specialization::of<T>();
+  }
+
+ private:
+  /**
    * @brief Static instance of the @c TypeRegistrar that will trigger the registration of the class type information for
    * @c T when the class is loaded.
    */
-  static inline TypeRegistrar s_registrar{&declare, &define};
+  inline static TypeRegistrar s_registrar{&declare, &define};
 
   /**
    * @brief A static pointer to the IClassType information for the class type @c T that will be populated after

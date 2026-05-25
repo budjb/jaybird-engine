@@ -1,4 +1,4 @@
-add_library(jaybird-engine-core STATIC
+add_library(jaybird-engine-core SHARED
         src/INamePool.cpp
         src/IName.cpp
         src/rtti/TypeRegistry.cpp
@@ -26,9 +26,21 @@ add_library(jaybird-engine-core STATIC
         include/rtti/registration/Macros.hpp
         include/rtti/registration/AutoRegistration.hpp
         include/rtti/registration/Specialization.hpp
-        include/FixedString.hpp
+        include/CString.hpp
         include/rtti/registration/Fundamentals.hpp
         src/rtti/registration/Fundamentals.cpp
 )
 
-target_include_directories(jaybird-engine-core PUBLIC "include")
+include(GenerateExportHeader)
+generate_export_header(jaybird-engine-core
+    EXPORT_MACRO_NAME JAYBIRD_EXPORT
+    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/JaybirdCoreExport.hpp
+    NO_EXPORT_MACRO_NAME JAYBIRD_NO_EXPORT
+    DEFINE_NO_DEPRECATED
+)
+
+target_include_directories(jaybird-engine-core
+    PUBLIC
+        "include"
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+)

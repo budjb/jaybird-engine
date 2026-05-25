@@ -1,12 +1,13 @@
 #pragma once
 #include "IType.hpp"
+#include "JaybirdCoreExport.hpp"
 
 namespace core::rtti {
 /**
  * @brief Interface for type descriptors representing containers that encapsulate other types (e.g., arrays, maps, smart
  * pointers, etc.).
  */
-class IContainerType : public IType {
+class JAYBIRD_EXPORT IContainerType : public IType {
  public:
   /**
    * @brief Constructs an IContainerType with the given name, size, alignment, and inner type descriptor.

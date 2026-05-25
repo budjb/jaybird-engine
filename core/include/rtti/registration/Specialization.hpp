@@ -3,7 +3,33 @@
 #include "Hash.hpp"
 #include "TypeName.hpp"
 
+// TODO: replace the to_string_view jankiness with a real function
 namespace core::rtti {
+
+/**
+ * @brief Helper to get a string_view from various string types.
+ * Handles const char*, string literals (const char[N]), CString<N>, and anything with .sv().
+ */
+constexpr std::string_view to_string_view(const std::string_view sv) noexcept {
+  return std::move(sv);
+}
+
+constexpr std::string_view to_string_view(const char* str) noexcept {
+  std::size_t len = 0;
+  while (str[len] != '\0') {
+    ++len;
+  }
+  return std::move(std::string_view({str, len}));
+}
+
+template <typename T>
+  requires requires(const T& t) {
+    { t.sv() } -> std::convertible_to<std::string_view>;
+  }
+constexpr std::string_view to_string_view(const T& t) noexcept {
+  return t.sv();
+}
+
 /**
  * @brief The Specialization class provides a way to create compile-time, polymorphic template uniqueness via an FNV-1a
  * hash. This allows the creation of arbitrary uniqueness constraints that are not tied class types alone.
@@ -36,9 +62,9 @@ class Specialization {
   template <typename T>
   constexpr static Specialization of() noexcept {
     if constexpr (HasTypeNameMember<T>) {
-      return Specialization(T::NAME);
+      return Specialization(to_string_view(T::NAME));
     } else if constexpr (HasTypeNameMapping<T>) {
-      return Specialization(GetTypeName<T>.sv());
+      return Specialization(to_string_view(GetTypeName<T>));
     } else {
       static_assert(sizeof(T) == 0, "Type does not have a name member or type name mapping");
       std::unreachable();

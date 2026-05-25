@@ -3,7 +3,6 @@
 #include "Specialization.hpp"
 
 namespace core::rtti {
-
 /**
  * @brief A template container class that serves as a base for type registration in the RTTI system. This class is
  * intended to be specialized for specific types or type categories, where the specialization will define the necessary

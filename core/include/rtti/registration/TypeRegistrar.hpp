@@ -2,6 +2,9 @@
 
 #include <vector>
 
+#include "JaybirdCoreExport.hpp"
+#include "rtti/TypeRegistry.hpp"
+
 namespace core::rtti {
 /**
  * @brief Forward declaration of the TypeRegistry class.
@@ -26,7 +29,7 @@ class TypeRegistry;
  * @c TypeRegistrar, which will trigger the registration process when the class is loaded. This instance should be
  * initialized with the appropriate declaration and definition functions for the type being registered.
  */
-class TypeRegistrar {
+class JAYBIRD_EXPORT TypeRegistrar {
  public:
   /**
    * @brief Defines the type of function pointers used for declaring types in the RTTI system.
@@ -83,13 +86,13 @@ class TypeRegistrar {
    * expected to take a non-const pointer to the @c TypeRegistry and perform the necessary declaration logic for a
    * specific type.
    */
-  static inline std::vector<DeclareFunction> s_declareFunctions;
+  static std::vector<DeclareFunction> s_declareFunctions;
 
   /**
    * @brief Static vector of function pointers for defining types in the RTTI system. Each function in this vector is
    * expected to take a non-const pointer to the @c TypeRegistry and perform the necessary definition logic for a
    * specific type.
    */
-  static inline std::vector<DefineFunction> s_definitionFunctions;
+  static std::vector<DefineFunction> s_definitionFunctions;
 };
 }  // namespace core::rtti

@@ -40,7 +40,7 @@ jaybird-engine/
 ├── core/          ← Static library: jaybird-engine-core
 │   ├── include/   ← Public headers (added to target_include_directories PUBLIC)
 │   └── src/       ← Implementation files
-├── tests/         ← Catch2 test executable: core_tests
+├── tests/         ← Catch2 test executable: core-tests
 │   └── *.cpp
 └── CMakeLists.txt ← Root; controls C++23 standard, CTest, coverage flag
 ```
@@ -206,7 +206,7 @@ Enable coverage: pass `-DENABLE_COVERAGE=ON` to CMake (only activates for Clang)
 
 ```powershell
 # From the repo root (adjust path for your config)
-cmake --build cmake-build-debug --target core_tests
+cmake --build cmake-build-debug --target core-tests
 ctest --test-dir cmake-build-debug -V
 ```
 
@@ -216,7 +216,7 @@ ctest --test-dir cmake-build-debug -V
 
 - Framework: **Catch2 v3.5.4** (fetched via `FetchContent`).
 - Linked with `Catch2::Catch2WithMain` (no custom `main()`).
-- Tests discovered via `catch_discover_tests(core_tests)` / CTest.
+- Tests discovered via `catch_discover_tests(core-tests)` / CTest.
 
 ### Test Writing Rules
 
@@ -233,7 +233,7 @@ ctest --test-dir cmake-build-debug -V
 ### Adding a New Test File
 
 1. Create `tests/MyThingTests.cpp`.
-2. Add it to `add_executable(core_tests ...)` in `tests/CMakeLists.txt`.
+2. Add it to `add_executable(core-tests ...)` in `tests/CMakeLists.txt`.
 
 ---
 

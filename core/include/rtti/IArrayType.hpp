@@ -3,6 +3,7 @@
 #include <string>
 
 #include "IContainerType.hpp"
+#include "JaybirdCoreExport.hpp"
 
 namespace core::rtti {
 // TODO: move these
@@ -44,7 +45,7 @@ class ReverseIterator;
  * @brief Interface for array type descriptors that provides methods for accessing and manipulating array elements, as
  * well as querying array properties such as length and capacity.
  */
-class IArrayType : public IContainerType {
+class JAYBIRD_EXPORT IArrayType : public IContainerType {
  public:
   /**
    * @brief Constructs an IArrayType with the given name, size, alignment, and inner type descriptor.

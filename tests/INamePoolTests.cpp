@@ -5,7 +5,6 @@
 #include <thread>
 #include <vector>
 
-#include "../core/include/rtti/registration/TypeRegistrar.hpp"
 #include "Hash.hpp"
 #include "IName.hpp"
 #include "INamePool.hpp"

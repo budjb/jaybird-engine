@@ -5,6 +5,9 @@
 #include "rtti/TypeRegistry.hpp"
 
 namespace core::rtti {
+std::vector<TypeRegistrar::DeclareFunction> TypeRegistrar::s_declareFunctions;
+std::vector<TypeRegistrar::DefineFunction> TypeRegistrar::s_definitionFunctions;
+
 TypeRegistrar::TypeRegistrar(const DeclareFunction& declare) {
   s_declareFunctions.push_back(declare);
 }

@@ -5,6 +5,8 @@
 #include <unordered_map>
 
 #include "IName.hpp"
+#include "IType.hpp"
+#include "JaybirdCoreExport.hpp"
 
 namespace core::rtti {
 
@@ -12,11 +14,6 @@ namespace core::rtti {
  * @brief Forward declaration of the IClassType interface, which represents class type information in the RTTI system.
  */
 class IClassType;
-
-/**
- * @brief Forward declaration of the IType interface, which represents type information in the RTTI system.
- */
-class IType;
 
 /**
  * @brief The TypeRegistry class is a singleton that manages the registration and retrieval of type information in the
@@ -29,7 +26,7 @@ class IType;
  * types at runtime, enabling features such as dynamic casting, type introspection, and more flexible type handling in
  * the application.
  */
-class TypeRegistry {
+class JAYBIRD_EXPORT TypeRegistry {
  public:
   /**
    * @brief Gets the singleton instance of the TypeRegistry. This is the main entry point for accessing the type

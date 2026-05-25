@@ -1,51 +1,61 @@
 #pragma once
 
 #include "AutoRegistration.hpp"
-#include "FixedString.hpp"
+#include "CString.hpp"
 #include "TypeDefinition.hpp"
 #include "TypeName.hpp"
+
+/**
+ * @brief Select the Nth argument from the provided arguments. This is used for macro overloading based on argument
+ * count.
+ */
+#define X_SELECT(_0, _1, _2, _3, ...) _3
+
+/**
+ * @brief Recompose the arguments for selection. This is used in conjunction with X_SELECT to enable macro overloading
+ * based on argument count.
+ */
+#define X_RECOMPOSE(_) X_SELECT _
+
+/**
+ * @brief Expand the arguments for the case when no arguments are provided. This is used to ensure that the correct
+ * macro variant is selected when no arguments are given, by providing dummy arguments that will lead to the selection
+ * of the correct macro variant for zero arguments.
+ */
+#define X_EXPAND_NOARG(NAME) , , , NAME##_1
+
+/**
+ * @brief Select the correct macro variant based on the number of arguments provided. This macro takes the base name of
+ * the macro and the provided arguments, and it uses the number of arguments to select the appropriate macro variant
+ * (e.g., NAME_1, NAME_2, NAME_3, etc.).
+ */
+#define X_SELECT_BY_NARG(NAME, ...) X_RECOMPOSE((__VA_ARGS__, NAME##_3, NAME##_2, NAME##_1, ))
+
+/**
+ * @brief Select the correct macro variant based on the number of arguments provided, and invoke it with the provided
+ * arguments.
+ */
+#define X_SELECT_MACRO(NAME, ...) X_SELECT_BY_NARG(NAME, X_EXPAND_NOARG __VA_ARGS__(NAME))
+
+/**
+ * @brief Macro for overloading based on the number of arguments. This macro takes the base name of the macro and the
+ * provided arguments, and it uses the number of arguments to select the appropriate macro variant and invoke it with
+ * the provided arguments.
+ */
+#define X_OVERLOAD(NAME, ...) X_SELECT_MACRO(NAME, __VA_ARGS__)(__VA_ARGS__)
 
 /**
  * @brief Macro for registering a type name mapping.
  *
  * @param _type The type for which to create the name mapping.
- * @param _name The name to associate with the type in the RTTI system.
+ * @param _name The name to associate with the type in the RTTI system. Can be a const char*,
+ *              a string literal (const char[N]), or a CString<N>.
  */
-#define RTTI_REGISTER_NAME(_type, _name)             \
-  template <>                                        \
-  struct core::rtti::TypeName<_type> {               \
-    static constexpr core::FixedString value{_name}; \
+#define RTTI_REGISTER_NAME(_type, _name) \
+  template <>                            \
+  struct core::rtti::TypeName<_type> {   \
+    static constexpr auto value{_name};  \
   }
-
-/**
- * @brief A simple helper macro that concatenates tokens together.
- *
- * @param a The left hand side of the concatenation.
- * @param b The right hand side of the concatenation.
- * @return The result of concatenating the two tokens together.
- */
-#define X_CAT(lhs, rhs) lhs##rhs
-
-/**
- * @brief A helper macro that counts the number of arguments passed to it, up to a maximum of 3. This is used to
- * determine which overload of a macro to invoke based on the number of arguments provided.
- *
- * As an example, calling @code X_ARG_COUNT(A, B)@endcode would expand to @c 2, while calling @code X_ARG_COUNT(A, B,
- * C)@endcode would expand to @code 3@endcode.
- */
-#define X_ARG_COUNT_IMPL(_1, _2, _3, N, ...) N
-
-/**
- * @brief A helper macro that counts the number of arguments passed to it, up to a maximum of 3. This macro is used in
- * conjunction with the X_CAT macro to select the appropriate overload of a macro based on the number of arguments
- * provided. The macro works by appending the numbers 3, 2, and 1 to the list of arguments, and then using the
- * X_ARG_COUNT_IMPL macro to extract the correct count based on the position of the arguments.
- *
- * For example, if 2 arguments are provided, the macro will expand to @c 2, and if 3 arguments are provided, it will
- * expand to @c 3. This allows for flexible macro definitions that can handle different numbers of arguments without
- * requiring the user to specify the count explicitly.
- */
-#define X_ARG_COUNT(...) X_ARG_COUNT_IMPL(__VA_ARGS__, 3, 2, 1)
 
 /**
  * @brief Macro for registering a class type with the RTTI system. This macro supports multiple overloads to allow for
@@ -66,7 +76,7 @@
  *   // ...
  * });@endcode
  */
-#define RTTI_REGISTER_CLASS(...) X_CAT(X_RTTI_REGISTER_CLASS_, X_ARG_COUNT(__VA_ARGS__))(__VA_ARGS__)
+#define RTTI_REGISTER_CLASS(...) X_OVERLOAD(X_RTTI_REGISTER_CLASS, __VA_ARGS__)
 
 /**
  * @brief Macro for registering a class type with the RTTI system using the class's static @c NAME property as the name
@@ -88,16 +98,17 @@
  * parent relationships, etc.
  */
 #define X_RTTI_REGISTER_CLASS_3(_type, _name, _desc)                          \
-  RTTI_REGISTER_TYPE(_type, _name);                                           \
+  RTTI_REGISTER_NAME(_type, _name);                                           \
                                                                               \
   template <>                                                                 \
   class core::rtti::AutoRegistration<core::rtti::IClassDefinition<_type>{}> { \
    public:                                                                    \
+    using Type = _type;                                                       \
     static void define(core::rtti::IClassType* type) {                        \
       using T = _type;                                                        \
       _desc                                                                   \
     };                                                                        \
-  }
+  };
 
 /**
  * @brief Macro for registering a fundamental type with the RTTI system. This macro creates a name mapping for the type
@@ -108,8 +119,11 @@
  * float, etc.
  * @param _name The name to associate with the fundamental type in the RTTI system.
  */
-#define RTTI_REGISTER_TYPE(_type, _name) \
-  RTTI_REGISTER_NAME(_type, _name);      \
-                                         \
-  template <>                            \
-  class core::rtti::AutoRegistration<core::rtti::IFundamentalDefinition<_type>{}> {};
+#define RTTI_REGISTER_TYPE(_type, _name)                                            \
+  RTTI_REGISTER_NAME(_type, _name);                                                 \
+                                                                                    \
+  template <>                                                                       \
+  class core::rtti::AutoRegistration<core::rtti::IFundamentalDefinition<_type>{}> { \
+   public:                                                                          \
+    using Type = _type;                                                             \
+  };
