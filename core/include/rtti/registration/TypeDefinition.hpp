@@ -41,7 +41,7 @@ class IFundamentalDefinition {
     /**
      * @brief Constructs a TypeImpl for the fundamental type T with its registered name.
      */
-    FundamentalType() : TType<T>(GetTypeName<T>, TypeKind::FUNDAMENTAL) {}
+    FundamentalType() : TType<T>(GetTypeName<T>(), TypeKind::FUNDAMENTAL) {}
 
     /**
      * @brief Virtual destructor for the TypeImpl class.
@@ -173,16 +173,7 @@ class IClassDefinition {
    * information.
    */
   static void declare(TypeRegistry* registry) {
-    // TODO: replace this jankiness
-    // GetTypeName<T> may be either const char* or CString<N>.
-    // Both are implicitly convertible to IName via string_view.
-    if (auto* type = registry->registerType(std::make_unique<ClassType>([](auto&& name) constexpr {
-          if constexpr (requires { name.sv(); }) {
-            return IName(name.sv());
-          } else {
-            return IName(std::string_view(name));
-          }
-        }(GetTypeName<T>)));
+    if (auto* type = registry->registerType(std::make_unique<ClassType>(IName(GetTypeName<T>())));
         type && type->kind() == TypeKind::CLASS) {
       s_classType = static_cast<IClassType*>(type);
     }

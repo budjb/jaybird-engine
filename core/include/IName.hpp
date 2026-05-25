@@ -20,14 +20,14 @@ class JAYBIRD_EXPORT IName {
   /**
    * @brief Constructs an IName with a hash value of 0, representing an empty or invalid name.
    */
-  IName() = default;
+  constexpr IName() = default;
 
   /**
    * @brief Constructs an IName with the given hash value, which should be a valid hash of an interned string.
    *
    * @param hash The hash value of the interned string name.
    */
-  IName(hash_t hash) noexcept;
+  constexpr IName(hash_t hash) noexcept;
 
   /**
    * @brief Constructs an IName by computing the hash value of the given string view, which should be a valid interned
@@ -36,7 +36,7 @@ class JAYBIRD_EXPORT IName {
    * @param str The string view of the interned string name to be hashed and stored in the IName instance.
    * @note The constructor does not register the provided string with the interned name pool.
    */
-  IName(std::string_view str) noexcept;
+  constexpr IName(std::string_view str) noexcept;
 
   /**
    * @brief Constructs an IName by computing the hash value of the given string, which should be a valid interned
@@ -53,7 +53,7 @@ class JAYBIRD_EXPORT IName {
    *
    * @param str The C-style string of the interned string name to be hashed and stored in the IName instance.
    */
-  IName(const char* str) noexcept;
+  constexpr IName(const char* str) noexcept;
 
   /**
    * @brief Returns whether this IName instance represents an empty or invalid name, which is determined by checking if
@@ -66,7 +66,7 @@ class JAYBIRD_EXPORT IName {
    *
    * @return true if this IName instance has a hash value of 0, indicating that it is empty or invalid; false otherwise.
    */
-  [[nodiscard]] bool empty() const noexcept;
+  [[nodiscard]] constexpr bool empty() const noexcept;
 
   /**
    * @brief Returns the string view of the interned string name associated with this IName instance, if it exists in the
@@ -85,7 +85,7 @@ class JAYBIRD_EXPORT IName {
    *
    * @return The hash value of the interned string name associated with this IName instance.
    */
-  [[nodiscard]] hash_t hash() const noexcept;
+  [[nodiscard]] constexpr hash_t hash() const noexcept;
 
   /**
    * @brief Converts this IName instance to its underlying hash value, allowing it to be used in contexts where a hash
@@ -93,7 +93,7 @@ class JAYBIRD_EXPORT IName {
    *
    * @return The hash value of the interned string name associated with this IName instance.
    */
-  operator hash_t() const noexcept;
+  constexpr operator hash_t() const noexcept;
 
   /**
    * @brief Returns whether this IName instance represents a valid interned string name, which is determined by checking
@@ -107,7 +107,7 @@ class JAYBIRD_EXPORT IName {
    * @return true if this IName instance has a non-zero hash value, indicating that it may represent a valid interned
    * string name; false otherwise.
    */
-  operator bool() const noexcept;
+  constexpr operator bool() const noexcept;
 
   /**
    * @brief Converts this IName instance to a string view of the interned string name it represents, allowing it to be
@@ -118,7 +118,7 @@ class JAYBIRD_EXPORT IName {
    * @return The string view of the interned string name associated with this IName instance, or an empty string view if
    * the hash value does not correspond to a valid interned string.
    */
-  operator std::string_view() const noexcept;
+  constexpr operator std::string_view() const noexcept;
 
   /**
    * @brief Compares this IName instance with another IName instance for equality by comparing their hash values. If the
@@ -129,7 +129,7 @@ class JAYBIRD_EXPORT IName {
    * @return true if the hash values of both IName instances are the same, indicating that they are equal; false
    * otherwise.
    */
-  bool operator==(const IName& other) const noexcept;
+  constexpr bool operator==(const IName& other) const noexcept;
 
   /**
    * @brief Compares this IName instance with another IName instance for inequality by comparing their hash values. If
@@ -140,7 +140,7 @@ class JAYBIRD_EXPORT IName {
    * @return true if the hash values of both IName instances are different, indicating that they are not equal; false
    * otherwise.
    */
-  bool operator!=(const IName& other) const noexcept;
+  constexpr bool operator!=(const IName& other) const noexcept;
 
  private:
   /**

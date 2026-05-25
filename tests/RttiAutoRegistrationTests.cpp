@@ -86,7 +86,7 @@ static_assert(HasFundamentalDefinition<int>);
 
 TEST_CASE("Given FixedString and TypeName mapping, when queried, then compile-time mapping resolves to expected text",
           "[rtti][registration][type_name]") {
-  REQUIRE(core::rtti::GetTypeName<rtti_registration_tests::UsesTypeMap>.sv() == "uses_type_map");
+  REQUIRE(core::rtti::GetTypeName<rtti_registration_tests::UsesTypeMap>() == "uses_type_map");
 }
 
 TEST_CASE("Given a type name source, when Specialization::of is used, then hash identity matches FNV-1a",
