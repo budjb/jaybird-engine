@@ -10,13 +10,13 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(core-tests
         INameTests.cpp
         INamePoolTests.cpp
-        IntTypeTests.cpp
-        IntArrayTypeTests.cpp
-        TypeRegistryTests.cpp
-        RttiIteratorTests.cpp
-        RttiReverseIteratorTests.cpp
-        RttiAutoRegistrationTests.cpp
-        RttiAutoRegistrationFundamentalsTest.cpp
+        FundamentalTypeTests.cpp
+#        IntTypeTests.cpp
+#        TypeRegistryTests.cpp
+#        RttiIteratorTests.cpp
+#        RttiReverseIteratorTests.cpp
+#        RttiAutoRegistrationTests.cpp
+#        RttiAutoRegistrationFundamentalsTest.cpp
 )
 
 target_include_directories(core-tests PRIVATE

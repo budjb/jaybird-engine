@@ -1,9 +1,64 @@
 #pragma once
 
+#include <any>
 #include <concepts>
+#include <string>
 #include <string_view>
 
+#include "CString.hpp"
+#include "rtti/TypeKind.hpp"
+
 namespace core::rtti {
+/**
+ * @brief An implementation of @c ToString that simply returns the provided value.
+ *
+ * @tparam N The size of the CString, including the null terminator.
+ * @param str The core::CString to convert to a std::string_view.
+ * @return The provided CString.
+ */
+template <std::size_t N>
+[[nodiscard]] constexpr auto ToCString(const CString<N>& str) {
+  return str;
+}
+
+/**
+ * @brief A helper function that converts a string literal (const char array) to a CString.
+ *
+ * @tparam N The size of the string literal, including the null terminator.
+ * @param str The string literal to convert to a CString.
+ * @return A CString that views the contents of the string literal.
+ */
+template <std::size_t N>
+[[nodiscard]] constexpr auto ToCString(const char (&str)[N]) {
+  return core::CString<N>(str);
+}
+
+template <TypeKind>
+constexpr std::string_view TypePrefix() {
+  return "";
+}
+
+template <>
+constexpr std::string_view TypePrefix<TypeKind::ARRAY>() {
+  return "array:";
+}
+
+template <TypeKind T>
+constexpr std::string TypePrefix(const std::string_view str) {
+  const auto prefix = TypePrefix<T>();
+
+  if (prefix.empty()) {
+    return "";
+  }
+
+  return std::string(prefix).append(str);
+}
+
+template <TypeKind T>
+constexpr std::string TypePrefix(const IName& name) {
+  return TypePrefix<T>(std::string_view(name));
+}
+
 /**
  * @brief A template struct that serves as a mapping from types to their corresponding type names.
  *
@@ -85,5 +140,32 @@ constexpr std::string_view GetTypeName() noexcept {
   }
   static_assert(HasTypeName<T>);
   std::unreachable();
+}
+
+template <typename T>
+  requires HasTypeName<T>
+[[nodiscard]] constexpr auto GetTypeArrayName() {
+  constexpr auto arrayPrefix = CString("array:");
+
+  if constexpr (HasTypeNameMember<T>) {
+    if constexpr (requires { ToCString(T::NAME); }) {
+      return arrayPrefix + ToCString(T::NAME);
+    } else {
+      static_assert(std::is_convertible_v<decltype(T::NAME), const char*>,
+                    "GetTypeArrayName requires T::NAME to be core::CString, a char array literal, or const char*.");
+      return TypePrefix<TypeKind::ARRAY>(std::string_view(T::NAME));
+    }
+  }
+
+  static_assert(HasTypeNameMapping<T>);
+  if constexpr (requires { ToCString(TypeName<T>::value); }) {
+    return arrayPrefix + ToCString(TypeName<T>::value);
+  } else {
+    static_assert(
+        std::is_convertible_v<decltype(TypeName<T>::value), const char*>,
+        "GetTypeArrayName requires TypeName<T>::value to be core::CString, a char array literal, or const char*.");
+
+    return arrayPrefix + ToCString(TypeName<T>::value);
+  }
 }
 }  // namespace core::rtti

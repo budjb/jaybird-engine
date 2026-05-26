@@ -8,7 +8,7 @@ TEST_CASE(
     "Given fundamental types from Fundamentals.hpp, when the DLL is loaded, then they are auto-registered without "
     "explicit registerTypes call",
     "[rtti][registration][auto_registration][fundamentals]") {
-  core::rtti::TypeRegistrar::registerTypes();
+  core::rtti::TypeRegistrar::get()->registerTypes();
   auto* registry = core::rtti::TypeRegistry::get();
 
   REQUIRE(registry->hasType(core::IName("int32")));

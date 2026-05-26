@@ -22,15 +22,13 @@ enum class TypeKind : std::size_t {
   ARRAY,
 
   /**
-   * @brief Represents a string type, which is a sequence of characters. This is distinct from @c ISTRING, which is an
-   * interned string used for identifiers and other purposes.
+   * @brief Represents a string type, which is a sequence of characters.
    */
   STRING,
 
   /**
    * @brief Represents a fundamental type, such as an integer, float, or other primitive type that does not have member
-   * variables or functions. This kind of type is typically used for basic data types that can be directly assigned and
-   * do not require complex construction or destruction logic.
+   * variables or functions.
    */
   FUNDAMENTAL,
 };

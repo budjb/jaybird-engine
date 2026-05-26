@@ -6,7 +6,7 @@
 
 #include "IName.hpp"
 #include "IType.hpp"
-#include "JaybirdCoreExport.hpp"
+#include "Export.hpp"
 
 namespace core::rtti {
 
@@ -26,16 +26,8 @@ class IClassType;
  * types at runtime, enabling features such as dynamic casting, type introspection, and more flexible type handling in
  * the application.
  */
-class JAYBIRD_EXPORT TypeRegistry {
+class JAYBIRD_API TypeRegistry {
  public:
-  /**
-   * @brief Gets the singleton instance of the TypeRegistry. This is the main entry point for accessing the type
-   * registry, and ensures that there is only one instance of the registry throughout the application.
-   *
-   * @return TypeRegistry* A pointer to the singleton instance of the TypeRegistry.
-   */
-  static TypeRegistry* get();
-
   /**
    * @brief Gets the type information for a given type name.
    *
@@ -78,14 +70,19 @@ class JAYBIRD_EXPORT TypeRegistry {
 
  private:
   /**
-   * @brief Constructs a new Type Registry object. This is private to enforce the singleton pattern.
+   * @brief A flag indicating whether the type registry has been initialized.
    */
-  TypeRegistry() = default;
+  bool m_initialized = false;
 
   /**
    * @brief A mutex to protect access to the type registry. This allows for thread-safe access to the registry.
    */
   mutable std::shared_mutex m_mutex;
+
+  /**
+   * @brief A pointer to the singleton instance of the TypeRegistry.
+   */
+  static TypeRegistry* s_instance;
 
   /**
    * @brief A map of type names to their corresponding type information. This is the core of the type registry, allowing

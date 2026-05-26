@@ -6,7 +6,7 @@
 
 #include "Hash.hpp"
 #include "IName.hpp"
-#include "JaybirdCoreExport.hpp"
+#include "Export.hpp"
 
 namespace core {
 /**
@@ -18,7 +18,7 @@ namespace core {
  * names as hash values. This provides a compact and efficient way to represent strings in the system while still
  * allowing for easy retrieval of the original string values when needed.
  */
-class JAYBIRD_EXPORT INamePool {
+class JAYBIRD_API INamePool {
  public:
   /**
    * @brief Retrieves the singleton instance of the INamePool class, which manages the pool of interned string names.

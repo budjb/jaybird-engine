@@ -1,14 +1,14 @@
 #pragma once
 #include <atomic>
 
-#include "JaybirdCoreExport.hpp"
+#include "Export.hpp"
 
 namespace core {
 /**
  * @brief A simple spin lock implementation that provides basic locking functionality for synchronizing access to shared
  * resources in a multithreaded environment.
  */
-class JAYBIRD_EXPORT SpinLock {
+class JAYBIRD_API SpinLock {
  public:
   /**
    * @brief Acquires the lock by spinning until the lock is successfully acquired. This function will block the calling

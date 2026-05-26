@@ -1,13 +1,14 @@
 #pragma once
+
+#include "Export.hpp"
 #include "IType.hpp"
-#include "JaybirdCoreExport.hpp"
 
 namespace core::rtti {
 /**
  * @brief Interface for type descriptors representing containers that encapsulate other types (e.g., arrays, maps, smart
  * pointers, etc.).
  */
-class JAYBIRD_EXPORT IContainerType : public IType {
+class JAYBIRD_API IContainerType : public IType {
  public:
   /**
    * @brief Constructs an IContainerType with the given name, size, alignment, and inner type descriptor.
@@ -17,13 +18,9 @@ class JAYBIRD_EXPORT IContainerType : public IType {
    * @param alignment The alignment requirement of the container type in bytes.
    * @param inner A pointer to the IType descriptor for the type contained within the container.
    */
-  explicit IContainerType(const IName& name, std::size_t size, std::size_t alignment, const IType* inner) noexcept;
-
-  /**
-   * @brief Virtual destructor for IContainerType. This allows for proper cleanup of derived classes when deleting
-   * through a pointer to IContainerType.
-   */
-  ~IContainerType() override = default;
+  explicit IContainerType(const IName& name, const std::size_t size, const std::size_t alignment,
+                          const IType* inner) noexcept
+      : IType(name, size, alignment, TypeKind::ARRAY), m_inner(inner) {}
 
   /**
    * @brief Returns a pointer to the IType descriptor for the type contained within the container. The returned pointer
@@ -32,7 +29,9 @@ class JAYBIRD_EXPORT IContainerType : public IType {
    *
    * @return A pointer to the IType descriptor for the type contained within the container.
    */
-  [[nodiscard]] const IType* inner() const noexcept;
+  [[nodiscard]] const IType* inner() const noexcept {
+    return m_inner;
+  }
 
  private:
   /**

@@ -2,14 +2,10 @@
 
 #include <mutex>
 
+#include "rtti/ClassType.hpp"
 #include "rtti/IType.hpp"
 
 namespace core::rtti {
-TypeRegistry* TypeRegistry::get() {
-  static TypeRegistry instance;
-  return &instance;
-}
-
 IType* TypeRegistry::getType(const IName& name) const {
   std::shared_lock lock(m_mutex);
 

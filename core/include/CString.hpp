@@ -39,6 +39,22 @@ class CString {
     return {value, N - 1};
   }
 
+  template <std::size_t M>
+  [[nodiscard]] constexpr auto append(const CString<M>& other) const {
+    char data[N + M - 1]{};
+
+    for (std::size_t i = 0; i < N - 1; ++i) {
+      data[i] = value[i];
+    }
+
+    for (std::size_t i = 0; i < M - 1; ++i) {
+      data[N - 1 + i] = other.c_str()[i];
+    }
+
+    data[N + M - 2] = '\0';
+    return CString<N + M - 1>(data);
+  }
+
   /**
    * @brief Implicit conversion to std::string_view.
    */
@@ -48,6 +64,17 @@ class CString {
 
   constexpr operator IName() const {
     return {sv()};
+  }
+
+  template <std::size_t M>
+  friend constexpr auto operator+(const CString& lhs, const CString<M>& rhs) {
+    return lhs.append(rhs);
+  }
+  /**
+   * @brief Returns the underlying C-style string, including its null terminator.
+   */
+  [[nodiscard]] constexpr const char* c_str() const {
+    return value;
   }
 
  private:

@@ -1,7 +1,9 @@
 #include "rtti/IType.hpp"
 
-#include "rtti/IArrayType.hpp"
+#include "rtti/ArrayType.hpp"
+#include "rtti/TypeName.hpp"
 #include "rtti/TypeRegistry.hpp"
+#include "rtti/TypeSystem.hpp"
 
 namespace core::rtti {
 IType::IType(const IName& name, const std::size_t size, const TypeKind kind) noexcept
@@ -27,7 +29,7 @@ IName IType::name() const noexcept {
 }
 
 IArrayType* IType::asArray() const noexcept {
-  if (auto* type = TypeRegistry::get()->getType(typePrefix<TypeKind::ARRAY>(m_name));
+  if (auto* type = TypeSystem::get().registry().getType(TypePrefix<TypeKind::ARRAY>(m_name));
       type && type->kind() == TypeKind::ARRAY) {
     return reinterpret_cast<IArrayType*>(type);
   }

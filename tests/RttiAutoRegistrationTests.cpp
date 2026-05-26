@@ -1,6 +1,7 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 
+#include "../core/include/rtti/TypeName.hpp"
 #include "CString.hpp"
 #include "Hash.hpp"
 #include "rtti/TypeKind.hpp"
@@ -8,7 +9,6 @@
 #include "rtti/registration/Macros.hpp"
 #include "rtti/registration/Specialization.hpp"
 #include "rtti/registration/TypeDefinition.hpp"
-#include "rtti/registration/TypeName.hpp"
 #include "rtti/registration/TypeRegistrar.hpp"
 
 namespace rtti_registration_tests {
@@ -104,16 +104,16 @@ TEST_CASE(
     "Given custom TypeRegistrar entries, when registerTypes is called, then declaration and definition phases run in "
     "order",
     "[rtti][registration][type_registrar]") {
-  static TypeRegistrar withDefine{&customDeclare, &customDefine};
-  static TypeRegistrar onlyDeclare{&declareOnly};
-  (void)withDefine;
-  (void)onlyDeclare;
+  auto* registrar = TypeRegistrar::get();
+
+  registrar->addCallbacks(&customDeclare, &customDefine);
+  registrar->addDeclareCallback(&declareOnly);
 
   g_customDeclared.store(false, std::memory_order_relaxed);
   g_customDefineObservedDeclare.store(false, std::memory_order_relaxed);
   g_declareOnlyCalled.store(false, std::memory_order_relaxed);
 
-  TypeRegistrar::registerTypes();
+  registrar->registerTypes();
 
   REQUIRE(g_customDeclared.load(std::memory_order_relaxed));
   REQUIRE(g_customDefineObservedDeclare.load(std::memory_order_relaxed));
@@ -124,7 +124,7 @@ TEST_CASE(
     "Given auto-registered fundamental and class macros, when registerTypes is called, then both are discoverable",
     "[rtti][registration][auto_registration]") {
   const int beforeDefineCalls = g_classDefineCalls.load(std::memory_order_relaxed);
-  TypeRegistrar::registerTypes();
+  TypeRegistrar::get()->registerTypes();
 
   TypeRegistry* registry = TypeRegistry::get();
 

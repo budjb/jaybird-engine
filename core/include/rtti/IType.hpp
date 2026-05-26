@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IName.hpp"
-#include "JaybirdCoreExport.hpp"
+#include "Export.hpp"
 #include "TypeKind.hpp"
 
 namespace core::rtti {
@@ -12,7 +12,7 @@ class IArrayType;
  * name, size, alignment, and kind. It also defines virtual functions for assigning values, constructing and destructing
  * instances of the type.
  */
-class JAYBIRD_EXPORT IType {
+class JAYBIRD_API IType {
  public:
   /**
    * @brief Constructs an IType with the given name, size, and kind. The alignment is set to maximum alignment by

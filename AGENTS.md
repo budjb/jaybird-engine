@@ -18,6 +18,7 @@
 9. [What Exists vs. What Is Planned](#9-what-exists-vs-what-is-planned)
 10. [Important Constraints & Gotchas](#10-important-constraints--gotchas)
 11. [Placeholders Needing Owner Input](#11-placeholders-needing-owner-input)
+12. [Code Docs](#12-code-docs)
 
 ---
 
@@ -210,6 +211,23 @@ cmake --build cmake-build-debug --target core-tests
 ctest --test-dir cmake-build-debug -V
 ```
 
+### Windows MSVC Shell Requirement
+
+On Windows, agent-run `cmake`/build/test commands that target MSVC must run from a Visual Studio developer environment.
+If standard headers such as `cstdint`, `memory`, `string`, or `functional` appear as missing, initialize the shell with
+`VsDevCmd.bat` first and then run CMake/build commands in that same process.
+
+```powershell
+$repoRoot = $PWD.Path
+$buildDir = Join-Path $repoRoot "cmake-build-debug-vsenv"
+$vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+$vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+$vsDevCmd = Join-Path $vsPath "Common7\Tools\VsDevCmd.bat"
+cmd /c '"' + $vsDevCmd + '" -arch=x64 -host_arch=x64 >nul && cmake -S "' + $repoRoot + '" -B "' + $buildDir + '" -G Ninja && cmake --build "' + $buildDir + '" --target core-tests'
+```
+
+Use the existing `cmake-build-debug-vsenv/` directory (or a similarly named build directory) for MSVC-based agent runs.
+
 ---
 
 ## 7. Testing
@@ -332,3 +350,34 @@ Please fill in the items below and remove this section once complete.
 | P9  | What is the target release/milestone timeline (if any)?                                                              |
 | P10 | Is `SpinLock` intended to replace `std::shared_mutex` in `TypeRegistry`, or do they serve different purposes?        |
 
+## 12. Code Docs
+
+Code is documented with Doxygen-style comments. Public API in `core/include/` should have full doc comments; internal
+implementation files in `core/src/` may have minimal or no comments, but should still be reasonably clear. Use
+multi-line comments with `/** ... */` for all classes, functions, or properties.
+
+Document parameters, return values, ownership semantics, template parameters, throws, and any important notes or
+constraints on usage. For complex or non-obvious behaviors of functions, elaborate on specifics and gotchas, but do not
+introduce verbosity by narrating the implementation of the class or function where the code itself is easily followed.
+Docs for obvious or trivial elements can be brief, but should still be present for consistency.
+
+Where relevant, include example usage snippets in the comments.
+
+Use code formatting for types, parameters, and important terms. Critically, use `@c term` for this formatting for all
+cases except when "term" is the last element in a sentence and there is terminating punctuation. For example:
+
+```cpp
+/**
+ * Gets the @c IType descriptor for the given name.
+ */
+```
+
+In situations where a code token is the last element in a sentence, do not use `@c` as the punctuation will become part
+of the formatted code token, which is undesirable. Instead, use the surrounding code formatting (`@code term@endcode`),
+like so:
+
+```cpp
+/**
+ * Returns the associated @code IType@endcode.
+ */
+```

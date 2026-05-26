@@ -2,8 +2,6 @@
 
 #include <cstddef>
 
-#include "IArrayType.hpp"
-
 namespace core::rtti {
 /**
  * @brief A template class representing an iterator for array types in the RTTI system. This iterator provides standard
@@ -23,11 +21,10 @@ class Iterator {
   /**
    * @brief Constructs an Iterator for the given array type and pointer.
    *
-   * @param arrayType A pointer to the IArrayType descriptor for the array type that this iterator will be iterating
-   * over.
+   * @param elementSize The size in bytes of one element for type-erased iteration (`T=void`).
    * @param ptr A pointer to the current element in the array.
    */
-  explicit Iterator(IArrayType* arrayType, T* ptr) noexcept : m_arrayType(arrayType), m_ptr(ptr) {}
+  explicit Iterator(const std::size_t elementSize, T* ptr) noexcept : m_elementSize(elementSize), m_ptr(ptr) {}
 
   /**
    * @brief Returns a pointer to the current element in the array, cast to the specified type.
@@ -64,7 +61,7 @@ class Iterator {
    */
   Iterator& operator++() noexcept {
     if constexpr (std::is_void_v<T>) {
-      m_ptr = static_cast<std::byte*>(m_ptr) + m_arrayType->inner()->size();
+      m_ptr = static_cast<std::byte*>(m_ptr) + m_elementSize;
     } else {
       m_ptr = static_cast<T*>(m_ptr) + 1;
     }
@@ -90,7 +87,7 @@ class Iterator {
    */
   Iterator& operator--() noexcept {
     if constexpr (std::is_void_v<T>) {
-      m_ptr = static_cast<std::byte*>(m_ptr) - m_arrayType->inner()->size();
+      m_ptr = static_cast<std::byte*>(m_ptr) - m_elementSize;
     } else {
       m_ptr = static_cast<T*>(m_ptr) - 1;
     }
@@ -118,7 +115,7 @@ class Iterator {
    */
   Iterator& operator+=(const std::ptrdiff_t offset) noexcept {
     if constexpr (std::is_void_v<T>) {
-      m_ptr = static_cast<std::byte*>(m_ptr) + m_arrayType->inner()->size() * offset;
+      m_ptr = static_cast<std::byte*>(m_ptr) + m_elementSize * offset;
     } else {
       m_ptr = static_cast<T*>(m_ptr) + offset;
     }
@@ -135,7 +132,7 @@ class Iterator {
    */
   Iterator& operator-=(const std::ptrdiff_t offset) noexcept {
     if constexpr (std::is_void_v<T>) {
-      m_ptr = static_cast<std::byte*>(m_ptr) - m_arrayType->inner()->size() * offset;
+      m_ptr = static_cast<std::byte*>(m_ptr) - m_elementSize * offset;
     } else {
       m_ptr = static_cast<T*>(m_ptr) - offset;
     }
@@ -181,7 +178,7 @@ class Iterator {
    */
   std::ptrdiff_t operator-(const Iterator& iterator) const noexcept {
     if constexpr (std::is_void_v<T>) {
-      const std::ptrdiff_t size = m_arrayType->inner()->size();  // NOLINT(*-narrowing-conversions)
+      const auto size = static_cast<std::ptrdiff_t>(m_elementSize);
       return (static_cast<std::byte*>(m_ptr) - static_cast<std::byte*>(iterator.m_ptr)) / size;
     } else {
       return static_cast<T*>(m_ptr) - static_cast<T*>(iterator.m_ptr);
@@ -273,7 +270,7 @@ class Iterator {
    */
   void* operator[](const std::ptrdiff_t index) const noexcept {
     if constexpr (std::is_void_v<T>) {
-      return static_cast<std::byte*>(m_ptr) + index * m_arrayType->inner()->size();
+      return static_cast<std::byte*>(m_ptr) + index * m_elementSize;
     } else {
       return static_cast<T*>(m_ptr) + index;
     }
@@ -315,11 +312,9 @@ class Iterator {
 
  private:
   /**
-   * @brief A pointer to the IArrayType descriptor for the array type that this iterator is iterating over. This is used
-   * to perform pointer arithmetic correctly when the underlying type is void, by using the size of the inner type from
-   * the array type descriptor.
+   * @brief Element size in bytes used by the type-erased (`T=void`) iterator path.
    */
-  IArrayType* m_arrayType;
+  std::size_t m_elementSize;
 
   /**
    * @brief A pointer to the current element in the array. This is the primary data member of the iterator that tracks
