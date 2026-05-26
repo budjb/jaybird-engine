@@ -4,14 +4,12 @@
 
 namespace core::rtti {
 /**
- * @brief A template class representing an iterator for array types in the RTTI system. This iterator provides standard
- * iterator operations such as incrementing, decrementing, and pointer arithmetic, while also handling the case where
- * the underlying type is void (i.e., when the array type is not known at compile time). In the case of a void type, the
- * iterator uses the size of the inner type from the array type descriptor to perform pointer arithmetic correctly.
+ * @brief A template class representing an iterator for type-erased RTTI arrays.
  *
- * While the iterator attempts to provide a similar API contract as STL iterators, it allows type-erased access to array
- * elements, which means that it may not fully conform to all STL iterator requirements. For example, functions that
- * typically return references will return pointers instead.
+ * This iterator provides standard operations (increment, decrement, arithmetic) while handling the case where the
+ * underlying type is @c void (unknown at compile time). For void types, the iterator uses the inner type's size from
+ * the array descriptor for pointer arithmetic. It attempts to provide an STL-like API contract but uses type-erased
+ * pointers, which may differ from STL iterators (for example, by returning pointers instead of references).
  *
  * @tparam T The type of the elements in the array.
  */
@@ -328,11 +326,11 @@ class Iterator {
 };
 
 /**
- * @brief A template class representing a reverse iterator for array types in the RTTI system. This reverse iterator
- * provides standard reverse iterator operations such as incrementing, decrementing, and pointer arithmetic, while also
- * handling the case where the underlying type is void (i.e., when the array type is not known at compile time). In the
- * case of a void type, the reverse iterator uses the size of the inner type from the array type descriptor to perform
- * pointer arithmetic correctly.
+ * @brief A template class representing a reverse iterator for type-erased RTTI arrays.
+ *
+ * This reverse iterator provides standard operations (increment, decrement, arithmetic) while handling the case
+ * where the underlying type is @c void. For void types, it uses the inner type's size from the array descriptor for
+ * pointer arithmetic. It wraps a regular @code Iterator@endcode.
  *
  * @tparam T The type of the elements in the array.
  */
@@ -340,11 +338,12 @@ template <typename T = void>
 class ReverseIterator {
  public:
   /**
-   * @brief Constructs a ReverseIterator from a regular Iterator. The reverse iterator will point to the element before
-   * the position of the given iterator, which is the standard behavior for reverse iterators in C++.
+   * @brief Constructs a ReverseIterator from a regular @code Iterator@endcode.
    *
-   * @param iterator The regular iterator from which to construct the reverse iterator. The reverse iterator will point
-   * to the element before the position of this iterator.
+   * The reverse iterator points to the element before the given iterator, following standard C++ reverse iterator
+   * behavior.
+   *
+   * @param iterator The regular iterator from which to construct the reverse iterator.
    */
   explicit ReverseIterator(Iterator<T> iterator) noexcept : m_iterator(iterator) {}
 

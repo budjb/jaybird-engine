@@ -1,16 +1,17 @@
 #pragma once
 
-#include "IName.hpp"
 #include "Export.hpp"
+#include "IName.hpp"
 #include "TypeKind.hpp"
 
 namespace core::rtti {
 class IArrayType;
 
 /**
- * @brief Interface representing a type in the RTTI system. This class provides information about the type, such as its
- * name, size, alignment, and kind. It also defines virtual functions for assigning values, constructing and destructing
- * instances of the type.
+ * @brief Interface representing a type in the RTTI system.
+ *
+ * This class provides metadata about the type (name, size, alignment, kind) and defines virtual functions for
+ * assigning values, constructing, and destructing instances.
  */
 class JAYBIRD_API IType {
  public:
@@ -69,12 +70,12 @@ class JAYBIRD_API IType {
   [[nodiscard]] IName name() const noexcept;
 
   /**
-   * @brief Assigns the value from the source pointer to the destination pointer. The actual assignment logic is defined
-   * in derived classes, as it may involve complex copying or move semantics depending on the type.
+   * @brief Assigns the value from the source pointer to the destination pointer.
    *
-   * The destination pointer should point to a valid memory location that can hold an instance of the type, and the
-   * source pointer should point to a valid instance of the type. The behavior is undefined if either pointer is null or
-   * if they do not point to valid instances of the type.
+   * The actual assignment logic is defined in derived classes, as it may involve complex copying or move semantics
+   * depending on the type. The destination pointer should point to a valid memory location that can hold an instance
+   * of the type. Similarly, the source pointer should point to a valid instance of the type. The behavior is undefined
+   * if either pointer is null or does not point to a valid instance of the type.
    *
    * @param dst The destination pointer where the value should be assigned.
    * @param src The source pointer from which the value should be assigned.
@@ -82,42 +83,36 @@ class JAYBIRD_API IType {
   virtual void assign(void* dst, const void* src) = 0;
 
   /**
-   * @brief Allocates memory for an instance of the type. The actual allocation logic is defined in derived classes, as
-   * it may involve specific memory management strategies depending on the type.
+   * @brief Allocates memory for an instance of the type.
    *
-   * The type is not constructed as part of this allocation process; it only allocates raw memory that can hold an
-   * instance of the type.
-   *
-   * The caller is responsible for managing the allocated memory and ensuring that it is properly freed when no longer
-   * needed.
+   * The actual allocation logic is defined in derived classes, as it may involve specific memory management strategies
+   * depending on the type. The type is not constructed as part of this operation; only raw memory is allocated. The
+   * caller is responsible for managing the allocated memory and ensuring it is properly freed when no longer needed.
    *
    * @return A pointer to the allocated memory for an instance of the type.
    */
   virtual void* allocate() = 0;
 
   /**
-   * @brief Frees the memory allocated for an instance of the type. The actual deallocation logic is defined in derived
-   * classes, as it may involve specific memory management strategies depending on the type.
+   * @brief Frees the raw memory allocated for an instance of the type without calling the destructor.
    *
-   * The type is not destructed as part of this allocation process; it only allocates raw memory that can hold an
-   * instance of the type.
+   * The instance is not destructed as part of this operation; only the raw memory is freed. Call
+   * @c destruct() before @c deallocate() if the object's destructor must be run, or use @c destroy()
+   * to do both in one step.
    *
-   * The provided memory pointer should have been allocated by the allocate() function of this type, and it is the
-   * caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   * The provided pointer must have been obtained from @c allocate() on this same type descriptor.
    *
-   * @param ptr A pointer to the memory that should be freed.
+   * @param ptr A pointer to the memory to free.
    */
   virtual void deallocate(void* ptr) = 0;
 
   /**
-   * @brief Constructs an instance of the type in the provided memory location. The memory should be pre-allocated and
-   * large enough to hold an instance of the type.
+   * @brief Constructs an instance of the type at the provided memory location.
    *
-   * The behavior is undefined if the memory pointer does not point to a valid memory location that can hold an instance
-   * of the type.
+   * The memory must be pre-allocated and large enough to hold an instance of the type. The behavior is undefined if
+   * the memory pointer does not point to valid memory or is too small for the type.
    *
-   * @param memory A pointer to the memory where the instance should be constructed. This memory should be pre-allocated
-   * and large enough to hold an instance of the type.
+   * @param memory A pointer to the memory where the instance should be constructed.
    */
   virtual void construct(void* memory) noexcept = 0;
 
@@ -132,39 +127,42 @@ class JAYBIRD_API IType {
   virtual void destruct(void* memory) noexcept = 0;
 
   /**
-   * @brief Creates a new instance of the type by allocating the required memory and constructing the object using its
-   * default constructor.
+   * @brief Creates and returns a new instance of the type by allocating memory and constructing it.
    *
-   * It is the caller's responsibility to manage the memory and ensure that it is properly freed when no longer needed.
+   * The caller is responsible for managing the allocated memory and ensuring it is properly freed when no longer
+   * needed.
    *
-   * @return A pointer to the allocated memory containing a default-constructed instance of the type.
+   * @return A pointer to the allocated memory containing a default-constructed instance.
    */
   virtual void* create() = 0;
 
   /**
    * @brief Destroys the provided instance by calling its destructor and deallocating its memory.
    *
-   * The memory pointed to by the parameter should have been allocated by the create() function of this type, and it is
-   * the caller's responsibility to ensure that the memory is properly freed when no longer needed.
+   * The memory must have been allocated by the @c create() function of this type. The caller is responsible for
+   * ensuring the memory is properly freed.
    *
-   * @param memory A pointer to the memory that should be freed.
+   * @param memory A pointer to the memory that should be destroyed.
    */
   virtual void destroy(void* memory) = 0;
 
   /**
-   * @brief Compares two instances of the type for equality. The behavior is undefined if either pointer does not point
-   * to valid instances of the type.
+   * @brief Compares two instances of the type for equality.
+   *
+   * The behavior is undefined if either pointer does not point to a valid instance of the type.
    *
    * @param lhs A pointer to the first instance of the type to compare.
    * @param rhs A pointer to the second instance of the type to compare.
-   * @return true if the instances are considered equal according to the type's equality semantics, false otherwise.
+   * @return @c true if the instances are considered equal according to the type's equality semantics, @c false
+   * otherwise.
    */
   virtual bool equals(const void* lhs, const void* rhs) const noexcept = 0;
 
   /**
-   * @brief Returns a pointer to the associated array type of this type.
+   * @brief Returns this type as an @c IArrayType if its kind is @c TypeKind::ARRAY, otherwise returns @code
+   * nullptr@endcode.
    *
-   * @return A pointer to the associated array type of this type.
+   * This avoids the need for a @c dynamic_cast in the common array-check case.
    */
   [[nodiscard]] IArrayType* asArray() const noexcept;
 
@@ -172,7 +170,7 @@ class JAYBIRD_API IType {
    * @brief Compares this type with another type for equality.
    *
    * @param type The type to compare with this type.
-   * @return true if the types are considered equal, false otherwise.
+   * @return @c true if the types are considered equal, @c false otherwise.
    */
   bool operator==(const IType& type) const noexcept;
 
@@ -180,14 +178,15 @@ class JAYBIRD_API IType {
    * @brief Compares this type with another type for inequality.
    *
    * @param type The type to compare with this type.
-   * @return true if the types are considered not equal, false otherwise.
+   * @return @c true if the types are considered not equal, @c false otherwise.
    */
   bool operator!=(const IType& type) const noexcept;
 
  private:
   /**
-   * @brief The name of the type, represented as an IName. This is used to uniquely identify the type within the RTTI
-   * system and can be used for type lookup and comparison.
+   * @brief The name of the type, represented as an IName.
+   *
+   * This name uniquely identifies the type within the RTTI system and enables type lookup and comparison.
    */
   const IName m_name;
 

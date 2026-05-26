@@ -10,7 +10,8 @@ namespace core::rtti {
 /**
  * @brief Polymorphic interface for fundamental type descriptors in the RTTI system.
  *
- * Concrete fundamental-type descriptors derive from this interface, while shared implementation lives in @c TTypeImpl.
+ * Concrete fundamental-type descriptors derive from this interface, while shared implementation lives in @code
+ * TTypeImpl@endcode.
  */
 class JAYBIRD_API IFundamentalType : public IType {
  public:
@@ -44,7 +45,7 @@ template <typename T>
 class TFundamentalType : public TType<T, IFundamentalType> {
  public:
   /**
-   * @brief Defines a type alias for the underlying type T.
+   * @brief Defines a type alias for the underlying type @code T@endcode.
    */
   using Type = T;
 

@@ -77,18 +77,15 @@ class JAYBIRD_API IArrayType : public IContainerType {
   [[nodiscard]] virtual const void* at(const void* array, std::size_t index) const = 0;
 
   /**
-   * @brief Template method that returns a pointer to the element at the specified index in the provided array, cast to
-   * the specified type.
+   * @brief Template method that returns a pointer to the element at the specified index, cast to a type.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. Type mismatches
+   * lead to undefined behavior including memory corruption, crashes, or incorrect data access.
    *
    * @tparam T The type to which the element pointer should be cast.
    * @param array A pointer to the array instance from which to retrieve the element.
-   * @param index The index of the element to retrieve, which must be within the bounds of the array's length.
-   * @return A pointer to the element at the specified index in the array, cast to the specified type, or nullptr if the
-   * index is out of bounds.
+   * @param index The index of the element to retrieve, which must be within bounds.
+   * @return A pointer to the element at the specified index, cast to type @c T, or nullptr if out of bounds.
    */
   template <typename T>
   [[nodiscard]] T* at(const void* array, const std::size_t index) {
@@ -96,18 +93,15 @@ class JAYBIRD_API IArrayType : public IContainerType {
   }
 
   /**
-   * @brief Template method that returns a const pointer to the element at the specified index in the provided array,
-   * cast to the specified type.
+   * @brief Template method that returns a const pointer to the element at the specified index, cast to a type.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. Type mismatches
+   * lead to undefined behavior including memory corruption, crashes, or incorrect data access.
    *
    * @tparam T The type to which the element pointer should be cast.
    * @param array A pointer to the array instance from which to retrieve the element.
-   * @param index The index of the element to retrieve, which must be within the bounds of the array's length.
-   * @return A const pointer to the element at the specified index in the array, cast to the specified type, or nullptr
-   * if the index is out of bounds.
+   * @param index The index of the element to retrieve, which must be within bounds.
+   * @return A const pointer to the element at the specified index, cast to type @c T, or nullptr if out of bounds.
    */
   template <typename T>
   [[nodiscard]] const T* at(const void* array, const std::size_t index) const {
@@ -157,17 +151,14 @@ class JAYBIRD_API IArrayType : public IContainerType {
   [[nodiscard]] virtual Iterator<> begin(void* array) noexcept = 0;
 
   /**
-   * @brief Template method that returns an iterator pointing to the first element in the provided array, cast to the
-   * specified type, or an iterator equal to end() if the array is empty.
+   * @brief Template method that returns an iterator pointing to the first element, cast to a type.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. Type mismatches
+   * lead to undefined behavior.
    *
    * @tparam T The type to which the iterator should be cast.
    * @param array A pointer to the array instance from which to retrieve the iterator.
-   * @return An iterator pointing to the first element in the array, cast to the specified type, or an iterator equal to
-   * end() if the array is empty.
+   * @return A typed iterator pointing to the first element, or equal to end() if empty.
    */
   template <typename T>
   [[nodiscard]] Iterator<T> begin(void* array) noexcept {
@@ -175,32 +166,25 @@ class JAYBIRD_API IArrayType : public IContainerType {
   }
 
   /**
-   * @brief Returns a type-erased iterator pointing to one past the last element in the provided array, which serves as
-   * a sentinel value for the end of the array.
+   * @brief Returns a type-erased iterator to one past the last element, serving as a sentinel.
    *
-   * The caller must ensure that the returned end iterator is only used for comparison purposes and is not dereferenced
-   * or used to access elements in the array, as this can lead to undefined behavior.
+   * The returned iterator should only be used for comparison and should not be
+   * dereferenced, as this leads to undefined behavior.
    *
    * @param array A pointer to the array instance from which to retrieve the end iterator.
-   * @return An iterator pointing to one past the last element in the array, which serves as a sentinel value for the
-   * end of the array.
+   * @return An iterator pointing to one past the last element in the array.
    */
   [[nodiscard]] virtual Iterator<> end(void* array) noexcept = 0;
 
   /**
-   * @brief Template method that returns an iterator pointing to one past the last element in the provided array, cast
-   * to the specified type, which serves as a sentinel value for the end of the array.
+   * @brief Template method that returns a typed iterator to one past the last element, serving as a sentinel.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. The returned
+   * iterator should only be used for comparison.
    *
-   * The caller must ensure that the returned end iterator is only used for comparison purposes and is not dereferenced
-   * or used to access elements in the array, as this can lead to undefined behavior.
-   *
-   * @tparam T
-   * @param array
-   * @return
+   * @tparam T The element type to which the iterator should be cast.
+   * @param array A pointer to the array instance from which to retrieve the end iterator.
+   * @return A typed iterator pointing to one past the last element in the array.
    */
   template <typename T>
   [[nodiscard]] Iterator<T> end(void* array) noexcept {
@@ -208,27 +192,25 @@ class JAYBIRD_API IArrayType : public IContainerType {
   }
 
   /**
-   * @brief Returns a type-erased reverse iterator pointing to the last element in the provided array, or a reverse
-   * iterator equal to rend() if the array is empty.
+   * @brief Returns a type-erased reverse iterator pointing to the last element.
+   *
+   * The returned iterator serves as a sentinel for reverse iteration. Returns a
+   * reverse end iterator if the array is empty.
    *
    * @param array A pointer to the array instance from which to retrieve the reverse iterator.
-   * @return A reverse iterator pointing to the last element in the array, or a reverse iterator equal to rend() if the
-   * array is empty.
+   * @return A reverse iterator pointing to the last element, or equal to rend() if empty.
    */
   [[nodiscard]] ReverseIterator<> rbegin(void* array) noexcept;
 
   /**
-   * @brief Template method that returns a reverse iterator pointing to the last element in the provided array, cast to
-   * the specified type, or a reverse iterator equal to rend() if the array is empty.
+   * @brief Template method that returns a reverse iterator pointing to the last element, cast to a type.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. Type mismatches
+   * lead to undefined behavior.
    *
    * @tparam T The type to which the reverse iterator should be cast.
    * @param array A pointer to the array instance from which to retrieve the reverse iterator.
-   * @return A reverse iterator pointing to the last element in the array, cast to the specified type, or a reverse
-   * iterator equal to rend() if the array is empty.
+   * @return A reverse iterator pointing to the last element, or equal to rend() if empty.
    */
   template <typename T>
   [[nodiscard]] ReverseIterator<T> rbegin(void* array) noexcept {
@@ -236,33 +218,25 @@ class JAYBIRD_API IArrayType : public IContainerType {
   }
 
   /**
-   * @brief Returns a type-erased reverse iterator pointing to one before the first element in the provided array, which
-   * serves as a sentinel value for the reverse end of the array.
+   * @brief Returns a type-erased reverse iterator to one before the first element, serving as a sentinel.
    *
-   * The caller must ensure that the returned rend iterator is only used for comparison purposes and is not dereferenced
-   * or used to access elements in the array, as this can lead to undefined behavior.
+   * The returned iterator should only be used for comparison and should not be
+   * dereferenced, as this leads to undefined behavior.
    *
    * @param array A pointer to the array instance from which to retrieve the reverse end iterator.
-   * @return A reverse iterator pointing to one before the first element in the array, which serves as a sentinel value
-   * for the reverse end of the array.
+   * @return A reverse iterator pointing to one before the first element.
    */
   [[nodiscard]] ReverseIterator<> rend(void* array) noexcept;
 
   /**
-   * @brief Template method that returns a reverse iterator pointing to one before the first element in the provided
-   * array, cast to the specified type, which serves as a sentinel value for the reverse end of the array.
+   * @brief Template method that returns a reverse iterator to one before the first element, cast to a type.
    *
-   * It is the responsibility of the caller to ensure that the templated type matches the templated type of the vector
-   * pointed to by the given type-erased pointer. Mismatches may lead to undefined behavior, including but not limited
-   * to memory corruption, crashes, or incorrect data access.
-   *
-   * The caller must ensure that the returned rend iterator is only used for comparison purposes and is not dereferenced
-   * or used to access elements in the array, as this can lead to undefined behavior.
+   * The caller is responsible for ensuring the templated type matches the actual array element type. The returned
+   * iterator should only be used for comparison.
    *
    * @tparam T The type to which the reverse end iterator should be cast.
    * @param array A pointer to the array instance from which to retrieve the reverse end iterator.
-   * @return A reverse iterator pointing to one before the first element in the array, cast to the specified type, which
-   * serves as a sentinel value for the reverse end of the array.
+   * @return A reverse iterator pointing to one before the first element, cast to type @c T.
    */
   template <typename T>
   [[nodiscard]] ReverseIterator<T> rend(void* array) noexcept {
@@ -279,27 +253,19 @@ class JAYBIRD_API IArrayType : public IContainerType {
   virtual void erase(const void* array, std::size_t index) = 0;
 
   /**
-   * @brief Inserts a new element with the specified value at the specified index in the provided array, shifting
-   * subsequent elements to make room for the new element.
+   * @brief Inserts a new element with the specified value at the specified index, shifting subsequent elements.
    *
    * @param array A pointer to the array instance into which to insert the new element.
-   * @param index The index at which to insert the new element, which must be within the bounds of the array's length or
-   * equal to the array's length to insert at the end.
-   * @param value A pointer to the value to be inserted, which must be of the same type as the elements contained in the
-   * array. The caller is responsible for ensuring that the value is properly constructed and valid for insertion into
-   * the array.
+   * @param index The index at which to insert, within bounds or equal to the array's length.
+   * @param value A pointer to a properly constructed value of the same type as array elements.
    */
   virtual void insert(const void* array, std::size_t index, const void* value) = 0;
 
   /**
-   * @brief Appends a new element with the specified value to the end of the provided array, increasing the array's
-   * length by one.
+   * @brief Appends a new element with the specified value to the end of the array.
    *
    * @param array A pointer to the array instance to which to append the new element.
-   * @param value A pointer to the value to be appended, which must be of the same type as the elements contained in the
-   * array. The caller is responsible for ensuring that the value is properly constructed and valid for insertion into
-   * the array.
-   *
+   * @param value A pointer to a properly constructed value of the same type as array elements.
    */
   virtual void pushBack(const void* array, const void* value) = 0;
 

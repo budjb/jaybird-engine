@@ -9,16 +9,17 @@ add_library(jaybird-engine-core SHARED
         include/rtti/TypeKind.hpp
         src/rtti/IType.cpp
         include/rtti/ContainerType.hpp
+        src/rtti/ContainerType.cpp
         src/rtti/ArrayType.cpp
         include/rtti/ArrayType.hpp
         include/rtti/TType.hpp
         include/rtti/ClassType.hpp
+        src/rtti/ClassType.cpp
         include/rtti/FundamentalType.hpp
         src/rtti/FundamentalType.cpp
         include/rtti/Iterator.hpp
         include/rtti/TypeName.hpp
         include/CString.hpp
-        include/rtti/FundamentalType.hpp
         src/rtti/TypeSystem.cpp
         include/rtti/TypeSystem.hpp
 )

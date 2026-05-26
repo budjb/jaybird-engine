@@ -4,6 +4,12 @@
 #include "TypeRegistry.hpp"
 
 namespace core::rtti {
+/**
+ * @brief Top-level manager for the RTTI type system, coordinating type registration and lifecycle.
+ *
+ * @c TypeSystem is a singleton that owns the @c TypeRegistry and drives a two-phase type
+ * registration process (declare then define) via callbacks registered before initialization.
+ */
 class TypeSystem {
  public:
   /**
@@ -18,6 +24,15 @@ class TypeSystem {
    */
   static TypeSystem& get() noexcept;
 
+  /**
+   * @brief Initializes the type system by executing registered callbacks.
+   *
+   * Registration runs in two phases: first all declare callbacks, then all define callbacks. This two-phase approach
+   * allows forward references between types to be resolved during the define phase. Subsequent calls after successful
+   * initialization are no-ops and return @code true@endcode.
+   *
+   * @return @c true if initialization succeeded or was already complete.
+   */
   bool initialize();
 
   /**

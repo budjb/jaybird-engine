@@ -3,32 +3,31 @@
 namespace core::rtti {
 
 /**
- * @brief Enumeration representing the kind of type in the RTTI system.
+ * @brief Classification of types in the RTTI system.
  */
 enum class TypeKind : std::size_t {
   /**
-   * @brief Represents an interned string type.
+   * @brief Interned string (IName) type.
    */
   NAME,
 
   /**
-   * @brief Represents a class type with member variables and functions.
+   * @brief Class or struct type with members.
    */
   CLASS,
 
   /**
-   * @brief Represents an array type, which can hold multiple elements of a specified type.
+   * @brief Dynamic array container type.
    */
   ARRAY,
 
   /**
-   * @brief Represents a string type, which is a sequence of characters.
+   * @brief String sequence type.
    */
   STRING,
 
   /**
-   * @brief Represents a fundamental type, such as an integer, float, or other primitive type that does not have member
-   * variables or functions.
+   * @brief Fundamental or primitive type (e.g., int, float, bool).
    */
   FUNDAMENTAL,
 };

@@ -4,9 +4,9 @@
 #include <shared_mutex>
 #include <unordered_map>
 
+#include "Export.hpp"
 #include "IName.hpp"
 #include "IType.hpp"
-#include "Export.hpp"
 
 namespace core::rtti {
 
@@ -16,55 +16,50 @@ namespace core::rtti {
 class IClassType;
 
 /**
- * @brief The TypeRegistry class is a singleton that manages the registration and retrieval of type information in the
- * RTTI system. It provides methods for registering new types, retrieving type information by name, and checking for the
- * existence of types in the registry. The registry uses a thread-safe design with a shared mutex to allow for
- * concurrent access from multiple threads.
+ * @brief A singleton that manages registration and retrieval of type information.
  *
- * Once registered, types are guaranteed to be available for retrieval and use throughout the application, making the
- * TypeRegistry a central component of the RTTI system. It allows for dynamic type information to be associated with
- * types at runtime, enabling features such as dynamic casting, type introspection, and more flexible type handling in
- * the application.
+ * The registry provides methods for registering types, retrieving type information by name, and checking for type
+ * existence. It uses a thread-safe design with a shared mutex to allow concurrent access. Once registered, types are
+ * guaranteed to be available throughout the application's lifetime, enabling features like type introspection and
+ * dynamic casting.
  */
 class JAYBIRD_API TypeRegistry {
  public:
   /**
-   * @brief Gets the type information for a given type name.
+   * @brief Retrieves the type descriptor for a given type name.
    *
-   * @param name The name of the type to look up. This should be an IName that has been registered in the type registry.
-   * @return IType* A pointer to the IType information for the given type name, or nullptr if the type is not found in
-   * the registry.
+   * @param name The @c IName of the type to look up.
+   * @return A pointer to the @c IType descriptor, or @c nullptr if no type with that name is registered.
    */
   IType* getType(const IName& name) const;
 
   /**
-   * @brief Gets the class type information for a given type name. This is a convenience method that checks if the type
-   * is a class type and returns it as an IClassType if it is.
+   * @brief Retrieves the class type descriptor for a given type name.
    *
-   * @param name The name of the type to look up. This should be an IName that has been registered in the type registry.
-   * @return IClassType* A pointer to the IClassType information for the given type name if it is a class type, or
-   * nullptr if the type is not found in the registry or is not a class type.
+   * This is a convenience method that returns @c nullptr both when the type is not found and when it
+   * is found but is not a class type.
+   *
+   * @param name The @c IName of the type to look up.
+   * @return A pointer to the @c IClassType descriptor, or @c nullptr if the type is not found or is not a class type.
    */
   IClassType* getClass(const IName& name) const;
 
   /**
-   * @brief Registers a new type in the type registry. This method takes ownership of the provided IType and adds it to
-   * the registry.
+   * @brief Registers a new type in the registry, transferring ownership from the caller.
    *
-   * @param type A unique pointer to the IType to register. The type's name will be used as the key in the registry, so
-   * it must be unique.
-   * @return IType* A pointer to the registered IType if the registration was successful, or nullptr if a type with the
-   * same name already exists in the registry.
+   * If a type with the same name is already registered, the provided type is discarded and
+   * @c nullptr is returned; no overwrite occurs.
+   *
+   * @param type The @c IType descriptor to register. The registry takes ownership.
+   * @return A non-owning pointer to the registered @c IType, or @c nullptr if a type with that name already exists.
    */
   IType* registerType(std::unique_ptr<IType>&& type);
 
   /**
-   * @brief Checks if a type with the given name exists in the type registry. This is a convenience method that allows
-   * for quick checks for the existence of a type without needing to retrieve the full type information.
+   * @brief Checks whether a type with the given name is registered.
    *
-   * @param name The name of the type to check for. This should be an IName that may have been registered in the type
-   * registry.
-   * @return bool True if a type with the given name exists in the registry, or false if it does not.
+   * @param name The @c IName of the type to check.
+   * @return @c true if a type with that name exists in the registry, @c false otherwise.
    */
   bool hasType(const IName& name) const noexcept;
 

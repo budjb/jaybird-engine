@@ -6,14 +6,12 @@
 
 namespace core {
 /**
- * @brief A fixed-size compile-time string type for storing type names and other string literals.
+ * @brief A fixed-size compile-time string type for storing type names and string literals.
  *
- * The size of the string is determined by the template parameter N, which should be the size of
- * the string literal including the null terminator. This type provides a way to capture string
- * literals as compile-time constants that can be evaluated at compile time.
+ * The string size is determined by template parameter @c N, which should include the null terminator. This type
+ * captures string literals as compile-time constants that can be evaluated at compile time.
  *
- * @tparam N The size of the string literal, including the null terminator. For example, for a
- * string literal "Foo", N should be 4.
+ * @tparam N The size of the string literal, including the null terminator (e.g., N = 4 for "Foo").
  */
 template <std::size_t N>
 class CString {
@@ -31,14 +29,21 @@ class CString {
   }
 
   /**
-   * @brief Returns a std::string_view representing the string data, excluding the null terminator.
+   * @brief Returns a @c std::string_view over the string data, excluding the null terminator.
    *
-   * @return std::string_view A view of the string data (size N - 1)
+   * @return A view of the string data with length @c N-1.
    */
   [[nodiscard]] constexpr std::string_view sv() const {
     return {value, N - 1};
   }
 
+  /**
+   * @brief Returns a new @c CString formed by appending another @c CString to this one.
+   *
+   * @tparam M The size of the other @c CString, including the null terminator.
+   * @param other The @c CString to append.
+   * @return A new @c CString containing the concatenated result.
+   */
   template <std::size_t M>
   [[nodiscard]] constexpr auto append(const CString<M>& other) const {
     char data[N + M - 1]{};
@@ -56,22 +61,40 @@ class CString {
   }
 
   /**
-   * @brief Implicit conversion to std::string_view.
+   * @brief Implicit conversion to @code std::string_view@endcode.
+   *
+   * @return A @c std::string_view over the string data, equivalent to calling @code sv()@endcode.
    */
   constexpr operator std::string_view() const {
     return sv();
   }
 
+  /**
+   * @brief Implicit conversion to @code IName@endcode.
+   *
+   * @return An @c IName constructed by hashing the string data.
+   */
   constexpr operator IName() const {
     return {sv()};
   }
 
+  /**
+   * @brief Returns a new @c CString formed by concatenating @c lhs and @code rhs@endcode.
+   *
+   * @tparam M The size of the right-hand @c CString, including the null terminator.
+   * @param lhs The left-hand @code CString@endcode.
+   * @param rhs The right-hand @code CString@endcode.
+   * @return A new @c CString containing the concatenated result.
+   */
   template <std::size_t M>
   friend constexpr auto operator+(const CString& lhs, const CString<M>& rhs) {
     return lhs.append(rhs);
   }
+
   /**
-   * @brief Returns the underlying C-style string, including its null terminator.
+   * @brief Returns the underlying null-terminated C-style string.
+   *
+   * @return A pointer to the null-terminated character array of length @code N@endcode.
    */
   [[nodiscard]] constexpr const char* c_str() const {
     return value;

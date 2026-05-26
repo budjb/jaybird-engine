@@ -23,12 +23,12 @@ template <typename T, typename TBase>
 class TType : public TBase {
  public:
   /**
-   * @brief Defines a type alias for the underlying type T.
+   * @brief Defines a type alias for the underlying type @code T@endcode.
    */
   using Type = T;
 
   /**
-   * @brief Constructs a descriptor that implements @c IType.
+   * @brief Constructs a descriptor that implements @code IType@endcode.
    *
    * @param name The name of the type.
    * @param kind The kind of the type.
@@ -38,7 +38,7 @@ class TType : public TBase {
       : TBase(name, sizeof(Type), alignof(Type), kind) {}
 
   /**
-   * @brief Constructs a descriptor that implements @c IFundamentalType.
+   * @brief Constructs a descriptor that implements @code IFundamentalType@endcode.
    *
    * @param name The name of the type.
    */
@@ -47,7 +47,7 @@ class TType : public TBase {
       : TBase(name, sizeof(Type), alignof(Type)) {}
 
   /**
-   * @brief Constructs a descriptor that implements @c IClassType.
+   * @brief Constructs a descriptor that implements @code IClassType@endcode.
    *
    * @param name The name of the type.
    */
@@ -58,8 +58,8 @@ class TType : public TBase {
   /**
    * @brief Assigns the value from the source pointer to the destination pointer.
    *
-   * Both pointers are expected to point to valid instances of the underlying type T. The behavior is undefined if
-   * either pointer does not point to valid instances of the type.
+   * Both pointers are expected to point to valid instances of the underlying type @code T@endcode.
+   * The behavior is undefined if either pointer does not point to valid instances of the type.
    *
    * @param destination A pointer to the destination instance of the type where the value will be assigned.
    * @param source A pointer to the source instance of the type from which the value will be copied.
@@ -77,7 +77,7 @@ class TType : public TBase {
   }
 
   /**
-   * @brief Allocates memory for an instance of type @c T.
+   * @brief Allocates memory for an instance of type @code T@endcode.
    *
    * The type is not constructed as part of this allocation process; it only allocates raw memory that can hold an
    * instance of the type.
@@ -89,7 +89,7 @@ class TType : public TBase {
   }
 
   /**
-   * @brief Frees the memory allocated for an instance of type @c T.
+   * @brief Frees the memory allocated for an instance of type @code T@endcode.
    *
    * The provided memory pointer should have been allocated by @c allocate().
    *
@@ -151,7 +151,8 @@ class TType : public TBase {
    *
    * @param lhs A pointer to the first instance of the type to compare.
    * @param rhs A pointer to the second instance of the type to compare.
-   * @return true if the instances are considered equal according to the type's equality semantics, false otherwise.
+   * @return @c true if the instances are considered equal according to the type's equality semantics, @c false
+   * otherwise.
    */
   bool equals(const void* lhs, const void* rhs) const noexcept override {
     if (lhs == nullptr || rhs == nullptr) {

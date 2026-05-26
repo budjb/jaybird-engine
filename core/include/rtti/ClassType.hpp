@@ -1,14 +1,15 @@
 #pragma once
 
-#include "IType.hpp"
 #include "Export.hpp"
+#include "IType.hpp"
 #include "TType.hpp"
 
 namespace core::rtti {
 /**
  * @brief Polymorphic interface for class type descriptors in the RTTI system.
  *
- * Concrete class-type descriptors derive from this interface, while shared implementation lives in @c TTypeImpl .
+ * Concrete class-type descriptors derive from this interface, while shared implementation lives in @code
+ * TTypeImpl@endcode.
  */
 class JAYBIRD_API IClassType : public IType {
  public:
@@ -19,8 +20,7 @@ class JAYBIRD_API IClassType : public IType {
    * @param size The size of the class type in bytes.
    * @param alignment The alignment requirement of the class type in bytes.
    */
-  explicit IClassType(const IName& name, const std::size_t size, const std::size_t alignment) noexcept
-      : IType(name, size, alignment, TypeKind::CLASS) {}
+  explicit IClassType(const IName& name, std::size_t size, std::size_t alignment) noexcept;
 
   /**
    * @brief Virtual destructor for the @c IClassType interface.
@@ -38,12 +38,12 @@ template <typename T>
 class TClassType : public TType<T, IClassType> {
  public:
   /**
-   * @brief Defines a type alias for the underlying type T.
+   * @brief Defines a type alias for the underlying type @code T@endcode.
    */
   using Type = T;
 
   /**
-   * @brief Constructs a TClassType for the specified type @c T.
+   * @brief Constructs a @c TClassType for the specified type @code T@endcode.
    *
    * @param name The name of the type, represented as an IName.
    */

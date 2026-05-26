@@ -18,20 +18,17 @@ class JAYBIRD_API IContainerType : public IType {
    * @param alignment The alignment requirement of the container type in bytes.
    * @param inner A pointer to the IType descriptor for the type contained within the container.
    */
-  explicit IContainerType(const IName& name, const std::size_t size, const std::size_t alignment,
-                          const IType* inner) noexcept
-      : IType(name, size, alignment, TypeKind::ARRAY), m_inner(inner) {}
+  explicit IContainerType(const IName& name, std::size_t size, std::size_t alignment, const IType* inner) noexcept;
 
   /**
-   * @brief Returns a pointer to the IType descriptor for the type contained within the container. The returned pointer
-   * is guaranteed to be valid for the lifetime of the container type descriptor and should not be modified by the
-   * caller.
+   * @brief Returns a pointer to the inner type descriptor.
+   *
+   * The returned pointer is guaranteed to be valid for the lifetime of this container descriptor and should not be
+   * modified by the caller.
    *
    * @return A pointer to the IType descriptor for the type contained within the container.
    */
-  [[nodiscard]] const IType* inner() const noexcept {
-    return m_inner;
-  }
+  [[nodiscard]] const IType* inner() const noexcept;
 
  private:
   /**

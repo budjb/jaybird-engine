@@ -33,16 +33,39 @@ template <std::size_t N>
   return core::CString<N>(str);
 }
 
-template <TypeKind>
+/**
+ * @brief Returns the string prefix associated with the given @c TypeKind for use in type name construction.
+ *
+ * The base template returns an empty string view; specializations provide the appropriate prefix
+ * for each kind (e.g., @c "array:" for @c TypeKind::ARRAY).
+ *
+ * @tparam TK The @c TypeKind for which to retrieve the prefix.
+ * @return The prefix string view, or an empty view if none is defined for @code TK@endcode.
+ */
+template <TypeKind TK>
 constexpr std::string_view TypePrefix() {
   return "";
 }
 
+/**
+ * @brief Returns the prefix string for array type names.
+ *
+ * @return The string @c "array:" used as a prefix for array type names.
+ */
 template <>
 constexpr std::string_view TypePrefix<TypeKind::ARRAY>() {
   return "array:";
 }
 
+/**
+ * @brief Returns a prefixed type name string by prepending the @c TypeKind prefix to the given string.
+ *
+ * If no prefix is defined for @c T, an empty string is returned.
+ *
+ * @tparam T The @c TypeKind whose prefix to apply.
+ * @param str The base type name string to prefix.
+ * @return The prefixed type name, or an empty string if no prefix is defined for @code T@endcode.
+ */
 template <TypeKind T>
 constexpr std::string TypePrefix(const std::string_view str) {
   const auto prefix = TypePrefix<T>();
@@ -54,6 +77,14 @@ constexpr std::string TypePrefix(const std::string_view str) {
   return std::string(prefix).append(str);
 }
 
+/**
+ * @brief Returns a prefixed type name string by prepending the @c TypeKind prefix to the string resolved from an
+ * @code IName@endcode.
+ *
+ * @tparam T The @c TypeKind whose prefix to apply.
+ * @param name The @c IName whose string value to prefix.
+ * @return The prefixed type name, or an empty string if no prefix is defined for @code T@endcode.
+ */
 template <TypeKind T>
 constexpr std::string TypePrefix(const IName& name) {
   return TypePrefix<T>(std::string_view(name));
@@ -142,6 +173,16 @@ constexpr std::string_view GetTypeName() noexcept {
   std::unreachable();
 }
 
+/**
+ * @brief Returns the canonical array type name for an element type @c T at compile time.
+ *
+ * The result is the element type's name prefixed with @c "array:" (e.g., @c "array:int" for
+ * @code int@endcode). The element type must satisfy the @c HasTypeName concept, meaning it must
+ * expose its name via a @c T::NAME member or a @c TypeName<T> specialization.
+ *
+ * @tparam T The element type for which to produce the array type name.
+ * @return A @c CString or @c std::string containing the array type name.
+ */
 template <typename T>
   requires HasTypeName<T>
 [[nodiscard]] constexpr auto GetTypeArrayName() {

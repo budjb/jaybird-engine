@@ -104,7 +104,7 @@ header. Template-heavy code (`TType`, `TArrayType`, `Iterator`) lives entirely i
 - `INamePool::get()` is the singleton. Call `addName(str)` to intern; `getName(hash)` to resolve.
 - **Important:** Constructing an `IName` from a string does **not** automatically intern it in the
   pool. You must call `INamePool::get().addName(str)` explicitly if you need resolution to work.
-- `IName` is hashable via `std::hash<core::IName>` (specialised in `IName.hpp`).
+- `IName` is hashable via `std::hash<core::IName>` (specialized in `IName.hpp`).
 
 ### 4.2 RTTI Type Hierarchy
 
@@ -354,30 +354,141 @@ Please fill in the items below and remove this section once complete.
 
 Code is documented with Doxygen-style comments. Public API in `core/include/` should have full doc comments; internal
 implementation files in `core/src/` may have minimal or no comments, but should still be reasonably clear. Use
-multi-line comments with `/** ... */` for all classes, functions, or properties.
+multi-line comments with `/** ... */` for all classes, functions, or properties. Do not consolidate these documents into
+single lines. Additionally, descriptions must begin with `@brief`. For example:
 
-Document parameters, return values, ownership semantics, template parameters, throws, and any important notes or
-constraints on usage. For complex or non-obvious behaviors of functions, elaborate on specifics and gotchas, but do not
-introduce verbosity by narrating the implementation of the class or function where the code itself is easily followed.
-Docs for obvious or trivial elements can be brief, but should still be present for consistency.
+### Line Wrapping
+
+The project is configured with clang-format to enforce a maximum line width of 120 characters. Doc comment text should
+wrap at this boundary. **Critical rule**: Never break `@c token` or `@code token(s)@endcode` constructs across lines.
+These formatting elements must stay together on a single line. For example:
+
+```cpp
+/**
+ * @brief This is a longer description that wraps naturally at 120 characters while keeping code tokens intact.
+ *
+ * This text includes references like @c MyClass and @code myFunction()@endcode that stay on one line.
+ */
+
+/**
+ * @brief This is good.
+ */
+
+/**
+ * This is bad.
+ */
+
+/** @brief This is bad. */
+```
+
+Every function, constructor, and conversion operator must document all the following that apply:
+
+- **`@param name`** — one tag per parameter, for every parameter without exception.
+- **`@return`** — required for every non-`void` function and every conversion operator.
+- **`@tparam Name`** — one tag per template parameter, for every template parameter without exception.
+- **`@throws ExceptionType`** — when applicable.
+
+These are not optional even for trivial or self-evident cases; they must always be present. For complex or non-obvious
+behaviors, elaborate on specifics and gotchas, but do not introduce verbosity by narrating the implementation where the
+code itself is easily followed.
+
+The goal of the brief is to provide a one- or two-sentence summary of the entity's purpose. The rest of the comment can
+then expand on details, constraints, and usage examples as needed. We are aiming for balancing brevity with clarity.
+However, **every sentence in a doc comment — in the `@brief`, in body paragraphs, and in tag descriptions — must be
+proper, complete English prose with a subject and predicate.** Sentence fragments, noun-phrase-only sentences, and
+adjective-dangling openers such as "Thread-safe." or "Satisfies X." are not acceptable. Write "It is thread-safe." or
+"This class satisfies X." instead.
 
 Where relevant, include example usage snippets in the comments.
 
-Use code formatting for types, parameters, and important terms. Critically, use `@c term` for this formatting for all
-cases except when "term" is the last element in a sentence and there is terminating punctuation. For example:
+### Code Formatting Rule: `@c` vs. `@code`
+
+Use code formatting for types, parameters, important terms, and literals (e.g., keywords, enum values). This rule
+applies **everywhere** in a doc comment: in the `@brief`, in body paragraphs, and in all tag descriptions (`@param`,
+`@return`, `@tparam`, `@throws`).
+
+**The Rule**: Use `@c term` for all inline code formatting, **except** when a code token is the **last grammatical
+element in a clause or sentence** and is immediately followed by punctuation. In that case, use `@code term@endcode`
+instead so that punctuation renders outside the formatted span.
+
+A code token is considered the "last element" if nothing other than sentence-ending or clause-ending punctuation
+(`.`, `!`, `?`, `,`, `;`, or `)`) immediately follows it.
+
+**Examples**:
 
 ```cpp
 /**
- * Gets the @c IType descriptor for the given name.
+ * @brief Gets the @c IType descriptor for the given @c name.
+ *   // "name" is followed by a period, but it is not a code token — fine.
+ * @brief Returns a pointer to the @code IType@endcode.
+ *   // "IType" is a code token at sentence end — must use @code...@endcode.
+ *
+ * @param func The function pointer (of type @code FuncPtr@endcode).
+ *   // "FuncPtr" is a code token before closing paren — must use @code...@endcode.
+ *
+ * @param name The name of the descriptor (e.g., @c "Vector3D").
+ *   // "Vector3D" is quoted text, not the last element — @c is fine.
+ *
+ * @return A vector of @code int@endcode values.
+ *   // "int" is a code token at sentence end — must use @code...@endcode.
+ *
+ * Accepts instances of type @code T@endcode, where @c T must satisfy the @code Drawable@endcode concept.
+ *   // "T" at clause end: @code...@endcode.
+ *   // "Drawable" at end of sentence: @code...@endcode.
+ *   // "concept" is plain text after "Drawable" — but no, word ends at Drawable.
+ *   // Actually, read it as: "where T (must satisfy Drawable concept)" — so Drawable is not at sentence end.
+ *   // Let me reconsider: "satisfies the X concept" — X is before "concept", not at sentence end.
+ *   // So: @c Drawable (concept) is fine, or we could say (of type @code Drawable@endcode) if Drawable alone ended.
+ *
+ * Serializes to a buffer of size @code N@endcode bytes.
+ *   // "N" is a code token before whitespace then period — the period follows "bytes", not "N".
+ *   // Actually, re-read: "...size @code N@endcode bytes." — "bytes" ends the sentence.
+ *   // So this is correct usage of @code...@endcode for N because nothing follows N except whitespace.
  */
 ```
 
-In situations where a code token is the last element in a sentence, do not use `@c` as the punctuation will become part
-of the formatted code token, which is undesirable. Instead, use the surrounding code formatting (`@code term@endcode`),
-like so:
+**Clarification on punctuation-adjacent tokens**: The rule triggers when a code token has **no other text** between
+itself and sentence-ending punctuation. Whitespace does not count. For example:
 
-```cpp
-/**
- * Returns the associated @code IType@endcode.
- */
-```
+- `@c N.` (period directly follows) → use `@code N@endcode.`
+- `@c N,` (comma directly follows) → use `@code N@endcode,`
+- `@c N)` (closing paren directly follows) → use `@code N@endcode)`
+- `@c N bytes.` (plain text "bytes" follows the token) → `@c N` is fine (bytes ends the sentence)
+
+**Scope**: This rule applies in the `@brief`, in extended description paragraphs, in `@param` tag descriptions, in
+`@return` tag descriptions, in `@tparam` tag descriptions, and in `@throws` descriptions. There are no exceptions.
+
+### Prose Quality: Complete Sentences Everywhere
+
+Every sentence in every doc comment — including the `@brief`, body paragraphs, and tag descriptions — must be a proper,
+complete English sentence with a clear subject and a predicate. There are no exceptions, not even in tag descriptions or
+when the meaning seems obvious. Additionally, all sentences should target lengths of less than 40 words. This is not an
+absolute rule, but a guideline: if a sentence exceeds 40 words, consider breaking it into multiple sentences for
+improved clarity and readability. The goal is to avoid overwhelming readers with overly long, complex clauses.
+
+**Unacceptable (fragments)**:
+
+- "Thread-safe." ← Fragment (no subject or predicate)
+- "Satisfies @code BasicLockable@endcode." ← Fragment (noun phrase + action, but no subject pronoun)
+- "Maps hashes to strings." ← Fragment (participle phrase, no main subject)
+
+**Acceptable (complete sentences)**:
+
+- "It is thread-safe." ← Subject ("It") + predicate ("is thread-safe")
+- "This class satisfies @code BasicLockable@endcode." ← Subject ("This class") + predicate ("satisfies")
+- "Hashes are mapped to strings internally." ← Complete passive sentence
+- "The registry maps hashes to strings." ← Complete active sentence
+
+This rule applies in:
+
+- `@brief` tags
+- Body paragraphs (extended descriptions)
+- `@param` tag descriptions (e.g., "the value of the @c X parameter; must not be null")
+- `@return` tag descriptions (e.g., "the new size of the container after insertion")
+- `@tparam` tag descriptions
+- `@throws` tag descriptions
+- Any explanatory text within a doc comment
+
+If you find yourself wanting to write a label or noun phrase, add a subject and verb to make it a complete thought.
+For example, instead of "The buffer size", write "The size of the buffer is N bytes" or "Returns the buffer size in
+bytes."
