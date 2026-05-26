@@ -5,7 +5,6 @@
 
 #include "CString.hpp"
 #include "rtti/FundamentalType.hpp"
-#include "rtti/TType.hpp"
 #include "rtti/TypeName.hpp"
 
 namespace core::rtti {

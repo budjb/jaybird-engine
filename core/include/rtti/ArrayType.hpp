@@ -5,7 +5,6 @@
 #include "ContainerType.hpp"
 #include "Export.hpp"
 #include "Iterator.hpp"
-#include "TType.hpp"
 #include "TypeName.hpp"
 
 namespace core::rtti {

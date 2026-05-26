@@ -12,7 +12,6 @@ add_library(jaybird-engine-core SHARED
         src/rtti/ContainerType.cpp
         src/rtti/ArrayType.cpp
         include/rtti/ArrayType.hpp
-        include/rtti/TType.hpp
         include/rtti/ClassType.hpp
         src/rtti/ClassType.cpp
         include/rtti/FundamentalType.hpp

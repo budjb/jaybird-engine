@@ -4,7 +4,6 @@
 #include <type_traits>
 
 #include "rtti/ClassType.hpp"
-#include "rtti/TType.hpp"
 
 /**
  * @brief A trivially copyable struct with a single int field.

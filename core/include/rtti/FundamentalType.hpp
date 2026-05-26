@@ -2,7 +2,6 @@
 
 #include "Export.hpp"
 #include "IType.hpp"
-#include "TType.hpp"
 #include "TypeName.hpp"
 
 namespace core::rtti {
