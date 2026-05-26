@@ -24,10 +24,6 @@ IClassType* TypeRegistry::getClass(const IName& name) const {
 
 IType* TypeRegistry::registerType(std::unique_ptr<IType>&& type) {
   std::unique_lock lock(m_mutex);
-  if (m_types.contains(type->name())) {
-    // TODO: log? throw?
-    return nullptr;
-  }
 
   if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
     return it->second.get();

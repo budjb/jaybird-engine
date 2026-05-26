@@ -70,6 +70,83 @@ TEST_CASE(
   REQUIRE(end - begin == 3);
 }
 
+TEST_CASE(
+    "Given an RTTI int array descriptor, when array APIs are invoked with null and live data, then int specializations "
+    "are covered",
+    "[rtti][iterator][array_type][coverage]") {
+  const auto arrayType = createIntArrayType();
+  const IArrayType& constArrayType = *arrayType;
+
+  std::vector<int> values{1, 2, 3};
+  const auto& constValues = values;
+
+  REQUIRE(arrayType->length(nullptr) == 0);
+  REQUIRE(arrayType->capacity(nullptr) == 0);
+  REQUIRE(arrayType->maxLength(nullptr) == 0);
+  REQUIRE(arrayType->at(nullptr, 0) == nullptr);
+  REQUIRE(constArrayType.at(nullptr, 0) == nullptr);
+  REQUIRE(arrayType->front(nullptr) == nullptr);
+  REQUIRE(constArrayType.front(nullptr) == nullptr);
+  REQUIRE(arrayType->back(nullptr) == nullptr);
+  REQUIRE(constArrayType.back(nullptr) == nullptr);
+
+  REQUIRE(arrayType->length(&values) == 3);
+  REQUIRE(arrayType->capacity(&values) >= 3);
+  REQUIRE(arrayType->maxLength(&values) >= values.size());
+  REQUIRE(*static_cast<int*>(arrayType->at(&values, 1)) == 2);
+  REQUIRE(*static_cast<const int*>(constArrayType.at(&constValues, 2)) == 3);
+  REQUIRE(*static_cast<int*>(arrayType->front(&values)) == 1);
+  REQUIRE(*static_cast<const int*>(constArrayType.front(&constValues)) == 1);
+  REQUIRE(*static_cast<int*>(arrayType->back(&values)) == 3);
+  REQUIRE(*static_cast<const int*>(constArrayType.back(&constValues)) == 3);
+
+  int insertValue = 99;
+  int replaceValue = 42;
+  arrayType->insert(&values, 1, &insertValue);
+  REQUIRE(values[1] == 99);
+
+  arrayType->replace(&values, 1, &replaceValue);
+  REQUIRE(values[1] == 42);
+
+  arrayType->pushBack(&values, &insertValue);
+  REQUIRE(values.back() == 99);
+
+  arrayType->erase(&values, 0);
+  REQUIRE(values.front() == 42);
+
+  arrayType->remove(&values, values.size() - 1);
+  REQUIRE(values.back() != 99);
+
+  arrayType->popBack(&values);
+  REQUIRE(values.size() == 2);
+
+  arrayType->reserve(&values, 16);
+  REQUIRE(values.capacity() >= 16);
+
+  arrayType->resize(&values, 5);
+  REQUIRE(values.size() == 5);
+
+  arrayType->shrinkToFit(&values);
+  REQUIRE(values.capacity() >= values.size());
+
+  arrayType->clear(&values);
+  REQUIRE(values.empty());
+
+  arrayType->insert(nullptr, 0, &insertValue);
+  arrayType->insert(&values, 0, nullptr);
+  arrayType->pushBack(nullptr, &insertValue);
+  arrayType->pushBack(&values, nullptr);
+  arrayType->replace(nullptr, 0, &replaceValue);
+  arrayType->replace(&values, 0, nullptr);
+  arrayType->erase(nullptr, 0);
+  arrayType->remove(nullptr, 0);
+  arrayType->popBack(nullptr);
+  arrayType->reserve(nullptr, 4);
+  arrayType->resize(nullptr, 4);
+  arrayType->shrinkToFit(nullptr);
+  arrayType->clear(nullptr);
+}
+
 TEST_CASE("Given an RTTI array type and vector, when begin and end are iterated, then elements are visited in order",
           "[rtti][iterator]") {
   const auto arrayType = createIntArrayType();

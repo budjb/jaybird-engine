@@ -37,3 +37,17 @@ target_include_directories(jaybird-engine-core
         "include"
         ${CMAKE_CURRENT_BINARY_DIR}/include
 )
+
+if (BUILD_TESTING)
+  add_executable(core-tests
+          tests/INameTests.cpp
+          tests/INamePoolTests.cpp
+          tests/rtti/FundamentalTypeTests.cpp
+          tests/rtti/ClassTypeTests.cpp
+          tests/rtti/ArrayTypeTests.cpp
+          tests/rtti/IteratorTests.cpp
+  )
+
+  target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)
+  catch_discover_tests(core-tests)
+endif ()
