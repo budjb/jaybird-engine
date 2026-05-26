@@ -9,6 +9,7 @@
 namespace core::rtti {
 class IClassType;
 class IFundamentalType;
+class IContainerType;
 
 /**
  * @brief Generic implementation base for RTTI descriptors.
@@ -54,6 +55,16 @@ class TType : public TBase {
   explicit TType(const IName& name)
     requires std::same_as<TBase, IClassType>
       : TBase(name, sizeof(Type), alignof(Type)) {}
+
+  /**
+   * @brief Constructs a descriptor that implements @code IContainerType@endcode.
+   *
+   * @param name The name of the container type.
+   * @param inner A pointer to the inner type descriptor.
+   */
+  explicit TType(const IName& name, const IType* inner)
+    requires std::derived_from<TBase, IContainerType>
+      : TBase(name, sizeof(Type), alignof(Type), inner) {}
 
   /**
    * @brief Assigns the value from the source pointer to the destination pointer.

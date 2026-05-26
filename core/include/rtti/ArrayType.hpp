@@ -383,8 +383,7 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
   template <typename InnerType>
     requires TypedInnerDescriptorFor<InnerType, T>
   explicit TArrayType(const InnerType* inner)
-      : TType<std::vector<T>, IArrayType>(GetTypeArrayName<T>(), sizeof(Type), alignof(Type),
-                                          static_cast<const IType*>(inner)) {}
+      : TType<std::vector<T>, IArrayType>(GetTypeArrayName<T>(), static_cast<const IType*>(inner)) {}
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is

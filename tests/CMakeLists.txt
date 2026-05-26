@@ -10,11 +10,11 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(core-tests
         INameTests.cpp
         INamePoolTests.cpp
-        FundamentalTypeTests.cpp
+        rtti/FundamentalTypeTests.cpp
+        rtti/ClassTypeTests.cpp
+        rtti/IteratorTests.cpp
 #        IntTypeTests.cpp
 #        TypeRegistryTests.cpp
-#        RttiIteratorTests.cpp
-#        RttiReverseIteratorTests.cpp
 #        RttiAutoRegistrationTests.cpp
 #        RttiAutoRegistrationFundamentalsTest.cpp
 )

@@ -359,15 +359,31 @@ single lines. Additionally, descriptions must begin with `@brief`. For example:
 
 ### Line Wrapping
 
-The project is configured with clang-format to enforce a maximum line width of 120 characters. Doc comment text should
-wrap at this boundary. **Critical rule**: Never break `@c token` or `@code token(s)@endcode` constructs across lines.
-These formatting elements must stay together on a single line. For example:
+The project is configured with clang-format to enforce a maximum line width of 120 characters. Doc comment text must
+wrap at **semantic boundaries** — that is, at natural end points of sentences, clauses, or logical thought units — and
+must never exceed 120 characters. The goal is readability: keep related ideas on the same line when possible, and wrap
+only when introducing a new sentence, clause, or major concept.
+
+**Critical rule**: Never break `@c token` or `@code token(s)@endcode` constructs across lines. These formatting
+elements must stay together on a single line. If a code token would be split across the boundary, reflow the preceding
+text or move the token to the next line.
+
+**Guidelines**:
+
+- If a sentence or clause fits within 120 characters, keep it on one line.
+- Wrap only when a new sentence begins or a new clause starts.
+- Do not wrap mid-sentence just because there is space left on the line.
+- Prefer shorter, punchier sentences over long wrapped ones.
+- Review your line endings: if wrapping feels awkward, consider rephrasing for clarity.
+
+For example:
 
 ```cpp
 /**
- * @brief This is a longer description that wraps naturally at 120 characters while keeping code tokens intact.
+ * @brief This is a longer description that wraps naturally at sentence boundaries.
  *
- * This text includes references like @c MyClass and @code myFunction()@endcode that stay on one line.
+ * This text includes references like @c MyClass and @code myFunction()@endcode; they stay intact on one line.
+ * When a new sentence begins, wrap to the next line. This keeps ideas grouped logically.
  */
 
 /**
@@ -378,7 +394,30 @@ These formatting elements must stay together on a single line. For example:
  * This is bad.
  */
 
-/** @brief This is bad. */
+/** @brief This is bad too. */
+
+// This is good: each sentence is on a single line, and we wrap only when a new sentence starts.
+/**
+ * @brief Casts a pointer to the derived @code IArrayType@endcode interface.
+ *
+ * Serves mostly as a documentation helper.
+ *
+ * @param arrayType The pointer to cast.
+ * @return The same pointer, explicitly typed as @code IArrayType*@endcode.
+ */
+
+// This is bad: sentences are split arbitrarily mid-clause.
+/**
+ * @brief Casts a type descriptor pointer to an @code IArrayType@endcode
+ *   pointer.
+ *
+ * This function is a convenience helper that ensures type safety when
+ *   casting a raw pointer to an @code IArrayType@endcode.
+ *
+ * @param arrayType This parameter is a pointer to an @code IArrayType@endcode to cast.
+ * @return This function explicitly returns the pointer as
+ *   @code IArrayType*@endcode.
+ */
 ```
 
 Every function, constructor, and conversion operator must document all the following that apply:
