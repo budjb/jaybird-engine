@@ -112,7 +112,7 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType.kind() == TypeKind::FUNDAMENTAL);
   REQUIRE(asType.size() == sizeof(TestType));
   REQUIRE(asType.alignment() == alignof(TestType));
-  REQUIRE(asType.name() == IName(core::rtti::GetTypeName<TestType>()));
+  REQUIRE(asType.name() == core::rtti::GetTypeName<TestType>());
 }
 
 TEMPLATE_TEST_CASE(

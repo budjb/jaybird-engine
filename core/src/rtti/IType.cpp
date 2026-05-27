@@ -29,7 +29,7 @@ IName IType::name() const noexcept {
 }
 
 IArrayType* IType::asArray() const noexcept {
-  if (auto* type = TypeSystem::get().registry().getType(TypePrefix<TypeKind::ARRAY>(m_name));
+  if (auto* type = TypeSystem::get().registry().getType(GetPrefixedTypeName<TypeKind::ARRAY>(m_name));
       type && type->kind() == TypeKind::ARRAY) {
     return reinterpret_cast<IArrayType*>(type);
   }

@@ -8,7 +8,6 @@
 #include "TypeName.hpp"
 
 namespace core::rtti {
-
 /**
  * @brief Interface for array type descriptors that provides methods for accessing and manipulating array elements, as
  * well as querying array properties such as length and capacity.
@@ -341,17 +340,6 @@ class JAYBIRD_API IArrayType : public IContainerType {
 };
 
 /**
- * @brief Concept to check if a given type is a valid inner type descriptor for a TArrayType.
- *
- * This concept ensures that the type is derived from IType and that it defines a nested Type alias that matches the
- * specified ElementType. This is used to enforce that the inner type descriptor provided to TArrayType is compatible
- * with the element type of the array, allowing for type-safe construction of TArrayType instances.
- */
-template <typename InnerType, typename ElementType>
-concept TypedInnerDescriptorFor = std::derived_from<InnerType, IType> && requires { typename InnerType::Type; } &&
-                                  std::same_as<typename InnerType::Type, ElementType>;
-
-/**
  * @brief A template class representing an array type descriptor in the RTTI system. This class provides methods for
  * accessing and manipulating array elements, as well as querying array properties such as length and capacity. The
  * TArrayType class is designed to work with std::vector as the underlying container for the array elements, and it
@@ -382,7 +370,8 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
   template <typename InnerType>
     requires TypedInnerDescriptorFor<InnerType, T>
   explicit TArrayType(const InnerType* inner)
-      : TType<std::vector<T>, IArrayType>(GetTypeArrayName<T>(), static_cast<const IType*>(inner)) {}
+      : TType<std::vector<T>, IArrayType>(GetPrefixedTypeName<TypeKind::ARRAY, T>(), static_cast<const IType*>(inner)) {
+  }
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is

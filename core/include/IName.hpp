@@ -6,8 +6,12 @@
 #include <string_view>
 
 #include "Export.hpp"
+#include "Hash.hpp"
 
 namespace core {
+/**
+ * @brief Type alias for the hash value used in @code IName@endcode, representing the FNV-1a hash of a string.
+ */
 using hash_t = std::uint64_t;
 
 /**
@@ -25,24 +29,41 @@ class JAYBIRD_API IName {
 
   /**
    * @brief Constructs an @c IName from the given hash value.
+   *
+   * @param hash The pre-computed FNV-1a hash value to store.
    */
   constexpr IName(hash_t hash) noexcept;
+
+  /**
+   * @brief Constructs an @c IName by hashing the given string literal at compile time.
+   *
+   * @tparam N The size of the string literal, including the null terminator (e.g., N = 4 for "Foo").
+   * @param str Reference to a character array of size N representing the string literal to hash.
+   */
+  template <std::size_t N>
+  constexpr IName(const char (&str)[N]) noexcept : m_hash(fnv1a_64(str)) {}
 
   /**
    * @brief Constructs an @c IName by hashing the given string view.
    *
    * @note This does not register the string with @code INamePool@endcode.
    * Call @c INamePool::get().addName() to do that.
+   *
+   * @param str The string view whose content is hashed to form the name.
    */
   constexpr IName(std::string_view str) noexcept;
 
   /**
    * @brief Constructs an @c IName by hashing the given string.
+   *
+   * @param str The string whose content is hashed to form the name.
    */
   IName(const std::string& str) noexcept;
 
   /**
-   * @brief Constructs an @c IName by hashing the given C-string.
+   * @brief Constructs an @c IName by hashing the given null-terminated C-string.
+   *
+   * @param str A pointer to the null-terminated character sequence to hash.
    */
   constexpr IName(const char* str) noexcept;
 
@@ -94,7 +115,7 @@ class JAYBIRD_API IName {
   /**
    * @brief Compares two @c IName instances by their hash values.
    *
-   * @param other The @c IName to compare with.
+   * @param other The @c IName instance to compare against this one.
    * @return @c true if the hash values are equal, @c false otherwise.
    */
   constexpr bool operator==(const IName& other) const noexcept;
@@ -102,7 +123,7 @@ class JAYBIRD_API IName {
   /**
    * @brief Compares two @c IName instances by their hash values.
    *
-   * @param other The @c IName to compare with.
+   * @param other The @c IName instance to compare against this one.
    * @return @c true if the hash values differ, @c false otherwise.
    */
   constexpr bool operator!=(const IName& other) const noexcept;
