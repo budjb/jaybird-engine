@@ -36,7 +36,7 @@ using core::rtti::TypeKind;
 
 TEST_CASE("Given a TRefType descriptor, when kind is queried through IType, then it returns TypeKind::REF",
           "[rtti][ref_type][metadata]") {
-  const TClassType<RefTarget> inner(IName("kind_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IType&>(descriptor).kind() == TypeKind::REF);
@@ -44,7 +44,7 @@ TEST_CASE("Given a TRefType descriptor, when kind is queried through IType, then
 
 TEST_CASE("Given a TRefType descriptor, when size is queried through IType, then it equals sizeof std::shared_ptr",
           "[rtti][ref_type][metadata]") {
-  const TClassType<RefTarget> inner(IName("size_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IType&>(descriptor).size() == sizeof(std::shared_ptr<RefTarget>));
@@ -53,7 +53,7 @@ TEST_CASE("Given a TRefType descriptor, when size is queried through IType, then
 TEST_CASE(
     "Given a TRefType descriptor, when alignment is queried through IType, then it equals alignof std::shared_ptr",
     "[rtti][ref_type][metadata]") {
-  const TClassType<RefTarget> inner(IName("align_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IType&>(descriptor).alignment() == alignof(std::shared_ptr<RefTarget>));
@@ -61,15 +61,16 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor, when name is queried, then it is the inner type name prefixed with ref:",
           "[rtti][ref_type][metadata]") {
-  const TClassType<RefTarget> inner(IName("name_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IType&>(descriptor).name() == IName("ref:ref_target"));
+  REQUIRE(static_cast<IType&>(descriptor).name().toString() == "ref:ref_target");
 }
 
 TEST_CASE("Given a TRefType descriptor, when asArray is called through IType, then it returns nullptr",
           "[rtti][ref_type][metadata]") {
-  const TClassType<RefTarget> inner(IName("as_array_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IType&>(descriptor).asArray() == nullptr);
@@ -81,7 +82,7 @@ TEST_CASE("Given a TRefType descriptor, when asArray is called through IType, th
 
 TEST_CASE("Given a TRefType descriptor, when cast to IRefType, IContainerType, and IType, then all casts are non-null",
           "[rtti][ref_type][hierarchy]") {
-  const TClassType<RefTarget> inner(IName("hier_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(static_cast<IRefType*>(&descriptor) != nullptr);
@@ -95,7 +96,7 @@ TEST_CASE("Given a TRefType descriptor, when cast to IRefType, IContainerType, a
 
 TEST_CASE("Given a TRefType descriptor, when inner is queried, then it returns a pointer equal to the inner descriptor",
           "[rtti][ref_type][inner]") {
-  const TClassType<RefTarget> inner(IName("inner_query_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(descriptor.inner() == static_cast<const IType*>(&inner));
@@ -109,7 +110,7 @@ TEST_CASE(
     "Given a TRefType descriptor and valid source and destination shared_ptrs, when assign is called, then the "
     "destination shares the same managed object as the source",
     "[rtti][ref_type][operations][assign]") {
-  const TClassType<RefTarget> inner(IName("assign_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   const auto source = std::make_shared<RefTarget>(RefTarget{42});
@@ -125,7 +126,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a null destination, when assign is called, then it is a no-op and the source "
     "use count remains one",
     "[rtti][ref_type][operations][assign][negative]") {
-  const TClassType<RefTarget> inner(IName("assign_null_dst_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   const auto source = std::make_shared<RefTarget>(RefTarget{7});
@@ -143,7 +144,7 @@ TEST_CASE(
     "Given a TRefType descriptor and two shared_ptrs managing the same object, when equals is called, then it returns "
     "true",
     "[rtti][ref_type][operations][equals]") {
-  const TClassType<RefTarget> inner(IName("equals_same_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto a = std::make_shared<RefTarget>(RefTarget{1});
@@ -156,7 +157,7 @@ TEST_CASE(
     "Given a TRefType descriptor and two shared_ptrs managing distinct objects with the same value, when equals is "
     "called, then it returns false",
     "[rtti][ref_type][operations][equals][negative]") {
-  const TClassType<RefTarget> inner(IName("equals_diff_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto a = std::make_shared<RefTarget>(RefTarget{1});
@@ -169,7 +170,7 @@ TEST_CASE(
     "Given a TRefType descriptor and two default-constructed empty shared_ptrs, when equals is called, then it "
     "returns true",
     "[rtti][ref_type][operations][equals]") {
-  const TClassType<RefTarget> inner(IName("equals_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const std::shared_ptr<RefTarget> a;
@@ -181,7 +182,7 @@ TEST_CASE(
 TEST_CASE(
     "Given a TRefType descriptor, when equals is called with both void pointer arguments null, then it returns true",
     "[rtti][ref_type][operations][equals]") {
-  const TClassType<RefTarget> inner(IName("equals_null_ptrs_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(descriptor.equals(nullptr, nullptr));
@@ -191,7 +192,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a valid shared_ptr, when equals is called with a null left void pointer, then it "
     "returns false",
     "[rtti][ref_type][operations][equals][negative]") {
-  const TClassType<RefTarget> inner(IName("equals_lhs_null_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto a = std::make_shared<RefTarget>();
@@ -203,7 +204,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a valid shared_ptr, when equals is called with a null right void pointer, then "
     "it returns false",
     "[rtti][ref_type][operations][equals][negative]") {
-  const TClassType<RefTarget> inner(IName("equals_rhs_null_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto a = std::make_shared<RefTarget>();
@@ -215,7 +216,7 @@ TEST_CASE(
     "Given a TRefType descriptor, a non-empty shared_ptr, and an empty shared_ptr, when equals is called, then it "
     "returns false",
     "[rtti][ref_type][operations][equals][negative]") {
-  const TClassType<RefTarget> inner(IName("equals_nonempty_vs_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto populated = std::make_shared<RefTarget>(RefTarget{5});
@@ -232,7 +233,7 @@ TEST_CASE(
     "Given a TRefType descriptor, when allocate is called, then the returned pointer is non-null and correctly "
     "aligned for std::shared_ptr",
     "[rtti][ref_type][operations][allocate]") {
-  const TClassType<RefTarget> inner(IName("alloc_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
@@ -246,7 +247,7 @@ TEST_CASE(
     "Given a TRefType descriptor and memory obtained from allocate, when deallocate is called, then it completes "
     "without error",
     "[rtti][ref_type][operations][allocate]") {
-  const TClassType<RefTarget> inner(IName("dealloc_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
@@ -261,7 +262,7 @@ TEST_CASE(
     "Given a TRefType descriptor and pre-allocated storage, when construct is called, then the resulting shared_ptr "
     "is empty",
     "[rtti][ref_type][operations][construct]") {
-  const TClassType<RefTarget> inner(IName("construct_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
@@ -275,7 +276,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor, when construct is called with nullptr, then it is a safe no-op",
           "[rtti][ref_type][operations][construct][negative]") {
-  const TClassType<RefTarget> inner(IName("construct_null_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.construct(nullptr));
@@ -285,7 +286,7 @@ TEST_CASE(
     "Given a TRefType descriptor and allocated and constructed storage, when destruct is called, then it completes "
     "without error",
     "[rtti][ref_type][operations][destruct]") {
-  const TClassType<RefTarget> inner(IName("destruct_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
@@ -302,7 +303,7 @@ TEST_CASE(
     "Given a TRefType descriptor, when create is called, then the returned pointer is non-null and points to an "
     "empty shared_ptr",
     "[rtti][ref_type][operations][create]") {
-  const TClassType<RefTarget> inner(IName("create_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
@@ -316,7 +317,7 @@ TEST_CASE(
     "Given a TRefType descriptor and an instance obtained from create, when destroy is called, then it completes "
     "without error",
     "[rtti][ref_type][operations][destroy]") {
-  const TClassType<RefTarget> inner(IName("destroy_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
@@ -325,7 +326,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor, when destroy is called with nullptr, then it is a safe no-op",
           "[rtti][ref_type][operations][destroy][negative]") {
-  const TClassType<RefTarget> inner(IName("destroy_null_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.destroy(nullptr));
@@ -339,7 +340,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a shared_ptr with use count one, when assign copies it into a second "
     "descriptor-managed slot and then that slot is destructed, then the original use count returns to one",
     "[rtti][ref_type][shared_ownership]") {
-  const TClassType<RefTarget> inner(IName("refcount_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   const auto original = std::make_shared<RefTarget>(RefTarget{99});
@@ -361,7 +362,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a shared_ptr whose original owner goes out of scope, when the descriptor-managed "
     "copy still holds a reference, then the managed object remains alive",
     "[rtti][ref_type][shared_ownership]") {
-  const TClassType<RefTarget> inner(IName("lifetime_inner"));
+  const TClassType<RefTarget> inner;
   TRefType<RefTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
@@ -389,7 +390,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a non-empty shared_ptr, when get is called, then the returned void pointer "
     "equals the raw pointer managed by the shared_ptr",
     "[rtti][ref_type][operations][get]") {
-  const TClassType<RefTarget> inner(IName("get_raw_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   auto shared = std::make_shared<RefTarget>(RefTarget{10});
@@ -398,7 +399,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor and an empty shared_ptr, when get is called, then it returns nullptr",
           "[rtti][ref_type][operations][get]") {
-  const TClassType<RefTarget> inner(IName("get_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   std::shared_ptr<RefTarget> empty;
@@ -407,7 +408,7 @@ TEST_CASE("Given a TRefType descriptor and an empty shared_ptr, when get is call
 
 TEST_CASE("Given a TRefType descriptor, when get is called with a null instance, then it returns nullptr",
           "[rtti][ref_type][operations][get][negative]") {
-  const TClassType<RefTarget> inner(IName("get_null_instance_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(descriptor.get(nullptr) == nullptr);
@@ -417,7 +418,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a non-empty shared_ptr, when typed get<RefTarget> is called, then the returned "
     "pointer is correctly typed and equals the managed raw pointer",
     "[rtti][ref_type][operations][get]") {
-  const TClassType<RefTarget> inner(IName("get_typed_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
   const IRefType* poly = &descriptor;
 
@@ -436,7 +437,7 @@ TEST_CASE(
 TEST_CASE(
     "Given a TRefType descriptor and a non-empty shared_ptr, when reset is called, then the shared_ptr becomes empty",
     "[rtti][ref_type][operations][reset]") {
-  const TClassType<RefTarget> inner(IName("reset_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   auto shared = std::make_shared<RefTarget>(RefTarget{5});
@@ -449,7 +450,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a shared_ptr with two owners, when reset is called on one, then the other "
     "owner's use count drops to one",
     "[rtti][ref_type][operations][reset]") {
-  const TClassType<RefTarget> inner(IName("reset_usecount_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto original = std::make_shared<RefTarget>(RefTarget{9});
@@ -463,7 +464,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor, when reset is called with a null instance, then it is a safe no-op",
           "[rtti][ref_type][operations][reset][negative]") {
-  const TClassType<RefTarget> inner(IName("reset_null_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.reset(nullptr));
@@ -471,7 +472,7 @@ TEST_CASE("Given a TRefType descriptor, when reset is called with a null instanc
 
 TEST_CASE("Given a TRefType descriptor and an already-empty shared_ptr, when reset is called, then it remains empty",
           "[rtti][ref_type][operations][reset]") {
-  const TClassType<RefTarget> inner(IName("reset_already_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   std::shared_ptr<RefTarget> empty;
@@ -486,7 +487,7 @@ TEST_CASE("Given a TRefType descriptor and an already-empty shared_ptr, when res
 
 TEST_CASE("Given a TRefType descriptor and a sole-owner shared_ptr, when useCount is called, then it returns one",
           "[rtti][ref_type][operations][use_count]") {
-  const TClassType<RefTarget> inner(IName("usecount_sole_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<RefTarget>();
@@ -497,7 +498,7 @@ TEST_CASE(
     "Given a TRefType descriptor and a shared_ptr shared between two owners, when useCount is called, then it "
     "returns two",
     "[rtti][ref_type][operations][use_count]") {
-  const TClassType<RefTarget> inner(IName("usecount_two_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const auto original = std::make_shared<RefTarget>();
@@ -507,7 +508,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor and an empty shared_ptr, when useCount is called, then it returns zero",
           "[rtti][ref_type][operations][use_count]") {
-  const TClassType<RefTarget> inner(IName("usecount_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   const std::shared_ptr<RefTarget> empty;
@@ -516,7 +517,7 @@ TEST_CASE("Given a TRefType descriptor and an empty shared_ptr, when useCount is
 
 TEST_CASE("Given a TRefType descriptor, when useCount is called with a null instance, then it returns zero",
           "[rtti][ref_type][operations][use_count][negative]") {
-  const TClassType<RefTarget> inner(IName("usecount_null_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE(descriptor.useCount(nullptr) == 0);
@@ -530,7 +531,7 @@ TEST_CASE(
     "Given a TRefType descriptor and two non-empty shared_ptrs, when swap is called, then their managed objects are "
     "exchanged",
     "[rtti][ref_type][operations][swap]") {
-  const TClassType<RefTarget> inner(IName("swap_exchange_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   auto a = std::make_shared<RefTarget>(RefTarget{1});
@@ -546,7 +547,7 @@ TEST_CASE(
 
 TEST_CASE("Given a TRefType descriptor and two empty shared_ptrs, when swap is called, then both remain empty",
           "[rtti][ref_type][operations][swap]") {
-  const TClassType<RefTarget> inner(IName("swap_both_empty_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   std::shared_ptr<RefTarget> a;
@@ -559,7 +560,7 @@ TEST_CASE("Given a TRefType descriptor and two empty shared_ptrs, when swap is c
 
 TEST_CASE("Given a TRefType descriptor, when swap is called with a null lhs, then rhs is unchanged",
           "[rtti][ref_type][operations][swap][negative]") {
-  const TClassType<RefTarget> inner(IName("swap_null_lhs_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   auto b = std::make_shared<RefTarget>(RefTarget{7});
@@ -572,7 +573,7 @@ TEST_CASE("Given a TRefType descriptor, when swap is called with a null lhs, the
 
 TEST_CASE("Given a TRefType descriptor, when swap is called with a null rhs, then lhs is unchanged",
           "[rtti][ref_type][operations][swap][negative]") {
-  const TClassType<RefTarget> inner(IName("swap_null_rhs_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   auto a = std::make_shared<RefTarget>(RefTarget{8});
@@ -586,7 +587,7 @@ TEST_CASE("Given a TRefType descriptor, when swap is called with a null rhs, the
 TEST_CASE(
     "Given a TRefType descriptor, when swap is called with both lhs and rhs null, then it completes without error",
     "[rtti][ref_type][operations][swap][negative]") {
-  const TClassType<RefTarget> inner(IName("swap_both_null_inner"));
+  const TClassType<RefTarget> inner;
   const TRefType<RefTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.swap(nullptr, nullptr));

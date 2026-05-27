@@ -4,6 +4,7 @@
 
 #include "ContainerType.hpp"
 #include "Export.hpp"
+#include "INamePool.hpp"
 #include "Iterator.hpp"
 #include "TypeName.hpp"
 
@@ -370,8 +371,8 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
   template <typename InnerType>
     requires TypedInnerDescriptorFor<InnerType, T>
   explicit TArrayType(const InnerType* inner)
-      : TType<std::vector<T>, IArrayType>(GetPrefixedTypeName<TypeKind::ARRAY, T>(), static_cast<const IType*>(inner)) {
-  }
+      : TType<std::vector<T>, IArrayType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::ARRAY, T>()),
+                                          static_cast<const IType*>(inner)) {}
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is

@@ -1,4 +1,4 @@
-#include "../../include/rtti/TypeSystem.hpp"
+#include "rtti/TypeSystem.hpp"
 
 namespace core::rtti {
 TypeSystem& TypeSystem::get() noexcept {

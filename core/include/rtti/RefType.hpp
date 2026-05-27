@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "ContainerType.hpp"
+#include "INamePool.hpp"
 #include "TypeName.hpp"
 
 namespace core::rtti {
@@ -186,5 +187,6 @@ template <typename T>
 template <typename InnerType>
   requires TypedInnerDescriptorFor<InnerType, T>
 TRefType<T>::TRefType(const InnerType* inner)
-    : TType<std::shared_ptr<T>, IRefType>(GetPrefixedTypeName<TypeKind::REF, T>(), static_cast<const IType*>(inner)) {}
+    : TType<std::shared_ptr<T>, IRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::REF, T>()),
+                                          static_cast<const IType*>(inner)) {}
 }  // namespace core::rtti

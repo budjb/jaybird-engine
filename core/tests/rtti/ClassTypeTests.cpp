@@ -3,7 +3,9 @@
 #include <string>
 #include <type_traits>
 
+#include "CString.hpp"
 #include "rtti/ClassType.hpp"
+#include "rtti/TypeName.hpp"
 
 /**
  * @brief A trivially copyable struct with a single int field.
@@ -39,6 +41,21 @@ struct AlignedStruct {
 struct NonTrivialStruct {
   std::string value{};
   bool operator==(const NonTrivialStruct&) const = default;
+};
+
+template <>
+struct core::rtti::TypeName<TrivialStruct> {
+  static constexpr CString value{"trivial_struct"};
+};
+
+template <>
+struct core::rtti::TypeName<AlignedStruct> {
+  static constexpr CString value{"aligned_struct"};
+};
+
+template <>
+struct core::rtti::TypeName<NonTrivialStruct> {
+  static constexpr CString value{"non_trivial_struct"};
 };
 
 namespace {
@@ -111,6 +128,17 @@ T makeValueB() {
     return NonTrivialStruct{"world"};
   }
 }
+
+template <typename T>
+const char* classTypeName() {
+  if constexpr (std::is_same_v<T, TrivialStruct>) {
+    return "trivial_struct";
+  } else if constexpr (std::is_same_v<T, AlignedStruct>) {
+    return "aligned_struct";
+  } else {
+    return "non_trivial_struct";
+  }
+}
 }  // namespace
 
 // ============================================================================
@@ -138,10 +166,10 @@ TEMPLATE_TEST_CASE(
 // ============================================================================
 
 TEMPLATE_TEST_CASE(
-    "Given a TClassType descriptor, when observed through IClassType and IType, then metadata reflects the name passed "
-    "to the constructor",
+    "Given a TClassType descriptor, when observed through IClassType and IType, then metadata reflects the canonical "
+    "mapped type name",
     "[rtti][class_type][tclass_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  TClassType<TestType> descriptor(IName("my_class_type"));
+  TClassType<TestType> descriptor;
   IClassType* asClass = &descriptor;
   const IType& asType = *asClass;
 
@@ -149,7 +177,8 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType.kind() == TypeKind::CLASS);
   REQUIRE(asType.size() == sizeof(TestType));
   REQUIRE(asType.alignment() == alignof(TestType));
-  REQUIRE(asType.name() == IName("my_class_type"));
+  REQUIRE(asType.name() == IName(classTypeName<TestType>()));
+  REQUIRE(asType.name().toString() == classTypeName<TestType>());
 }
 
 // ============================================================================
@@ -357,7 +386,7 @@ TEST_CASE(
     "Given a TClassType over a non-trivial type, when assign is called, then copy semantics apply and the source is "
     "not mutated",
     "[rtti][class_type][operations][assign][non_trivial]") {
-  TClassType<NonTrivialStruct> descriptor(IName("non_trivial_assign"));
+  TClassType<NonTrivialStruct> descriptor;
   IType& type = descriptor;
 
   auto source = NonTrivialStruct{"original"};
@@ -373,7 +402,7 @@ TEST_CASE(
     "Given a TClassType over a non-trivial type, when create is called then destroy is called, then the object "
     "lifetime is managed correctly without leaking resources",
     "[rtti][class_type][operations][create][destroy][non_trivial]") {
-  TClassType<NonTrivialStruct> descriptor(IName("non_trivial_create_destroy"));
+  TClassType<NonTrivialStruct> descriptor;
   IType& type = descriptor;
 
   void* created = type.create();
@@ -395,7 +424,7 @@ TEST_CASE(
     "Given a TClassType over an over-aligned type, when allocate is called, then returned address satisfies the "
     "required alignment",
     "[rtti][class_type][operations][allocate][aligned]") {
-  TClassType<AlignedStruct> descriptor(IName("aligned_allocate"));
+  TClassType<AlignedStruct> descriptor;
   IType& type = descriptor;
 
   void* allocated = type.allocate();

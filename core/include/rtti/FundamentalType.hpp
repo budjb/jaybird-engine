@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
+#include "INamePool.hpp"
 #include "IType.hpp"
 #include "TypeName.hpp"
 
@@ -54,6 +55,6 @@ class TFundamentalType : public TType<T, IFundamentalType> {
    * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
    * for type @c T and sets the type kind to @code TypeKind::FUNDAMENTAL@endcode.
    */
-  TFundamentalType() noexcept : TType<T, IFundamentalType>(GetTypeName<T>()) {}
+  TFundamentalType() noexcept : TType<T, IFundamentalType>(INamePool::get().addName(GetTypeName<T>())) {}
 };
 }  // namespace core::rtti

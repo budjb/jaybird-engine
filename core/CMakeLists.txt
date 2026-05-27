@@ -47,10 +47,9 @@ if (BUILD_TESTING)
           tests/rtti/ClassTypeTests.cpp
           tests/rtti/ArrayTypeTests.cpp
           tests/rtti/IteratorTests.cpp
-          include/rtti/RefType.hpp
           tests/rtti/RefTypeTests.cpp
-          include/rtti/WeakRefType.hpp
           tests/rtti/WeakRefTypeTests.cpp
+          tests/rtti/TypeRegistryTests.cpp
   )
 
   target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)

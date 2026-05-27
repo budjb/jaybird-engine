@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Export.hpp"
+#include "INamePool.hpp"
 #include "IType.hpp"
+#include "TypeName.hpp"
 
 namespace core::rtti {
 /**
@@ -43,9 +45,7 @@ class TClassType : public TType<T, IClassType> {
 
   /**
    * @brief Constructs a @c TClassType for the specified type @code T@endcode.
-   *
-   * @param name The name of the type, represented as an IName.
    */
-  explicit TClassType(const IName& name) : TType<T, IClassType>(name) {}
+  explicit TClassType() : TType<T, IClassType>(INamePool::get().addName(GetTypeName<T>())) {}
 };
 }  // namespace core::rtti

@@ -1,7 +1,6 @@
 #include "rtti/TypeRegistry.hpp"
 
-#include <mutex>
-
+#include "rtti/ArrayType.hpp"
 #include "rtti/ClassType.hpp"
 #include "rtti/IType.hpp"
 
@@ -19,16 +18,6 @@ IClassType* TypeRegistry::getClass(const IName& name) const {
   if (auto* type = getType(name); type && type->kind() == TypeKind::CLASS) {
     return reinterpret_cast<IClassType*>(type);
   }
-  return nullptr;
-}
-
-IType* TypeRegistry::registerType(std::unique_ptr<IType>&& type) {
-  std::unique_lock lock(m_mutex);
-
-  if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
-    return it->second.get();
-  }
-
   return nullptr;
 }
 

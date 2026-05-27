@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "ContainerType.hpp"
+#include "INamePool.hpp"
 #include "TypeName.hpp"
 
 namespace core::rtti {
@@ -198,7 +199,7 @@ template <typename T>
 template <typename InnerType>
   requires TypedInnerDescriptorFor<InnerType, T>
 TWeakRefType<T>::TWeakRefType(const InnerType* inner) noexcept
-    : TType<std::weak_ptr<T>, IWeakRefType>(GetPrefixedTypeName<TypeKind::WEAK_REF, T>(),
+    : TType<std::weak_ptr<T>, IWeakRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::WEAK_REF, T>()),
                                             static_cast<const IType*>(inner)) {}
 
 template <typename T>

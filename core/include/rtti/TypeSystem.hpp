@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 
+#include "Export.hpp"
 #include "TypeRegistry.hpp"
 
 namespace core::rtti {
@@ -10,7 +11,7 @@ namespace core::rtti {
  * @c TypeSystem is a singleton that owns the @c TypeRegistry and drives a two-phase type
  * registration process (declare then define) via callbacks registered before initialization.
  */
-class TypeSystem {
+class JAYBIRD_API TypeSystem {
  public:
   /**
    * @brief Defines the type of function pointers used for callback functions in the RTTI system.
