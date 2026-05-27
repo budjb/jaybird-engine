@@ -2,10 +2,16 @@
 
 namespace core {
 void SpinLock::lock() noexcept {
-  int expected = 0;
-  while (!m_locked.compare_exchange_weak(expected, -1, std::memory_order_acquire, std::memory_order_relaxed)) {
-    expected = 0;
-    m_locked.wait(m_locked.load(std::memory_order_relaxed), std::memory_order_relaxed);
+  while (true) {
+    int expected = 0;
+    if (m_locked.compare_exchange_strong(expected, -1, std::memory_order_acquire, std::memory_order_relaxed)) {
+      return;
+    }
+
+    // Wait only when the lock is observed as contended; waiting on 0 can deadlock.
+    if (expected != 0) {
+      m_locked.wait(expected, std::memory_order_relaxed);
+    }
   }
 }
 

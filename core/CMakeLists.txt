@@ -43,6 +43,9 @@ if (BUILD_TESTING)
   add_executable(core-tests
           tests/INameTests.cpp
           tests/INamePoolTests.cpp
+          tests/CStringTests.cpp
+          tests/HashTests.cpp
+          tests/SpinLockTests.cpp
           tests/rtti/FundamentalTypeTests.cpp
           tests/rtti/ClassTypeTests.cpp
           tests/rtti/ArrayTypeTests.cpp
@@ -50,6 +53,7 @@ if (BUILD_TESTING)
           tests/rtti/RefTypeTests.cpp
           tests/rtti/WeakRefTypeTests.cpp
           tests/rtti/TypeRegistryTests.cpp
+          tests/rtti/TypeNameTests.cpp
   )
 
   target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)
