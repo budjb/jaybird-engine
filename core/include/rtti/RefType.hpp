@@ -24,12 +24,73 @@ class IRefType : public IContainerType {
    * @param inner A pointer to the @c IType descriptor for the referenced element type.
    */
   IRefType(const IName& name, const std::size_t size, const std::size_t alignment, const IType* inner) noexcept
-      : IContainerType(name, size, alignment, inner) {}
+      : IContainerType(name, size, alignment, inner, TypeKind::REF) {}
 
   /**
    * @brief Virtual destructor for @code IRefType@endcode.
    */
   ~IRefType() override = default;
+
+  /**
+   * @brief Retrieves the raw pointer managed by the @c std::shared_ptr instance at @c instance.
+   *
+   * The returned pointer is non-owning and shares the lifetime of the @c std::shared_ptr from which it was
+   * obtained. If @c instance is @c nullptr, this method returns @code nullptr@endcode.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> instance to query, or @code nullptr@endcode.
+   * @return The raw pointer managed by the shared pointer, or @code nullptr@endcode if the shared pointer
+   * is empty or @c instance is @code nullptr@endcode.
+   */
+  virtual void* get(void* instance) const = 0;
+
+  /**
+   * @brief Retrieves the raw pointer managed by the @c std::shared_ptr instance at @c instance, cast to @code
+   * T*@endcode.
+   *
+   * This is a typed convenience wrapper around the virtual @c get that forwards to the virtual dispatch and
+   * then @c static_cast<T*>s the result.
+   *
+   * @tparam T The type to which the raw managed pointer is cast.
+   * @param instance A pointer to the @c std::shared_ptr<T> instance to query, or @code nullptr@endcode.
+   * @return The managed raw pointer cast to @code T*@endcode, or @code nullptr@endcode if the shared pointer
+   * is empty or @c instance is @code nullptr@endcode.
+   */
+  template <typename T>
+  T* get(void* instance) const {
+    return static_cast<T*>(get(instance));
+  }
+
+  /**
+   * @brief Resets the @c std::shared_ptr at @c instance, releasing its ownership of the managed object.
+   *
+   * After a successful call, the shared pointer at @c instance is empty. It is a no-op if @c instance is
+   * @code nullptr@endcode.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> instance to reset, or @code nullptr@endcode.
+   */
+  virtual void reset(void* instance) const = 0;
+
+  /**
+   * @brief Returns the number of @c std::shared_ptr instances currently sharing ownership of the managed object.
+   *
+   * If @c instance is @c nullptr or the shared pointer at @c instance is empty, this method returns @c 0.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> instance to query, or @code nullptr@endcode.
+   * @return The strong reference count of the managed object, or @c 0 if @c instance is @c nullptr or the
+   * shared pointer is empty.
+   */
+  virtual long useCount(const void* instance) const = 0;
+
+  /**
+   * @brief Swaps the managed objects of two @c std::shared_ptr instances.
+   *
+   * After a successful call, the shared pointer at @c lhs manages the object previously held by @c rhs, and
+   * vice versa. It is a no-op if either @c lhs or @c rhs is @code nullptr@endcode.
+   *
+   * @param lhs A pointer to the left-hand @c std::shared_ptr<T> instance, or @code nullptr@endcode.
+   * @param rhs A pointer to the right-hand @c std::shared_ptr<T> instance, or @code nullptr@endcode.
+   */
+  virtual void swap(void* lhs, void* rhs) const = 0;
 };
 
 /**
@@ -62,6 +123,63 @@ class TRefType : public TType<std::shared_ptr<T>, IRefType> {
   template <typename InnerType>
     requires TypedInnerDescriptorFor<InnerType, T>
   explicit TRefType(const InnerType* inner);
+
+  /**
+   * @brief Retrieves the raw pointer from the @c std::shared_ptr<T> at @c instance.
+   *
+   * It returns @code nullptr@endcode if @c instance is @c nullptr or the shared pointer is empty.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> to query, or @code nullptr@endcode.
+   * @return The raw pointer managed by the shared pointer, or @code nullptr@endcode.
+   */
+  void* get(void* instance) const override {
+    if (instance) {
+      return static_cast<std::shared_ptr<T>*>(instance)->get();
+    }
+    return nullptr;
+  }
+
+  /**
+   * @brief Resets the @c std::shared_ptr<T> at @c instance, releasing its managed object.
+   *
+   * It is a no-op if @c instance is @code nullptr@endcode.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> to reset, or @code nullptr@endcode.
+   */
+  void reset(void* instance) const override {
+    if (instance) {
+      static_cast<std::shared_ptr<T>*>(instance)->reset();
+    }
+  }
+
+  /**
+   * @brief Returns the strong reference count of the @c std::shared_ptr<T> at @c instance.
+   *
+   * It returns @c 0 if @c instance is @c nullptr or the shared pointer is empty.
+   *
+   * @param instance A pointer to the @c std::shared_ptr<T> to query, or @code nullptr@endcode.
+   * @return The use count of the managed object, or @c 0 if @c instance is @code nullptr@endcode.
+   */
+  long useCount(const void* instance) const override {
+    if (instance) {
+      return static_cast<const std::shared_ptr<T>*>(instance)->use_count();
+    }
+    return 0;
+  }
+
+  /**
+   * @brief Swaps the managed objects of the two @c std::shared_ptr<T> instances.
+   *
+   * It is a no-op if either @c lhs or @c rhs is @code nullptr@endcode.
+   *
+   * @param lhs A pointer to the left-hand @c std::shared_ptr<T>, or @code nullptr@endcode.
+   * @param rhs A pointer to the right-hand @c std::shared_ptr<T>, or @code nullptr@endcode.
+   */
+  void swap(void* lhs, void* rhs) const override {
+    if (lhs && rhs) {
+      static_cast<std::shared_ptr<T>*>(lhs)->swap(*static_cast<std::shared_ptr<T>*>(rhs));
+    }
+  }
 };
 
 template <typename T>

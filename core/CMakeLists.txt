@@ -21,6 +21,8 @@ add_library(jaybird-engine-core SHARED
         include/CString.hpp
         src/rtti/TypeSystem.cpp
         include/rtti/TypeSystem.hpp
+        include/rtti/RefType.hpp
+        include/rtti/WeakRefType.hpp
 )
 
 include(GenerateExportHeader)
@@ -47,6 +49,8 @@ if (BUILD_TESTING)
           tests/rtti/IteratorTests.cpp
           include/rtti/RefType.hpp
           tests/rtti/RefTypeTests.cpp
+          include/rtti/WeakRefType.hpp
+          tests/rtti/WeakRefTypeTests.cpp
   )
 
   target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)

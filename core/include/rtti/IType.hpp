@@ -367,7 +367,12 @@ class TType : public TBase {
     if (lhs == nullptr || rhs == nullptr) {
       return lhs == rhs;
     }
-    return *static_cast<const Type*>(lhs) == *static_cast<const Type*>(rhs);
+
+    if constexpr (requires(const Type& a, const Type& b) { a == b; }) {
+      return *static_cast<const Type*>(lhs) == *static_cast<const Type*>(rhs);
+    } else {
+      return false;
+    }
   }
 };
 }  // namespace core::rtti

@@ -20,7 +20,11 @@ IName INamePool::addName(const std::string_view str) noexcept {
 std::string_view INamePool::getName(const IName& str) const noexcept {
   std::shared_lock lock(m_mutex);
 
-  return m_names.at(str);
+  if (const auto it = m_names.find(str); it != m_names.end()) {
+    return it->second;
+  }
+
+  return {};
 }
 
 std::string_view INamePool::getName(const hash_t hash) const noexcept {

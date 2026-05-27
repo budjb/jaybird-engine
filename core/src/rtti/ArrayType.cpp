@@ -7,7 +7,7 @@
 namespace core::rtti {
 IArrayType::IArrayType(const IName& name, const std::size_t size, const std::size_t alignment,
                        const IType* inner) noexcept
-    : IContainerType(name, size, alignment, inner) {}
+    : IContainerType(name, size, alignment, inner, TypeKind::ARRAY) {}
 
 ReverseIterator<> IArrayType::rbegin(void* array) noexcept {
   return ReverseIterator(end(array));
