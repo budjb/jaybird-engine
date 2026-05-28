@@ -82,3 +82,44 @@ TEST_CASE("Given a CString, when converted to IName, then the resulting hash mat
 
   REQUIRE(name.hash() == core::fnv1a_64("convert_me"));
 }
+
+TEST_CASE(
+    "Given two CStrings with identical content, when compared with operator==, then equality holds against both "
+    "another CString and a matching string literal",
+    "[cstring]") {
+  constexpr CString a("hello");
+  constexpr CString b("hello");
+
+  REQUIRE(a == b);
+  REQUIRE(a == "hello");
+  REQUIRE(b == "hello");
+
+  // Verify constexpr evaluation path as well.
+  static_assert(CString("abc") == CString("abc"));
+  static_assert(CString("abc") == "abc");
+}
+
+TEST_CASE(
+    "Given two CStrings with different content, when compared with operator==, then equality is false for both "
+    "CString-to-CString and CString-to-literal comparisons",
+    "[cstring]") {
+  constexpr CString a("hello");
+  constexpr CString b("world");
+
+  REQUIRE_FALSE(a == b);
+  REQUIRE_FALSE(a == "world");
+  REQUIRE_FALSE(b == "hello");
+}
+
+TEST_CASE(
+    "Given two CStrings of different sizes, when compared with operator==, then equality is false regardless of "
+    "content overlap",
+    "[cstring]") {
+  constexpr CString a("hi");
+  constexpr CString b("hi!");
+
+  REQUIRE_FALSE(a == b);
+  REQUIRE_FALSE(a == "hi!");
+  REQUIRE_FALSE(b == "hi");
+}
+

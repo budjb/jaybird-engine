@@ -7,16 +7,16 @@ namespace core::rtti {
 /**
  * @brief Concept that constrains inner type descriptors used with container types such as @code TArrayType@endcode.
  *
- * It is satisfied when @c InnerType derives from @c IType and defines a nested @c Type alias that matches
- * @c ElementType exactly. This ensures at compile time that the inner descriptor is compatible with the
+ * It is satisfied when @c T1 derives from @c IType and defines a nested @c Type alias that matches
+ * @c T2 exactly. This ensures at compile time that the inner descriptor is compatible with the
  * container's element type, preventing mismatched descriptors from being passed to constructors.
  *
- * @tparam InnerType The candidate inner type descriptor to validate.
- * @tparam ElementType The expected element type that @c InnerType::Type must match.
+ * @tparam T1 The candidate inner type descriptor to validate.
+ * @tparam T2 The expected element type that @c T1::Type must match.
  */
-template <typename InnerType, typename ElementType>
-concept TypedInnerDescriptorFor = std::derived_from<InnerType, IType> && requires { typename InnerType::Type; } &&
-                                  std::same_as<typename InnerType::Type, ElementType>;
+template <typename T1, typename T2>
+constexpr bool is_same_element_v =
+    std::derived_from<T1, IType> && requires { typename T1::Type; } && std::same_as<typename T1::Type, T2>;
 
 /**
  * @brief Interface for type descriptors representing containers that encapsulate other types (e.g., arrays, maps, smart

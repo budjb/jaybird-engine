@@ -1,7 +1,5 @@
 #include "rtti/ArrayType.hpp"
 
-#include <vector>
-
 #include "rtti/Iterator.hpp"
 
 namespace core::rtti {

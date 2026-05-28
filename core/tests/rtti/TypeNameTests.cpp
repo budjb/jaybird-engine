@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "CString.hpp"
 #include "rtti/TypeKind.hpp"
@@ -9,54 +9,86 @@
 
 namespace test_types {
 struct MemberNamedType {
+  // ReSharper disable once CppDeclaratorNeverUsed
   static constexpr auto NAME = core::CString("member_named");
 };
 
 struct MappedNamedType {};
 
 struct MemberAndMappedType {
+  // ReSharper disable once CppDeclaratorNeverUsed
   static constexpr auto NAME = core::CString("member_priority");
 };
+
+/**
+ * @brief A plain struct with no @c NAME member and no @c TypeName<> specialization.
+ *
+ * It is used as the negative case in concept checks that require @code NamedType@endcode.
+ */
+struct PlainStruct {};
 }  // namespace test_types
 
-namespace core::rtti {
-template <>
-struct TypeName<test_types::MappedNamedType> {
-  static constexpr auto value = CString("mapped_named");
-};
-
-template <>
-struct TypeName<test_types::MemberAndMappedType> {
-  // Keep the same length as MemberAndMappedType::NAME so GetTypeName/GetPrefixedTypeName deduce one return type.
-  static constexpr auto value = CString("mapped_prioritx");
-};
-}  // namespace core::rtti
+REGISTER_TYPE_NAME(test_types::MappedNamedType, "mapped_named");
+// Keep the same length as MemberAndMappedType::NAME so GetTypeName/GetPrefixedTypeName deduce one return type.
+REGISTER_TYPE_NAME(test_types::MemberAndMappedType, "mapped_prioritx");
 
 namespace {
-static_assert(core::rtti::HasTypeNameMember<test_types::MemberNamedType>);
-static_assert(core::rtti::HasTypeName<test_types::MemberNamedType>);
-static_assert(core::rtti::HasTypeNameMapping<test_types::MappedNamedType>);
-static_assert(core::rtti::HasTypeName<test_types::MappedNamedType>);
+// --- has_type_name_member_v ---
+static_assert(core::rtti::has_type_name_member_v<test_types::MemberNamedType>);
+static_assert(core::rtti::has_type_name_member_v<test_types::MemberAndMappedType>);
+static_assert(!core::rtti::has_type_name_member_v<test_types::MappedNamedType>);
+static_assert(!core::rtti::has_type_name_member_v<test_types::PlainStruct>);
 
+// --- has_type_name_mapping_v ---
+static_assert(core::rtti::has_type_name_mapping_v<test_types::MappedNamedType>);
+static_assert(core::rtti::has_type_name_mapping_v<test_types::MemberAndMappedType>);
+static_assert(!core::rtti::has_type_name_mapping_v<test_types::MemberNamedType>);
+static_assert(!core::rtti::has_type_name_mapping_v<test_types::PlainStruct>);
+
+// --- NamedType concept ---
+static_assert(core::rtti::NamedType<test_types::MemberNamedType>);
+static_assert(core::rtti::NamedType<test_types::MappedNamedType>);
+static_assert(core::rtti::NamedType<test_types::MemberAndMappedType>);
+static_assert(!core::rtti::NamedType<test_types::PlainStruct>);
+
+// --- StdVector concept ---
+static_assert(core::rtti::StdVector<std::vector<int>>);
+static_assert(core::rtti::StdVector<std::vector<test_types::MappedNamedType>>);
+static_assert(!core::rtti::StdVector<int>);
+static_assert(!core::rtti::StdVector<test_types::MappedNamedType>);
+
+// --- NamedVectorType concept ---
+static_assert(core::rtti::NamedVectorType<std::vector<test_types::MappedNamedType>>);
+static_assert(core::rtti::NamedVectorType<std::vector<test_types::MemberNamedType>>);
+static_assert(!core::rtti::NamedVectorType<std::vector<test_types::PlainStruct>>);
+static_assert(!core::rtti::NamedVectorType<int>);
 }  // namespace
 
-TEST_CASE("Given a TypeKind, when TypePrefix is requested, then each supported kind returns the expected prefix", "[rtti][type_name]") {
-  REQUIRE(static_cast<std::string_view>(core::rtti::TypePrefix<core::rtti::TypeKind::NAME>()) == "");
-  REQUIRE(static_cast<std::string_view>(core::rtti::TypePrefix<core::rtti::TypeKind::ARRAY>()) == "array:");
-  REQUIRE(static_cast<std::string_view>(core::rtti::TypePrefix<core::rtti::TypeKind::REF>()) == "ref:");
-  REQUIRE(static_cast<std::string_view>(core::rtti::TypePrefix<core::rtti::TypeKind::WEAK_REF>()) == "wref:");
+TEST_CASE("Given a TypeKind, when GetTypePrefix is requested, then each supported kind returns the expected prefix",
+          "[rtti][type_name]") {
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::NAME>()) == "");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::ARRAY>()) == "array:");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::REF>()) == "ref:");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::WEAK_REF>()) == "wref:");
 }
 
-TEST_CASE(
-    "Given a type with TypeName mapping only, when GetTypeName is used, then the mapped value is returned",
-    "[rtti][type_name]") {
+TEST_CASE("Given a type with a NAME member only, when GetTypeName is used, then the NAME value is returned",
+          "[rtti][type_name]") {
+  constexpr auto name = core::rtti::GetTypeName<test_types::MemberNamedType>();
+
+  REQUIRE(static_cast<std::string_view>(name) == "member_named");
+}
+
+TEST_CASE("Given a type with a TypeName mapping only, when GetTypeName is used, then the mapped value is returned",
+          "[rtti][type_name]") {
   constexpr auto name = core::rtti::GetTypeName<test_types::MappedNamedType>();
 
   REQUIRE(static_cast<std::string_view>(name) == "mapped_named");
 }
 
 TEST_CASE(
-    "Given a type with both NAME and TypeName mapping, when GetTypeName is used, then the NAME value is selected",
+    "Given a type with both a NAME member and a TypeName mapping, when GetTypeName is used, then the NAME value is "
+    "selected",
     "[rtti][type_name]") {
   constexpr auto name = core::rtti::GetTypeName<test_types::MemberAndMappedType>();
 
@@ -64,8 +96,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a type with a compile-time name, when GetPrefixedTypeName is used, then prefix and base name are "
-    "concatenated",
+    "Given a compile-time type name, when GetPrefixedTypeName is used, then the prefix and base name are concatenated",
     "[rtti][type_name]") {
   constexpr auto arrayName =
       core::rtti::GetPrefixedTypeName<core::rtti::TypeKind::ARRAY, test_types::MemberAndMappedType>();
@@ -76,10 +107,21 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a runtime base name, when runtime GetPrefixedTypeName is used, then the expected prefixed string is "
-    "returned",
+    "Given a runtime base name, when the runtime GetPrefixedTypeName overload is used, then the expected prefixed "
+    "string is returned",
     "[rtti][type_name]") {
   const std::string name = core::rtti::GetPrefixedTypeName<core::rtti::TypeKind::WEAK_REF>("Entity");
 
   REQUIRE(name == "wref:Entity");
+}
+
+TEST_CASE(
+    "Given a std::vector of a named element type, when GetTypeName is used, then the array prefix and element name "
+    "are concatenated",
+    "[rtti][type_name]") {
+  constexpr auto mappedName = core::rtti::GetTypeName<std::vector<test_types::MappedNamedType>>();
+  constexpr auto memberName = core::rtti::GetTypeName<std::vector<test_types::MemberNamedType>>();
+
+  REQUIRE(static_cast<std::string_view>(mappedName) == "array:mapped_named");
+  REQUIRE(static_cast<std::string_view>(memberName) == "array:member_named");
 }

@@ -7,42 +7,13 @@
 #include "rtti/FundamentalType.hpp"
 #include "rtti/TypeName.hpp"
 
-namespace core::rtti {
-template <>
-struct TypeName<std::int32_t> {
-  static constexpr CString value{"int32"};
-};
-
-template <>
-struct TypeName<std::uint32_t> {
-  static constexpr CString value{"uint32"};
-};
-
-template <>
-struct TypeName<std::int64_t> {
-  static constexpr CString value{"int64"};
-};
-
-template <>
-struct TypeName<std::uint64_t> {
-  static constexpr CString value{"uint64"};
-};
-
-template <>
-struct TypeName<float> {
-  static constexpr CString value{"float"};
-};
-
-template <>
-struct TypeName<double> {
-  static constexpr CString value{"double"};
-};
-
-template <>
-struct TypeName<bool> {
-  static constexpr CString value{"bool"};
-};
-}  // namespace core::rtti
+REGISTER_TYPE_NAME(std::int32_t, "int32");
+REGISTER_TYPE_NAME(std::uint32_t, "uint32");
+REGISTER_TYPE_NAME(std::int64_t, "int64");
+REGISTER_TYPE_NAME(std::uint64_t, "uint64");
+REGISTER_TYPE_NAME(float, "float");
+REGISTER_TYPE_NAME(double, "double");
+REGISTER_TYPE_NAME(bool, "bool");
 
 namespace {
 using core::IName;

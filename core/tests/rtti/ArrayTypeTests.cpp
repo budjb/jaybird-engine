@@ -29,17 +29,8 @@ struct NonTrivialElement {
   bool operator==(const NonTrivialElement&) const = default;
 };
 
-namespace core::rtti {
-template <>
-struct TypeName<TrivialElement> {
-  static constexpr CString value{"trivial_element"};
-};
-
-template <>
-struct TypeName<NonTrivialElement> {
-  static constexpr CString value{"non_trivial_element"};
-};
-}  // namespace core::rtti
+REGISTER_TYPE_NAME(TrivialElement, "trivial_element");
+REGISTER_TYPE_NAME(NonTrivialElement, "non_trivial_element");
 
 namespace {
 using core::IName;

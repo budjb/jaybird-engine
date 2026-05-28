@@ -1,6 +1,5 @@
 #include "rtti/TypeRegistry.hpp"
 
-#include "rtti/ArrayType.hpp"
 #include "rtti/ClassType.hpp"
 #include "rtti/IType.hpp"
 

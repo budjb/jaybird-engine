@@ -117,13 +117,12 @@ class TRefType : public TType<std::shared_ptr<T>, IRefType> {
    * The type name is automatically derived from @c GetPrefixedTypeName with @c TypeKind::REF,
    * producing a name such as @c "ref:MyType".
    *
-   * @tparam InnerType The concrete inner type descriptor, which must satisfy
-   *   @c TypedInnerDescriptorFor<InnerType, T>.
+   * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
    * @param inner A pointer to the @c IType descriptor for the element type @code T@endcode.
    */
-  template <typename InnerType>
-    requires TypedInnerDescriptorFor<InnerType, T>
-  explicit TRefType(const InnerType* inner);
+  template <typename I>
+    requires is_same_element_v<I, T>
+  explicit TRefType(const I* inner);
 
   /**
    * @brief Retrieves the raw pointer from the @c std::shared_ptr<T> at @c instance.
@@ -185,7 +184,7 @@ class TRefType : public TType<std::shared_ptr<T>, IRefType> {
 
 template <typename T>
 template <typename InnerType>
-  requires TypedInnerDescriptorFor<InnerType, T>
+  requires is_same_element_v<InnerType, T>
 TRefType<T>::TRefType(const InnerType* inner)
     : TType<std::shared_ptr<T>, IRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::REF, T>()),
                                           static_cast<const IType*>(inner)) {}

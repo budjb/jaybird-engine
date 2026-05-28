@@ -107,13 +107,12 @@ class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
    * The type name is automatically derived from @c GetPrefixedTypeName with @c TypeKind::WEAK_REF,
    * producing a name such as @c "wref:MyType".
    *
-   * @tparam InnerType The concrete inner type descriptor, which must satisfy
-   *   @c TypedInnerDescriptorFor<InnerType, T>.
+   * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
    * @param inner A pointer to the @c IType descriptor for the element type @code T@endcode.
    */
-  template <typename InnerType>
-    requires TypedInnerDescriptorFor<InnerType, T>
-  explicit TWeakRefType(const InnerType* inner) noexcept;
+  template <typename I>
+    requires is_same_element_v<I, T>
+  explicit TWeakRefType(const I* inner) noexcept;
 
   /**
    * @brief Compares two @c std::weak_ptr instances for equality by locking both and comparing
@@ -197,7 +196,7 @@ class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
 
 template <typename T>
 template <typename InnerType>
-  requires TypedInnerDescriptorFor<InnerType, T>
+  requires is_same_element_v<InnerType, T>
 TWeakRefType<T>::TWeakRefType(const InnerType* inner) noexcept
     : TType<std::weak_ptr<T>, IWeakRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::WEAK_REF, T>()),
                                             static_cast<const IType*>(inner)) {}
@@ -207,8 +206,8 @@ bool TWeakRefType<T>::equals(const void* lhs, const void* rhs) const noexcept {
   if (lhs == nullptr || rhs == nullptr) {
     return lhs == rhs;
   }
-  const auto slhs = static_cast<const std::weak_ptr<T>*>(lhs)->lock();
-  const auto srhs = static_cast<const std::weak_ptr<T>*>(rhs)->lock();
-  return slhs == srhs;
+  const auto l = static_cast<const std::weak_ptr<T>*>(lhs)->lock();
+  const auto r = static_cast<const std::weak_ptr<T>*>(rhs)->lock();
+  return l == r;
 }
 }  // namespace core::rtti

@@ -135,7 +135,7 @@ bool TypeRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
   auto* instance = type.get();
 
   if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
-    if constexpr (HasTypeName<typename D::Type>) {
+    if constexpr (NamedType<typename D::Type>) {
       registerTypeImpl(std::make_unique<TArrayType<typename D::Type>>(instance));
     }
     return true;

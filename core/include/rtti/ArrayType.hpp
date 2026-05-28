@@ -369,7 +369,7 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    * with the element type T.
    */
   template <typename InnerType>
-    requires TypedInnerDescriptorFor<InnerType, T>
+    requires is_same_element_v<InnerType, T>
   explicit TArrayType(const InnerType* inner)
       : TType<std::vector<T>, IArrayType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::ARRAY, T>()),
                                           static_cast<const IType*>(inner)) {}

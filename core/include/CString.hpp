@@ -18,10 +18,9 @@ template <std::size_t N>
 class CString {
  public:
   /**
-   * @brief Constructs a CString from a string literal by copying characters from the provided
-   * string literal, including the null terminator.
+   * @brief Constructs a @c CString from a string literal by copying all characters, including the null terminator.
    *
-   * @param str Reference to a character array of size N
+   * @param str The source character array of size @c N; all characters are copied, including the null terminator.
    */
   explicit constexpr CString(const char (&str)[N]) {
     for (std::size_t i = 0; i < N; ++i) {
@@ -125,6 +124,52 @@ class CString {
   }
 
   /**
+   * @brief Compares this @c CString to another for equality.
+   *
+   * Two @c CString values are equal when they have the same buffer size and identical character sequences,
+   * including the null terminator.
+   *
+   * @tparam M The size of the other @code CString@endcode, including the null terminator.
+   * @param other The @c CString to compare to.
+   * @return @c true if this string and @c other have equal content, @c false otherwise.
+   */
+  template <std::size_t M>
+  constexpr bool operator==(const CString<M>& other) const noexcept {
+    if (N != M) {
+      return false;
+    }
+    for (std::size_t i = 0; i < N; ++i) {
+      if (value[i] != other.c_str()[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @brief Compares this @c CString to a character array for equality.
+   *
+   * The comparison succeeds when both buffers have the same size and identical character sequences,
+   * including the null terminator.
+   *
+   * @tparam M The size of the character array, including the null terminator.
+   * @param str The character array to compare to.
+   * @return @c true if this string and @c str have equal content, @c false otherwise.
+   */
+  template <std::size_t M>
+  constexpr bool operator==(const char (&str)[M]) const noexcept {
+    if (N != M) {
+      return false;
+    }
+    for (std::size_t i = 0; i < N; ++i) {
+      if (value[i] != str[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * @brief Returns a new @c std::string formed by concatenating @c lhs and @code rhs@endcode.
    *
    * Unlike the @c CString overload, this operator returns a @c std::string because the result size cannot
@@ -141,7 +186,7 @@ class CString {
   /**
    * @brief Returns a new @c CString formed by concatenating @c lhs and @code rhs@endcode.
    *
-   * @tparam M The size of the right-hand @c CString, including the null terminator.
+   * @tparam M The size of the right-hand @code CString@endcode, including the null terminator.
    * @param lhs The left-hand @code CString@endcode.
    * @param rhs The right-hand @code CString@endcode.
    * @return A new @c CString containing the concatenated result.
@@ -168,11 +213,13 @@ class CString {
 };
 
 /**
- * @brief Deduction guide for CString. Allows construction without explicit template parameter.
+ * @brief Deduction guide for @code CString@endcode, allowing string literals to construct a @c CString without
+ * an explicit template argument.
  *
- * Usage: CString("Foo") automatically deduces N = 4
+ * For example, writing @c CString("Foo") causes the compiler to automatically deduce @c N as @c 4
+ * (three visible characters plus the null terminator).
  *
- * @tparam N The size of the string literal, deduced from the array size
+ * @tparam N The character array size, deduced from the string literal. It includes the null terminator.
  */
 template <std::size_t N>
 CString(const char (&)[N]) -> CString<N>;
@@ -217,6 +264,15 @@ constexpr bool is_char_array_v =
     std::is_same_v<char, std::remove_cv_t<std::remove_all_extents_t<std::remove_reference_t<T>>>>;
 
 /**
+ * @brief Variable template that is @c true if @c T is either a @c CString specialization or a character array type.
+ *
+ * @tparam T The type to check for CString convertibility, which can be either a @c CString specialization or a
+ * character array.
+ */
+template <typename T>
+constexpr bool is_cstring_convertible_v = is_cstring_v<T> || is_char_array_v<T>;
+
+/**
  * @brief Concept that is satisfied when @c T is either a @c CString specialization or a character array.
  *
  * It is intended to constrain template parameters that can be used as compile-time C-style string sources.
@@ -224,5 +280,5 @@ constexpr bool is_char_array_v =
  * @tparam T The type to check for CString convertibility.
  */
 template <typename T>
-concept is_cstring_convertible_v = is_cstring_v<T> || is_char_array_v<T>;
+concept CStringConvertible = is_cstring_convertible_v<T>;
 }  // namespace core

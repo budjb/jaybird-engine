@@ -71,40 +71,40 @@ struct RegTargetI {
   bool operator==(const RegTargetI&) const = default;
 };
 
-namespace core::rtti {
-template <>
-struct TypeName<RegTargetA> {
-  static constexpr CString value{"reg_target_a"};
+/**
+ * @brief This type is used exclusively to verify that the first @c registerType call returns @code true@endcode.
+ *
+ * No other test case may register this type. This constraint ensures the registration in that test case is
+ * always the first, so the return value is guaranteed to be @code true@endcode.
+ */
+struct RegTargetA_Solo {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  int v{0};
+  bool operator==(const RegTargetA_Solo&) const = default;
 };
-template <>
-struct TypeName<RegTargetB> {
-  static constexpr CString value{"reg_target_b"};
+
+/**
+ * @brief This type is used exclusively to verify that companion-array auto-registration works correctly.
+ *
+ * No other test case may register this type. This constraint ensures the registration in that test case is
+ * always the first, keeping the companion-array assertion order-independent.
+ */
+struct RegTargetB_Solo {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  int v{0};
+  bool operator==(const RegTargetB_Solo&) const = default;
 };
-template <>
-struct TypeName<RegTargetC> {
-  static constexpr CString value{"reg_target_c"};
-};
-template <>
-struct TypeName<RegTargetD> {
-  static constexpr CString value{"reg_target_d"};
-};
-template <>
-struct TypeName<RegTargetF> {
-  static constexpr CString value{"reg_target_f"};
-};
-template <>
-struct TypeName<RegTargetG> {
-  static constexpr CString value{"reg_target_g"};
-};
-template <>
-struct TypeName<RegTargetH> {
-  static constexpr CString value{"reg_target_h"};
-};
-template <>
-struct TypeName<RegTargetI> {
-  static constexpr CString value{"reg_target_i"};
-};
-}  // namespace core::rtti
+
+REGISTER_TYPE_NAME(RegTargetA, "reg_target_a");
+REGISTER_TYPE_NAME(RegTargetB, "reg_target_b");
+REGISTER_TYPE_NAME(RegTargetC, "reg_target_c");
+REGISTER_TYPE_NAME(RegTargetD, "reg_target_d");
+REGISTER_TYPE_NAME(RegTargetF, "reg_target_f");
+REGISTER_TYPE_NAME(RegTargetG, "reg_target_g");
+REGISTER_TYPE_NAME(RegTargetH, "reg_target_h");
+REGISTER_TYPE_NAME(RegTargetI, "reg_target_i");
+REGISTER_TYPE_NAME(RegTargetA_Solo, "reg_target_a_solo");
+REGISTER_TYPE_NAME(RegTargetB_Solo, "reg_target_b_solo");
 
 namespace {
 using core::IName;
@@ -157,9 +157,9 @@ TEST_CASE(
     "[rtti][type_registry]") {
   TypeRegistry& registry = TypeSystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<TClassType<RegTargetA>>()));
-  REQUIRE(registry.hasType(IName("reg_target_a")));
-  REQUIRE(registry.getType(IName("reg_target_a")) != nullptr);
+  REQUIRE(registry.registerType(std::make_unique<TClassType<RegTargetA_Solo>>()));
+  REQUIRE(registry.hasType("reg_target_a_solo"));
+  REQUIRE(registry.getType("reg_target_a_solo") != nullptr);
 }
 
 TEST_CASE("Given a registered TClassType, when getType is called, then the returned descriptor has kind CLASS",
@@ -168,7 +168,7 @@ TEST_CASE("Given a registered TClassType, when getType is called, then the retur
 
   registry.registerType(std::make_unique<TClassType<RegTargetA>>());
 
-  REQUIRE(registry.getType(IName("reg_target_a"))->kind() == TypeKind::CLASS);
+  REQUIRE(registry.getType("reg_target_a")->kind() == TypeKind::CLASS);
 }
 
 TEST_CASE("Given a registered TClassType, when getClass is called, then it returns the same descriptor as getType",
@@ -177,7 +177,7 @@ TEST_CASE("Given a registered TClassType, when getClass is called, then it retur
 
   registry.registerType(std::make_unique<TClassType<RegTargetA>>());
 
-  IType* asType = registry.getType(IName("reg_target_a"));
+  IType* asType = registry.getType("reg_target_a");
   IClassType* asClass = registry.getClass(IName("reg_target_a"));
 
   REQUIRE(asClass != nullptr);
@@ -194,9 +194,9 @@ TEST_CASE(
     "[rtti][type_registry]") {
   TypeRegistry& registry = TypeSystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<TClassType<RegTargetB>>()));
+  REQUIRE(registry.registerType(std::make_unique<TClassType<RegTargetB_Solo>>()));
 
-  const IName arrayName("array:reg_target_b");
+  const IName arrayName("array:reg_target_b_solo");
   REQUIRE(registry.hasType(arrayName));
   REQUIRE(registry.getType(arrayName) != nullptr);
 }
@@ -208,8 +208,8 @@ TEST_CASE(
   TypeRegistry& registry = TypeSystem::get().registry();
 
   registry.registerType(std::make_unique<TClassType<RegTargetB>>());
-  IType* baseType = registry.getType(IName("reg_target_b"));
-  IType* arrayType = registry.getType(IName("array:reg_target_b"));
+  IType* baseType = registry.getType("reg_target_b");
+  IType* arrayType = registry.getType("array:reg_target_b");
 
   REQUIRE(arrayType->kind() == TypeKind::ARRAY);
   // IType::asArray() called on the base type resolves its companion array via registry lookup
@@ -237,16 +237,16 @@ TEST_CASE(
   TypeRegistry& registry = TypeSystem::get().registry();
 
   registry.registerType(std::make_unique<TClassType<RegTargetI>>());
-  IType* inner = registry.getType(IName("reg_target_i"));
+  IType* inner = registry.getType("reg_target_i");
   REQUIRE(inner != nullptr);
 
   // The auto-array is already registered; re-registering it returns false (duplicate) but does not crash.
   const bool reregistered =
-      registry.registerType(std::make_unique<TArrayType<RegTargetI>>(static_cast<TClassType<RegTargetI>*>(inner)));
+      registry.registerType(std::make_unique<TArrayType<RegTargetI>>(reinterpret_cast<TClassType<RegTargetI>*>(inner)));
   REQUIRE_FALSE(reregistered);
 
   // No second-order array should ever exist.
-  REQUIRE_FALSE(registry.hasType(IName("array:array:reg_target_i")));
+  REQUIRE_FALSE(registry.hasType("array:array:reg_target_i"));
 }
 
 // =============================================================================
@@ -269,12 +269,12 @@ TEST_CASE(
   TypeRegistry& registry = TypeSystem::get().registry();
 
   registry.registerType(std::make_unique<TClassType<RegTargetC>>());
-  IType* original = registry.getType(IName("reg_target_c"));
+  IType* original = registry.getType("reg_target_c");
   REQUIRE(original != nullptr);
 
   registry.registerType(std::make_unique<TClassType<RegTargetC>>());
 
-  REQUIRE(registry.getType(IName("reg_target_c")) == original);
+  REQUIRE(registry.getType("reg_target_c") == original);
 }
 
 // =============================================================================
@@ -292,7 +292,7 @@ TEST_CASE(
   const IName byHash(IName("reg_target_d").hash());
 
   REQUIRE(registry.hasType(byHash));
-  REQUIRE(registry.getType(byHash) == registry.getType(IName("reg_target_d")));
+  REQUIRE(registry.getType(byHash) == registry.getType("reg_target_d"));
 }
 
 // =============================================================================
@@ -345,8 +345,8 @@ TEST_CASE(
   }
 
   REQUIRE(successCount == 1);
-  REQUIRE(registry.hasType(IName("reg_target_h")));
-  REQUIRE(registry.hasType(IName("array:reg_target_h")));
+  REQUIRE(registry.hasType("reg_target_h"));
+  REQUIRE(registry.hasType("array:reg_target_h"));
 }
 
 // =============================================================================
@@ -360,7 +360,7 @@ TEST_CASE(
   TypeRegistry& registry = TypeSystem::get().registry();
 
   registry.registerType(std::make_unique<TClassType<RegTargetG>>());
-  IType* expected = registry.getType(IName("reg_target_g"));
+  IType* expected = registry.getType("reg_target_g");
   REQUIRE(expected != nullptr);
 
   constexpr int readerCount = 8;
@@ -373,11 +373,11 @@ TEST_CASE(
   for (int i = 0; i < readerCount; ++i) {
     readers.emplace_back([&registry, expected, &inconsistentRead]() {
       for (int j = 0; j < iterationsPerReader; ++j) {
-        if (!registry.hasType(IName("reg_target_g"))) {
+        if (!registry.hasType("reg_target_g")) {
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }
-        if (registry.getType(IName("reg_target_g")) != expected) {
+        if (registry.getType("reg_target_g") != expected) {
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }
