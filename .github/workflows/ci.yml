@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: Build, Test, and Coverage (Windows Debug)
+    runs-on: windows-latest
+    outputs:
+      coverage_percent: ${{ steps.coverage_meta.outputs.coverage_percent }}
+      coverage_badge_color: ${{ steps.coverage_meta.outputs.coverage_badge_color }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Verify clang coverage tools
+        shell: pwsh
+        run: |
+          clang-cl --version
+          llvm-profdata --version
+          llvm-cov --version
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER=clang-cl
+
+      - name: Build core-tests
+        run: cmake --build build --target core-tests --parallel
+
+      - name: Run test suite
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path build/coverage -Force | Out-Null
+          $env:LLVM_PROFILE_FILE = "build/coverage/core-tests-%p.profraw"
+          ctest --test-dir build --output-on-failure --output-junit build/ctest-junit.xml
+
+      - name: Generate coverage reports
+        shell: pwsh
+        run: |
+          llvm-profdata merge -sparse build/coverage/*.profraw -o build/coverage/coverage.profdata
+          llvm-cov report build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage-summary.txt
+          llvm-cov export -format=lcov build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage.lcov
+          "### Coverage summary" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "```text" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          Get-Content build/coverage/coverage-summary.txt | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "```" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Extract coverage metadata
+        id: coverage_meta
+        shell: pwsh
+        run: |
+          $summary = Get-Content build/coverage/coverage-summary.txt -Raw
+          $match = [regex]::Match($summary, '(?m)^TOTAL\s+\d+\s+\d+\s+([0-9]+(?:\.[0-9]+)?)%')
+          if (-not $match.Success) {
+            throw "Unable to parse TOTAL line coverage percentage from build/coverage/coverage-summary.txt"
+          }
+
+          $coverage = $match.Groups[1].Value
+          $coverageValue = [double]$coverage
+          if ($coverageValue -ge 90.0) {
+            $color = "brightgreen"
+          } elseif ($coverageValue -ge 75.0) {
+            $color = "yellow"
+          } else {
+            $color = "red"
+          }
+
+          "coverage_percent=$coverage" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "coverage_badge_color=$color" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "Parsed line coverage: $coverage%" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Publish test results to GitHub checks
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: CTest Results (Windows Debug)
+          path: build/ctest-junit.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Upload JUnit report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-windows-debug
+          path: |
+            build/ctest-junit.xml
+            build/coverage/coverage.profdata
+            build/coverage/coverage-summary.txt
+            build/coverage/coverage.lcov
