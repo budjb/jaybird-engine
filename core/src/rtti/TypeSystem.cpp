@@ -1,8 +1,24 @@
 #include "rtti/TypeSystem.hpp"
 
 #include <algorithm>
+#include <cstdint>
 
+#include "rtti/ClassType.hpp"
 #include "rtti/FundamentalType.hpp"
+#include "rtti/INameType.hpp"
+#include "types/Color.hpp"
+#include "types/EulerAngles.hpp"
+#include "types/Quaternion.hpp"
+
+REGISTER_TYPE_NAME(int8_t, "int8");
+REGISTER_TYPE_NAME(int32_t, "int32");
+REGISTER_TYPE_NAME(int64_t, "int64");
+REGISTER_TYPE_NAME(uint8_t, "uint8");
+REGISTER_TYPE_NAME(uint32_t, "uint32");
+REGISTER_TYPE_NAME(uint64_t, "uint64");
+REGISTER_TYPE_NAME(float, "float");
+REGISTER_TYPE_NAME(double, "double");
+REGISTER_TYPE_NAME(bool, "bool");
 
 namespace core::rtti {
 TypeSystem& TypeSystem::get() noexcept {
@@ -40,18 +56,23 @@ void TypeSystem::addCallbacks(const CallbackFunction& declare, const CallbackFun
 }
 
 TypeSystem::TypeSystem() noexcept {
-  addDeclareCallback([&] { registerFundamentalTypes(); });
+  addDeclareCallback([this] { registerBuiltInTypes(); });
 }
 
-void TypeSystem::registerFundamentalTypes() noexcept {
+void TypeSystem::registerBuiltInTypes() noexcept {
+  m_registry.registerType(std::make_unique<TFundamentalType<int8_t>>());
   m_registry.registerType(std::make_unique<TFundamentalType<int32_t>>());
   m_registry.registerType(std::make_unique<TFundamentalType<int64_t>>());
+  m_registry.registerType(std::make_unique<TFundamentalType<uint8_t>>());
   m_registry.registerType(std::make_unique<TFundamentalType<uint32_t>>());
   m_registry.registerType(std::make_unique<TFundamentalType<uint64_t>>());
-
   m_registry.registerType(std::make_unique<TFundamentalType<float>>());
   m_registry.registerType(std::make_unique<TFundamentalType<double>>());
-
   m_registry.registerType(std::make_unique<TFundamentalType<bool>>());
+
+  m_registry.registerType(std::make_unique<INameType>());
+  m_registry.registerType(std::make_unique<TClassType<Quaternion>>());
+  m_registry.registerType(std::make_unique<TClassType<EulerAngles>>());
+  m_registry.registerType(std::make_unique<TClassType<Color>>());
 }
 }  // namespace core::rtti

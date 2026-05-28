@@ -1,8 +1,16 @@
 #pragma once
+
 #include <functional>
+#include <vector>
 
 #include "Export.hpp"
 #include "TypeRegistry.hpp"
+
+#ifdef TESTING_ENABLED
+#define TEST_VISIBILITY public:
+#else
+#define TEST_VISIBILITY private:
+#endif
 
 namespace core::rtti {
 /**
@@ -14,7 +22,7 @@ namespace core::rtti {
 class JAYBIRD_API TypeSystem {
  public:
   /**
-   * @brief Defines the type of function pointers used for callback functions in the RTTI system.
+   * @brief This alias defines the callback type that is executed during initialization.
    */
   using CallbackFunction = std::function<void()>;
 
@@ -30,9 +38,10 @@ class JAYBIRD_API TypeSystem {
    *
    * Registration runs in two phases: first all declare callbacks, then all define callbacks. This two-phase approach
    * allows forward references between types to be resolved during the define phase. Subsequent calls after successful
-   * initialization are no-ops and return @code true@endcode.
+   * initialization are no-ops and return @code false@endcode.
    *
-   * @return @c true if initialization succeeded or was already complete.
+   * @return This function returns @c true if initialization work ran during this call, and it returns @c false if the
+   * system was already initialized.
    */
   bool initialize();
 
@@ -44,51 +53,44 @@ class JAYBIRD_API TypeSystem {
   TypeRegistry& registry() noexcept;
 
   /**
-   * @brief Adds a declaration callback function to the type system. This function will be called during the
-   * registration process to declare a type to the RTTI system.
+   * @brief Adds a declaration callback function to the type system.
    *
-   * @param function A function pointer to the callback function that should be added to the type system.
+   * The callback runs in the declaration phase when @code initialize()@endcode is called.
+   *
+   * @param function This parameter provides the callback function that will be stored for declaration-phase execution.
    */
   void addDeclareCallback(const CallbackFunction& function);
 
   /**
-   * @brief Adds a definition callback function to the type system. This function will be called during the registration
-   * process to define a type in the RTTI system.
+   * @brief Adds a definition callback function to the type system.
    *
-   * @param function A function pointer to the callback function that should be added to the type system.
+   * The callback runs in the definition phase after all declaration callbacks have completed.
+   *
+   * @param function This parameter provides the callback function that will be stored for definition-phase execution.
    */
   void addDefineCallback(const CallbackFunction& function);
 
   /**
    * @brief Adds both declaration and definition callback functions to the type system.
    *
-   * @param declare A function pointer to the declaration callback function that should be added to the type system.
-   * @param define A function pointer to the definition callback function that should be added to the type system.
+   * @param declare This parameter provides the callback function that will run in the declaration phase.
+   * @param define This parameter provides the callback function that will run in the definition phase.
    */
   void addCallbacks(const CallbackFunction& declare, const CallbackFunction& define);
 
- private:
   /**
    * @brief Private constructor for the @c TypeSystem singleton.
    *
    * This constructor is private to prevent direct instantiation of the @c TypeSystem class, ensuring that only one
    * instance can exist and that it is accessed through the @c get() method.
    */
-  TypeSystem() noexcept;
+  TEST_VISIBILITY TypeSystem() noexcept;
 
+ private:
   /**
-   * @brief Registers fundamental types in the RTTI system.
-   *
-   * Fundamental types include:
-   * - @c int32_t
-   * - @c int64_t
-   * - @c uint32_t
-   * - @c uint64_t
-   * - @c float
-   * - @c double
-   * - @c bool
+   * @brief Registers built-in types with the RTTI system.
    */
-  void registerFundamentalTypes() noexcept;
+  void registerBuiltInTypes() noexcept;
 
   /**
    * @brief A flag indicating whether the type system has been initialized.
@@ -109,25 +111,15 @@ class JAYBIRD_API TypeSystem {
   /**
    * @brief Collection of callback functions for declaring types in the RTTI system.
    *
-   * Each function in this @c std::vector is expected to take a non-const pointer to the @c TypeRegistry and perform the
-   * necessary declaration logic for a specific type.
+   * Each function in this collection takes no parameters and performs declaration-phase registration work.
    */
   std::vector<CallbackFunction> m_declareFunctions;
 
   /**
    * @brief Collection of callback functions for defining types in the RTTI system.
    *
-   * Each function in this @c std::vector is expected to take a non-const pointer to the @c TypeRegistry and perform the
-   * necessary definition logic for a specific type.
+   * Each function in this collection takes no parameters and performs definition-phase registration work.
    */
   std::vector<CallbackFunction> m_defineFunctions;
 };
 }  // namespace core::rtti
-
-REGISTER_TYPE_NAME(int32_t, "int32");
-REGISTER_TYPE_NAME(int64_t, "int64");
-REGISTER_TYPE_NAME(uint32_t, "uint32");
-REGISTER_TYPE_NAME(uint64_t, "uint64");
-REGISTER_TYPE_NAME(float, "float");
-REGISTER_TYPE_NAME(double, "double");
-REGISTER_TYPE_NAME(bool, "bool");

@@ -8,6 +8,11 @@
 #include "Export.hpp"
 #include "Hash.hpp"
 
+namespace core::rtti {
+template <typename T>
+struct TypeName;
+}
+
 namespace core {
 /**
  * @brief Type alias for the hash value used in @code IName@endcode, representing the FNV-1a hash of a string.
@@ -132,7 +137,7 @@ class JAYBIRD_API IName {
   /**
    * @brief The hash value of this @code IName@endcode.
    */
-  const hash_t m_hash = 0;
+  hash_t m_hash = 0;
 };
 }  // namespace core
 
@@ -145,4 +150,12 @@ struct std::hash<core::IName> {
   std::size_t operator()(const core::IName& s) const noexcept {
     return std::hash<core::hash_t>{}(s.hash());
   }
+};
+
+/**
+ * @brief Specialization of @code TypeName@endcode that maps @code core::IName@endcode to the canonical RTTI name.
+ */
+template <>
+struct core::rtti::TypeName<core::IName> {
+  static constexpr char value[] = "IName";
 };

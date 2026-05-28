@@ -24,6 +24,13 @@ add_library(jaybird-engine-core SHARED
         include/rtti/TypeSystem.hpp
         include/rtti/RefType.hpp
         include/rtti/WeakRefType.hpp
+        src/types/Quaternion.cpp
+        include/types/Quaternion.hpp
+        src/types/EulerAngles.cpp
+        include/types/EulerAngles.hpp
+        src/types/Color.cpp
+        include/types/Color.hpp
+
 )
 
 include(GenerateExportHeader)
@@ -47,12 +54,17 @@ if (BUILD_TESTING)
           tests/CStringTests.cpp
           tests/HashTests.cpp
           tests/SpinLockTests.cpp
+          tests/types/QuaternionTests.cpp
+          tests/types/EulerAnglesTests.cpp
+          tests/types/ColorTests.cpp
           tests/rtti/FundamentalTypeTests.cpp
           tests/rtti/ClassTypeTests.cpp
           tests/rtti/ArrayTypeTests.cpp
           tests/rtti/IteratorTests.cpp
           tests/rtti/RefTypeTests.cpp
           tests/rtti/WeakRefTypeTests.cpp
+          tests/rtti/INameTypeTests.cpp
+          tests/rtti/TypeSystemTests.cpp
           tests/rtti/TypeRegistryTests.cpp
           tests/rtti/TypeNameTests.cpp
   )
