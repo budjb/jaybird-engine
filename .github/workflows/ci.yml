@@ -43,12 +43,20 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path build/coverage -Force | Out-Null
           $env:LLVM_PROFILE_FILE = "build/coverage/core-tests-%p.profraw"
-          ctest --test-dir build --output-on-failure --output-junit build/ctest-junit.xml
+          & build/core/core-tests.exe --reporter junit --out build/ctest-junit.xml
 
       - name: Generate coverage reports
         shell: pwsh
         run: |
-          llvm-profdata merge -sparse build/coverage/*.profraw -o build/coverage/coverage.profdata
+          $profrawFiles = Get-ChildItem -Path build/coverage -Filter *.profraw -File -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+          if (-not $profrawFiles -or $profrawFiles.Count -eq 0) {
+            Write-Host "No .profraw files were generated in build/coverage."
+            Get-ChildItem -Path build -Recurse | Select-Object -First 200 | Format-Table -AutoSize | Out-String | Write-Host
+            throw "Coverage profile files are missing."
+          }
+
+          llvm-profdata merge -sparse $profrawFiles -o build/coverage/coverage.profdata
           llvm-cov report build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage-summary.txt
           llvm-cov export -format=lcov build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage.lcov
           '### Coverage summary' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
