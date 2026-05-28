@@ -77,6 +77,20 @@ class JAYBIRD_API TypeSystem {
   TypeSystem() noexcept;
 
   /**
+   * @brief Registers fundamental types in the RTTI system.
+   *
+   * Fundamental types include:
+   * - @c int32_t
+   * - @c int64_t
+   * - @c uint32_t
+   * - @c uint64_t
+   * - @c float
+   * - @c double
+   * - @c bool
+   */
+  void registerFundamentalTypes() noexcept;
+
+  /**
    * @brief A flag indicating whether the type system has been initialized.
    *
    * This is used to ensure that the initialization process is only performed once, and that any subsequent calls to the
@@ -93,34 +107,27 @@ class JAYBIRD_API TypeSystem {
   TypeRegistry m_registry;
 
   /**
-   * @brief Registers all types that have been automatically discovered.
+   * @brief Collection of callback functions for declaring types in the RTTI system.
    *
-   * This method will be called during the initialization phase of the application to ensure that all types are properly
-   * registered in the RTTI system.
-   *
-   * The registration process is performed in two phases. First, all declaration functions are called to declare the
-   * types to the RTTI system, which allows the system to be aware of the existence of the types and their names without
-   * needing any details about the types themselves. Afterward, all definition functions are called to provide the full
-   * details of the types, such as their properties, functions, parent relationships, etc.
-   *
-   * This two-phase approach ensures that any inter-type relationships can be properly resolved during the definition
-   * phase, as all types will have been declared and their names will be known to the RTTI system before any definitions
-   * are processed.
-   */
-  void registerTypes();
-
-  /**
-   * @brief Collection of callback functions for declaring types in the RTTI system. Each function in this vector is
-   * expected to take a non-const pointer to the @c TypeRegistry and perform the necessary declaration logic for a
-   * specific type.
+   * Each function in this @c std::vector is expected to take a non-const pointer to the @c TypeRegistry and perform the
+   * necessary declaration logic for a specific type.
    */
   std::vector<CallbackFunction> m_declareFunctions;
 
   /**
-   * @brief Collection of callback functions for defining types in the RTTI system. Each function in this vector is
-   * expected to take a non-const pointer to the @c TypeRegistry and perform the necessary definition logic for a
-   * specific type.
+   * @brief Collection of callback functions for defining types in the RTTI system.
+   *
+   * Each function in this @c std::vector is expected to take a non-const pointer to the @c TypeRegistry and perform the
+   * necessary definition logic for a specific type.
    */
   std::vector<CallbackFunction> m_defineFunctions;
 };
 }  // namespace core::rtti
+
+REGISTER_TYPE_NAME(int32_t, "int32");
+REGISTER_TYPE_NAME(int64_t, "int64");
+REGISTER_TYPE_NAME(uint32_t, "uint32");
+REGISTER_TYPE_NAME(uint64_t, "uint64");
+REGISTER_TYPE_NAME(float, "float");
+REGISTER_TYPE_NAME(double, "double");
+REGISTER_TYPE_NAME(bool, "bool");

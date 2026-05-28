@@ -1,13 +1,14 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
-#include <vector>
 
 #include "CString.hpp"
+#include "Vector.hpp"
 #include "rtti/ArrayType.hpp"
 #include "rtti/ClassType.hpp"
+
+using core::Vector;
 
 /**
  * @brief A lightweight class element used for array descriptor tests.
@@ -114,8 +115,8 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asArray != nullptr);
   REQUIRE(asType != nullptr);
   REQUIRE(asType->kind() == TypeKind::ARRAY);
-  REQUIRE(asType->size() == sizeof(std::vector<TestType>));
-  REQUIRE(asType->alignment() == alignof(std::vector<TestType>));
+  REQUIRE(asType->size() == sizeof(Vector<TestType>));
+  REQUIRE(asType->alignment() == alignof(Vector<TestType>));
   REQUIRE(asArray->inner() == static_cast<const IType*>(&inner));
   REQUIRE(asType->name() == IName(arrayTypeName<TestType>()));
   REQUIRE(asType->name().toString() == arrayTypeName<TestType>());
@@ -128,7 +129,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
+  Vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
 
   REQUIRE(descriptor.length(nullptr) == 0);
   REQUIRE(descriptor.capacity(nullptr) == 0);
@@ -146,7 +147,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
+  Vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
   const auto& constValues = values;
 
   auto* atOne = static_cast<TestType*>(descriptor.at(&values, 1));
@@ -176,16 +177,15 @@ TEMPLATE_TEST_CASE(
   REQUIRE(descriptor.back(nullptr) == nullptr);
 }
 
-TEMPLATE_TEST_CASE(
-    "Given an array descriptor, when at is called with an out-of-range index, then std::out_of_range is thrown",
-    "[rtti][array_type][element_access][negative][bounds]", TrivialElement, NonTrivialElement) {
+TEMPLATE_TEST_CASE("Given an array descriptor, when at is called with an out-of-range index, then nullptr is returned",
+                   "[rtti][array_type][element_access][negative][bounds]", TrivialElement, NonTrivialElement) {
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values{valueA<TestType>()};
+  Vector<TestType> values{valueA<TestType>()};
 
-  REQUIRE_THROWS_AS(descriptor.at(&values, 1), std::out_of_range);
-  REQUIRE_THROWS_AS(static_cast<const IArrayType&>(descriptor).at(&values, 5), std::out_of_range);
+  REQUIRE(descriptor.at(&values, 1) == nullptr);
+  REQUIRE(static_cast<const IArrayType&>(descriptor).at(&values, 5) == nullptr);
 }
 
 TEMPLATE_TEST_CASE(
@@ -195,7 +195,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
+  Vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
 
   auto begin = descriptor.begin(&values);
   auto end = descriptor.end(&values);
@@ -231,7 +231,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values;
+  Vector<TestType> values;
 
   auto a = valueA<TestType>();
   auto b = valueB<TestType>();
@@ -269,7 +269,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
+  Vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
   const auto before = values;
 
   auto replacement = valueC<TestType>();
@@ -299,7 +299,7 @@ TEMPLATE_TEST_CASE(
   TClassType<TestType> inner;
   TArrayType<TestType> descriptor(&inner);
 
-  std::vector<TestType> values;
+  Vector<TestType> values;
 
   descriptor.reserve(&values, 10);
   REQUIRE(values.capacity() >= 10);
@@ -331,8 +331,8 @@ TEMPLATE_TEST_CASE(
   IType& asType = descriptor;
   const IType& constType = descriptor;
 
-  std::vector<TestType> source{valueA<TestType>(), valueB<TestType>()};
-  std::vector<TestType> destination{valueC<TestType>()};
+  Vector<TestType> source{valueA<TestType>(), valueB<TestType>()};
+  Vector<TestType> destination{valueC<TestType>()};
 
   asType.assign(&destination, &source);
   REQUIRE(destination == source);
@@ -341,7 +341,7 @@ TEMPLATE_TEST_CASE(
   asType.assign(nullptr, &source);
   REQUIRE(destination == source);
 
-  std::vector<TestType> different{valueC<TestType>()};
+  Vector<TestType> different{valueC<TestType>()};
   REQUIRE_FALSE(constType.equals(&destination, &different));
   REQUIRE(constType.equals(nullptr, nullptr));
   REQUIRE_FALSE(constType.equals(&destination, nullptr));
@@ -359,13 +359,13 @@ TEMPLATE_TEST_CASE(
 
   void* allocated = asType.allocate();
   REQUIRE(allocated != nullptr);
-  REQUIRE(reinterpret_cast<std::uintptr_t>(allocated) % alignof(std::vector<TestType>) == 0);
+  REQUIRE(reinterpret_cast<std::uintptr_t>(allocated) % alignof(Vector<TestType>) == 0);
 
   asType.construct(allocated);
-  auto* allocatedVector = static_cast<std::vector<TestType>*>(allocated);
+  auto* allocatedVector = static_cast<Vector<TestType>*>(allocated);
   REQUIRE(allocatedVector->empty());
 
-  allocatedVector->push_back(valueA<TestType>());
+  allocatedVector->pushBack(valueA<TestType>());
   REQUIRE(allocatedVector->size() == 1);
 
   asType.destruct(allocated);
@@ -373,10 +373,10 @@ TEMPLATE_TEST_CASE(
 
   void* created = asType.create();
   REQUIRE(created != nullptr);
-  auto* createdVector = static_cast<std::vector<TestType>*>(created);
+  auto* createdVector = static_cast<Vector<TestType>*>(created);
   REQUIRE(createdVector->empty());
 
-  createdVector->push_back(valueB<TestType>());
+  createdVector->pushBack(valueB<TestType>());
   REQUIRE(createdVector->size() == 1);
 
   asType.destroy(created);

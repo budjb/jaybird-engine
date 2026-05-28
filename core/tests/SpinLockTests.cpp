@@ -2,9 +2,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <mutex>
 #include <thread>
-#include <vector>
 
 #include "SpinLock.hpp"
+#include "Vector.hpp"
+
+using core::Vector;
 
 TEST_CASE("Given an unlocked SpinLock, when lock and try_lock are used, then exclusive ownership is enforced",
           "[spinlock]") {
@@ -58,11 +60,11 @@ TEST_CASE(
   std::atomic activeReaders{0};
   std::atomic maxReaders{0};
   std::atomic releaseReaders{false};
-  std::vector<std::thread> readers;
+  Vector<std::thread> readers;
   readers.reserve(readerCount);
 
   for (int i = 0; i < readerCount; ++i) {
-    readers.emplace_back([&]() {
+    readers.emplaceBack([&]() {
       lock.lock_shared();
 
       const int current = activeReaders.fetch_add(1, std::memory_order_relaxed) + 1;
@@ -103,11 +105,11 @@ TEST_CASE(
   constexpr int incrementsPerWriter = 2000;
 
   int sharedCounter = 0;
-  std::vector<std::thread> writers;
+  Vector<std::thread> writers;
   writers.reserve(writerCount);
 
   for (int i = 0; i < writerCount; ++i) {
-    writers.emplace_back([&]() {
+    writers.emplaceBack([&]() {
       for (int j = 0; j < incrementsPerWriter; ++j) {
         std::lock_guard guard(lock);
         ++sharedCounter;

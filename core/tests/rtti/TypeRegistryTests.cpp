@@ -2,13 +2,15 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <thread>
-#include <vector>
 
 #include "CString.hpp"
+#include "Vector.hpp"
 #include "rtti/ClassType.hpp"
 #include "rtti/FundamentalType.hpp"
 #include "rtti/TypeRegistry.hpp"
 #include "rtti/TypeSystem.hpp"
+
+using core::Vector;
 
 // =============================================================================
 // Test types — each struct has a unique TypeName so the auto-array name is
@@ -324,12 +326,12 @@ TEST_CASE(
   TypeRegistry& registry = TypeSystem::get().registry();
   constexpr int writerCount = 16;
 
-  std::vector successes(writerCount, 0);
-  std::vector<std::thread> threads;
+  Vector successes(writerCount, 0);
+  Vector<std::thread> threads;
   threads.reserve(writerCount);
 
   for (int i = 0; i < writerCount; ++i) {
-    threads.emplace_back([&registry, &successes, i]() {
+    threads.emplaceBack([&registry, &successes, i]() {
       const bool ok = registry.registerType(std::make_unique<TClassType<RegTargetH>>());
       successes[static_cast<std::size_t>(i)] = ok ? 1 : 0;
     });
@@ -367,11 +369,11 @@ TEST_CASE(
   constexpr int iterationsPerReader = 5000;
   std::atomic inconsistentRead{false};
 
-  std::vector<std::thread> readers;
+  Vector<std::thread> readers;
   readers.reserve(readerCount);
 
   for (int i = 0; i < readerCount; ++i) {
-    readers.emplace_back([&registry, expected, &inconsistentRead]() {
+    readers.emplaceBack([&registry, expected, &inconsistentRead]() {
       for (int j = 0; j < iterationsPerReader; ++j) {
         if (!registry.hasType("reg_target_g")) {
           inconsistentRead.store(true, std::memory_order_relaxed);

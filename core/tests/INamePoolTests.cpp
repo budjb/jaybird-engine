@@ -3,11 +3,13 @@
 #include <string>
 #include <string_view>
 #include <thread>
-#include <vector>
 
 #include "Hash.hpp"
 #include "IName.hpp"
 #include "INamePool.hpp"
+#include "Vector.hpp"
+
+using core::Vector;
 
 namespace {
 using core::fnv1a_64;
@@ -122,18 +124,18 @@ TEST_CASE("Given many unique texts, when concurrent writers call addName, then a
   INamePool& pool = INamePool::get();
   constexpr int writerCount = 12;
 
-  std::vector<std::string> texts;
+  Vector<std::string> texts;
   texts.reserve(writerCount);
   for (int i = 0; i < writerCount; ++i) {
-    texts.push_back(uniqueNameText("pool_concurrent_unique"));
+    texts.pushBack(uniqueNameText("pool_concurrent_unique"));
   }
 
-  std::vector<core::hash_t> hashes(writerCount, 0);
-  std::vector<std::thread> writers;
+  Vector<core::hash_t> hashes(writerCount, 0);
+  Vector<std::thread> writers;
   writers.reserve(writerCount);
 
   for (int i = 0; i < writerCount; ++i) {
-    writers.emplace_back([&pool, &texts, &hashes, i]() {
+    writers.emplaceBack([&pool, &texts, &hashes, i]() {
       const IName name = pool.addName(texts[static_cast<std::size_t>(i)]);
       hashes[static_cast<std::size_t>(i)] = name.hash();
     });
@@ -158,12 +160,12 @@ TEST_CASE(
   const std::string text = uniqueNameText("pool_concurrent_duplicate");
   constexpr int writerCount = 16;
 
-  std::vector<core::hash_t> hashes(writerCount, 0);
-  std::vector<std::thread> writers;
+  Vector<core::hash_t> hashes(writerCount, 0);
+  Vector<std::thread> writers;
   writers.reserve(writerCount);
 
   for (int i = 0; i < writerCount; ++i) {
-    writers.emplace_back([&pool, &text, &hashes, i]() {
+    writers.emplaceBack([&pool, &text, &hashes, i]() {
       const IName name = pool.addName(text);
       hashes[static_cast<std::size_t>(i)] = name.hash();
     });
@@ -196,13 +198,13 @@ TEST_CASE(
 
   constexpr int readerCount = 8;
   constexpr int iterationsPerReader = 5000;
-  std::atomic<bool> inconsistent{false};
+  std::atomic inconsistent{false};
 
-  std::vector<std::thread> readers;
+  Vector<std::thread> readers;
   readers.reserve(readerCount);
 
   for (int i = 0; i < readerCount; ++i) {
-    readers.emplace_back([&pool, aName, bName, &aText, &bText, &inconsistent]() {
+    readers.emplaceBack([&pool, aName, bName, &aText, &bText, &inconsistent]() {
       for (int j = 0; j < iterationsPerReader; ++j) {
         if (!pool.hasName(aName) || !pool.hasName(bName)) {
           inconsistent.store(true, std::memory_order_relaxed);

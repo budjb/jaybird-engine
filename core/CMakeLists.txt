@@ -18,6 +18,7 @@ add_library(jaybird-engine-core SHARED
         src/rtti/FundamentalType.cpp
         include/rtti/Iterator.hpp
         include/rtti/TypeName.hpp
+        include/Vector.hpp
         include/CString.hpp
         src/rtti/TypeSystem.cpp
         include/rtti/TypeSystem.hpp

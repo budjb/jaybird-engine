@@ -1,5 +1,9 @@
 #include "rtti/TypeSystem.hpp"
 
+#include <algorithm>
+
+#include "rtti/FundamentalType.hpp"
+
 namespace core::rtti {
 TypeSystem& TypeSystem::get() noexcept {
   static TypeSystem typeSystem{};
@@ -11,10 +15,11 @@ bool TypeSystem::initialize() {
     return false;
   }
 
-  // TODO: actually initialize
+  std::ranges::for_each(m_declareFunctions, [](const auto& func) { func(); });
+  std::ranges::for_each(m_defineFunctions, [](const auto& func) { func(); });
 
   m_initialized = true;
-  return m_initialized;
+  return true;
 }
 
 TypeRegistry& TypeSystem::registry() noexcept {
@@ -35,6 +40,18 @@ void TypeSystem::addCallbacks(const CallbackFunction& declare, const CallbackFun
 }
 
 TypeSystem::TypeSystem() noexcept {
-  // TODO: registrations of built-ins!
+  addDeclareCallback([&] { registerFundamentalTypes(); });
+}
+
+void TypeSystem::registerFundamentalTypes() noexcept {
+  m_registry.registerType(std::make_unique<TFundamentalType<int32_t>>());
+  m_registry.registerType(std::make_unique<TFundamentalType<int64_t>>());
+  m_registry.registerType(std::make_unique<TFundamentalType<uint32_t>>());
+  m_registry.registerType(std::make_unique<TFundamentalType<uint64_t>>());
+
+  m_registry.registerType(std::make_unique<TFundamentalType<float>>());
+  m_registry.registerType(std::make_unique<TFundamentalType<double>>());
+
+  m_registry.registerType(std::make_unique<TFundamentalType<bool>>());
 }
 }  // namespace core::rtti

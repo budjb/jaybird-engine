@@ -3,9 +3,10 @@
 #include <concepts>
 #include <string>
 #include <string_view>
-#include <vector>
+#include <type_traits>
 
 #include "CString.hpp"
+#include "Vector.hpp"
 #include "rtti/TypeKind.hpp"
 
 namespace core::rtti {
@@ -150,37 +151,38 @@ template <TypeKind K>
 }
 
 /**
- * @brief Concept that is satisfied when @c C is a @c std::vector specialization.
+ * @brief Concept that is satisfied when @c C is a @c Vector specialization.
  *
  * It checks that @c C exposes a @c value_type member and that @c C is exactly
- * @c std::vector of that element type.
+ * @c Vector of that element type.
  *
  * @tparam C The type to check.
  */
 template <typename C>
-concept StdVector = requires { typename C::value_type; } && std::same_as<C, std::vector<typename C::value_type>>;
+concept VectorType = requires { typename std::remove_cvref_t<C>::value_type; } &&
+                     std::same_as<std::remove_cvref_t<C>, Vector<typename std::remove_cvref_t<C>::value_type>>;
 
 /**
- * @brief Concept that is satisfied when @c C is a @c std::vector and its element type satisfies
+ * @brief Concept that is satisfied when @c C is a @c Vector and its element type satisfies
  * @code NamedType@endcode.
  *
  * @tparam C The type to check.
  */
 template <typename C>
-concept NamedVectorType = StdVector<C> && NamedType<typename C::value_type>;
+concept NamedVectorType = VectorType<C> && NamedType<typename std::remove_cvref_t<C>::value_type>;
 
 /**
- * @brief Returns the canonical type name for a @c std::vector whose element type satisfies @code NamedType@endcode.
+ * @brief Returns the canonical type name for a @c Vector whose element type satisfies @code NamedType@endcode.
  *
  * The returned name uses the @c TypeKind::ARRAY prefix followed by the element type name
- * (e.g., @c "array:double" for @code std::vector<double>@endcode).
+ * (e.g., @c "array:double" for @code Vector<double>@endcode).
  *
  * @tparam C The container type to name. It must satisfy @code NamedVectorType@endcode.
  * @return A @c CString containing the prefixed array type name.
  */
 template <NamedVectorType C>
 constexpr auto GetTypeName() {
-  return GetPrefixedTypeName<TypeKind::ARRAY, typename C::value_type>();
+  return GetPrefixedTypeName<TypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
 }
 }  // namespace core::rtti
 
@@ -199,7 +201,7 @@ constexpr auto GetTypeName() {
 /**
  * @brief Macro to register a type name mapping for a type that cannot declare a static @c NAME member.
  *
- * @param _type The C++ type for which to register the name mapping (e.g., @c std::vector<int>).
+ * @param _type The C++ type for which to register the name mapping (e.g., @c Vector<int>).
  * @param _name The string name to associate with the given type (e.g., @c "array:int").
  */
 #define REGISTER_TYPE_NAME(_type, _name)         \

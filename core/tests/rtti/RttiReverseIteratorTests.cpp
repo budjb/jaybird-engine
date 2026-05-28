@@ -1,8 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
-#include <vector>
+#include "Vector.hpp"
+
 
 #include "RttiTestUtils.hpp"
-#include "rtti/Iterator.hpp"
+#include "rtti/Iterator.hpp"
+
+using core::Vector;
+
 
 namespace {
 using core::rtti::IArrayType;
@@ -15,7 +19,7 @@ TEST_CASE(
     "Given an RTTI array type and vector, when rbegin and rend are compared, then reverse range length is correct",
     "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{1, 2, 3};
+  Vector values{1, 2, 3};
 
   ReverseIterator<> rbegin = arrayType->rbegin(&values);
   ReverseIterator<> rend = arrayType->rend(&values);
@@ -27,7 +31,7 @@ TEST_CASE(
 TEST_CASE("Given an RTTI reverse iterator, when pre-incremented, then it traverses from back toward front",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{10, 20, 30};
+  Vector values{10, 20, 30};
 
   ReverseIterator<> it = arrayType->rbegin(&values);
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
@@ -45,7 +49,7 @@ TEST_CASE("Given an RTTI reverse iterator, when pre-incremented, then it travers
 TEST_CASE("Given an RTTI reverse iterator, when post-incremented, then old position is returned and iterator advances",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{5, 6, 7};
+  Vector values{5, 6, 7};
 
   ReverseIterator<> it = arrayType->rbegin(&values);
   const ReverseIterator<> old = it++;
@@ -57,7 +61,7 @@ TEST_CASE("Given an RTTI reverse iterator, when post-incremented, then old posit
 TEST_CASE("Given an RTTI reverse iterator at rend, when pre-decremented, then it moves toward the back",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{1, 2, 3};
+  Vector values{1, 2, 3};
 
   ReverseIterator<> it = arrayType->rend(&values);
   --it;
@@ -69,7 +73,7 @@ TEST_CASE("Given an RTTI reverse iterator at rend, when pre-decremented, then it
 TEST_CASE("Given an RTTI reverse iterator, when post-decremented, then old position is returned and iterator retreats",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{4, 5, 6};
+  Vector values{4, 5, 6};
 
   ReverseIterator<> it = arrayType->rend(&values);
   --it;
@@ -82,7 +86,7 @@ TEST_CASE("Given an RTTI reverse iterator, when post-decremented, then old posit
 TEST_CASE("Given an RTTI reverse iterator, when adjusted with += and -=, then it moves in reverse offset space",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{1, 2, 3, 4, 5};
+  Vector values{1, 2, 3, 4, 5};
 
   ReverseIterator<> it = arrayType->rbegin(&values);
   it += 2;
@@ -96,7 +100,7 @@ TEST_CASE(
     "Given an RTTI reverse iterator, when + and - are used, then new iterators are returned without mutating source",
     "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{10, 20, 30, 40};
+  Vector values{10, 20, 30, 40};
 
   const ReverseIterator<> rbegin = arrayType->rbegin(&values);
   const ReverseIterator<> shifted = rbegin + 2;
@@ -110,7 +114,7 @@ TEST_CASE(
 TEST_CASE("Given an RTTI reverse iterator, when scalar-plus-iterator arithmetic is used, then source is unchanged",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{100, 200, 300};
+  Vector values{100, 200, 300};
 
   const ReverseIterator<> rbegin = arrayType->rbegin(&values);
   const ReverseIterator<> shifted = 2 + rbegin;
@@ -121,7 +125,7 @@ TEST_CASE("Given an RTTI reverse iterator, when scalar-plus-iterator arithmetic 
 TEST_CASE("Given RTTI reverse iterators, when subtracted, then signed distance follows reverse traversal direction",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{1, 2, 3, 4, 5};
+  Vector values{1, 2, 3, 4, 5};
 
   const ReverseIterator<> rbegin = arrayType->rbegin(&values);
   const ReverseIterator<> rend = arrayType->rend(&values);
@@ -133,7 +137,7 @@ TEST_CASE("Given RTTI reverse iterators, when subtracted, then signed distance f
 TEST_CASE("Given RTTI reverse iterators, when compared, then ordering reflects inverted reverse-iterator semantics",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{1, 2, 3};
+  Vector values{1, 2, 3};
 
   ReverseIterator<> a = arrayType->rbegin(&values);
   ReverseIterator<> b = a + 1;
@@ -150,7 +154,7 @@ TEST_CASE("Given RTTI reverse iterators, when compared, then ordering reflects i
 TEST_CASE("Given an RTTI reverse iterator, when indexed, then elements are read using reverse offsets",
           "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{10, 20, 30};
+  Vector values{10, 20, 30};
 
   ReverseIterator<> it = arrayType->rbegin(&values);
   REQUIRE(*static_cast<int*>(it[0]) == 30);
@@ -164,7 +168,7 @@ TEST_CASE(
     "semantics",
     "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{10, 20, 30};
+  Vector values{10, 20, 30};
 
   const ReverseIterator<> it = arrayType->rbegin(&values);
 
@@ -182,7 +186,7 @@ TEST_CASE(
     "movement remains correct",
     "[rtti][reverse_iterator]") {
   IArrayType* arrayType = asArrayType(intArrayType());
-  std::vector values{10, 20, 30, 40};
+  Vector values{10, 20, 30, 40};
 
   ReverseIterator<> it = arrayType->rbegin(&values) + 1;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);

@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "CString.hpp"
 #include "rtti/TypeKind.hpp"
@@ -51,16 +50,16 @@ static_assert(core::rtti::NamedType<test_types::MappedNamedType>);
 static_assert(core::rtti::NamedType<test_types::MemberAndMappedType>);
 static_assert(!core::rtti::NamedType<test_types::PlainStruct>);
 
-// --- StdVector concept ---
-static_assert(core::rtti::StdVector<std::vector<int>>);
-static_assert(core::rtti::StdVector<std::vector<test_types::MappedNamedType>>);
-static_assert(!core::rtti::StdVector<int>);
-static_assert(!core::rtti::StdVector<test_types::MappedNamedType>);
+// --- VectorType concept ---
+static_assert(core::rtti::VectorType<core::Vector<int>>);
+static_assert(core::rtti::VectorType<core::Vector<test_types::MappedNamedType>>);
+static_assert(!core::rtti::VectorType<int>);
+static_assert(!core::rtti::VectorType<test_types::MappedNamedType>);
 
 // --- NamedVectorType concept ---
-static_assert(core::rtti::NamedVectorType<std::vector<test_types::MappedNamedType>>);
-static_assert(core::rtti::NamedVectorType<std::vector<test_types::MemberNamedType>>);
-static_assert(!core::rtti::NamedVectorType<std::vector<test_types::PlainStruct>>);
+static_assert(core::rtti::NamedVectorType<core::Vector<test_types::MappedNamedType>>);
+static_assert(core::rtti::NamedVectorType<core::Vector<test_types::MemberNamedType>>);
+static_assert(!core::rtti::NamedVectorType<core::Vector<test_types::PlainStruct>>);
 static_assert(!core::rtti::NamedVectorType<int>);
 }  // namespace
 
@@ -116,11 +115,11 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a std::vector of a named element type, when GetTypeName is used, then the array prefix and element name "
+    "Given a Vector of a named element type, when GetTypeName is used, then the array prefix and element name "
     "are concatenated",
     "[rtti][type_name]") {
-  constexpr auto mappedName = core::rtti::GetTypeName<std::vector<test_types::MappedNamedType>>();
-  constexpr auto memberName = core::rtti::GetTypeName<std::vector<test_types::MemberNamedType>>();
+  constexpr auto mappedName = core::rtti::GetTypeName<core::Vector<test_types::MappedNamedType>>();
+  constexpr auto memberName = core::rtti::GetTypeName<core::Vector<test_types::MemberNamedType>>();
 
   REQUIRE(static_cast<std::string_view>(mappedName) == "array:mapped_named");
   REQUIRE(static_cast<std::string_view>(memberName) == "array:member_named");

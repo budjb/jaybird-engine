@@ -175,6 +175,10 @@ class Iterator {
    * @return The distance between this iterator and the other iterator, measured in the number of elements between them.
    */
   std::ptrdiff_t operator-(const Iterator& iterator) const noexcept {
+    if (m_ptr == iterator.m_ptr) {
+      return 0;
+    }
+
     if constexpr (std::is_void_v<T>) {
       const auto size = static_cast<std::ptrdiff_t>(m_elementSize);
       return (static_cast<std::byte*>(m_ptr) - static_cast<std::byte*>(iterator.m_ptr)) / size;

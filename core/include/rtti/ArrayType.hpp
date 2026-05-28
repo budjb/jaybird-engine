@@ -1,12 +1,11 @@
 #pragma once
 
-#include <vector>
-
 #include "ContainerType.hpp"
 #include "Export.hpp"
 #include "INamePool.hpp"
 #include "Iterator.hpp"
 #include "TypeName.hpp"
+#include "Vector.hpp"
 
 namespace core::rtti {
 /**
@@ -343,20 +342,20 @@ class JAYBIRD_API IArrayType : public IContainerType {
 /**
  * @brief A template class representing an array type descriptor in the RTTI system. This class provides methods for
  * accessing and manipulating array elements, as well as querying array properties such as length and capacity. The
- * TArrayType class is designed to work with std::vector as the underlying container for the array elements, and it
+ * TArrayType class is designed to work with @c Vector as the underlying container for the array elements, and it
  * requires that the inner type descriptor provided to its constructor is compatible with the element type of the array.
  *
  * @tparam T The type of the elements in the array. This type must be compatible with the inner type descriptor provided
  * to the constructor, as enforced by the TypedInnerDescriptorFor concept.
  */
 template <typename T>
-class TArrayType : public TType<std::vector<T>, IArrayType> {
+class TArrayType : public TType<Vector<T>, IArrayType> {
  public:
   /**
-   * @brief Defines a type alias for the underlying array type, which is std::vector<T>. This allows users of TArrayType
+   * @brief Defines a type alias for the underlying array type, which is @c Vector<T>. This allows users of TArrayType
    * to refer to the underlying array type using TArrayType<T>::Type.
    */
-  using Type = std::vector<T>;
+  using Type = Vector<T>;
 
   /**
    * @brief Constructs a TArrayType with the given name and inner type descriptor. The size and alignment are
@@ -371,8 +370,8 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
   template <typename InnerType>
     requires is_same_element_v<InnerType, T>
   explicit TArrayType(const InnerType* inner)
-      : TType<std::vector<T>, IArrayType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::ARRAY, T>()),
-                                          static_cast<const IType*>(inner)) {}
+      : TType<Vector<T>, IArrayType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::ARRAY, T>()),
+                                     static_cast<const IType*>(inner)) {}
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is
@@ -414,7 +413,7 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] std::size_t maxLength(const void* array) const noexcept override {
     if (array != nullptr) {
-      return static_cast<const Type*>(array)->max_size();
+      return static_cast<const Type*>(array)->maxSize();
     }
     return 0;
   }
@@ -432,7 +431,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] void* at(const void* array, std::size_t index) override {
     if (array != nullptr) {
-      return &static_cast<Type*>(const_cast<void*>(array))->at(index);
+      auto* vector = static_cast<Type*>(const_cast<void*>(array));
+      if (index < vector->size()) {
+        return &(*vector)[index];
+      }
     }
     return nullptr;
   }
@@ -450,7 +452,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] const void* at(const void* array, std::size_t index) const override {
     if (array != nullptr) {
-      return &static_cast<const Type*>(array)->at(index);
+      const auto* vector = static_cast<const Type*>(array);
+      if (index < vector->size()) {
+        return &(*vector)[index];
+      }
     }
     return nullptr;
   }
@@ -466,7 +471,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] void* front(const void* array) override {
     if (array != nullptr) {
-      return &static_cast<Type*>(const_cast<void*>(array))->front();
+      auto* vector = static_cast<Type*>(const_cast<void*>(array));
+      if (!vector->empty()) {
+        return &vector->front();
+      }
     }
     return nullptr;
   }
@@ -482,7 +490,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] const void* front(const void* array) const override {
     if (array != nullptr) {
-      return &static_cast<const Type*>(array)->front();
+      const auto* vector = static_cast<const Type*>(array);
+      if (!vector->empty()) {
+        return &vector->front();
+      }
     }
     return nullptr;
   }
@@ -498,7 +509,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] void* back(const void* array) override {
     if (array != nullptr) {
-      return &static_cast<Type*>(const_cast<void*>(array))->back();
+      auto* vector = static_cast<Type*>(const_cast<void*>(array));
+      if (!vector->empty()) {
+        return &vector->back();
+      }
     }
     return nullptr;
   }
@@ -514,7 +528,10 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   [[nodiscard]] const void* back(const void* array) const override {
     if (array != nullptr) {
-      return &static_cast<const Type*>(array)->back();
+      const auto* vector = static_cast<const Type*>(array);
+      if (!vector->empty()) {
+        return &vector->back();
+      }
     }
     return nullptr;
   }
@@ -602,7 +619,7 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   void pushBack(const void* array, const void* value) override {
     if (array != nullptr && value != nullptr) {
-      static_cast<Type*>(const_cast<void*>(array))->push_back(*static_cast<const T*>(value));
+      static_cast<Type*>(const_cast<void*>(array))->pushBack(*static_cast<const T*>(value));
     }
   }
 
@@ -614,7 +631,9 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   void popBack(const void* array) override {
     if (array != nullptr) {
-      static_cast<Type*>(const_cast<void*>(array))->pop_back();
+      if (auto* vector = static_cast<Type*>(const_cast<void*>(array)); !vector->empty()) {
+        vector->popBack();
+      }
     }
   }
 
@@ -629,7 +648,12 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
   void remove(const void* array, const std::size_t index) override {
     if (array != nullptr) {
       auto* vector = static_cast<Type*>(const_cast<void*>(array));
-      vector->erase(vector->begin() + static_cast<std::ptrdiff_t>(index));
+      if (index < vector->size()) {
+        if (index + 1 < vector->size()) {
+          (*vector)[index] = vector->back();
+        }
+        vector->popBack();
+      }
     }
   }
 
@@ -693,7 +717,7 @@ class TArrayType : public TType<std::vector<T>, IArrayType> {
    */
   void shrinkToFit(void* array) override {
     if (array != nullptr) {
-      static_cast<Type*>(array)->shrink_to_fit();
+      static_cast<Type*>(array)->shrinkToFit();
     }
   }
 
