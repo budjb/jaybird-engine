@@ -51,10 +51,10 @@ jobs:
           llvm-profdata merge -sparse build/coverage/*.profraw -o build/coverage/coverage.profdata
           llvm-cov report build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage-summary.txt
           llvm-cov export -format=lcov build/core/core-tests.exe -instr-profile=build/coverage/coverage.profdata > build/coverage/coverage.lcov
-          "### Coverage summary" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "```text" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          '### Coverage summary' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          '```text' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           Get-Content build/coverage/coverage-summary.txt | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "```" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
       - name: Extract coverage metadata
         id: coverage_meta
