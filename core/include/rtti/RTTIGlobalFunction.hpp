@@ -1,11 +1,11 @@
 #pragma once
-#include "Function.hpp"
+#include "RTTIFunction.hpp"
 
 namespace core::rtti {
 /**
  * @brief Base interface for reflected global (non-member) functions.
  */
-class IGlobalFunction : public IFunction {
+class RTTIGlobalFunction : public RTTIFunction {
  public:
   /**
    * @brief Constructs a reflected global function descriptor.
@@ -13,15 +13,15 @@ class IGlobalFunction : public IFunction {
    * @param name This value is the reflected function name.
    * @param flags This value initializes the function flags.
    */
-  explicit IGlobalFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : IFunction(name, flags) {
+  explicit RTTIGlobalFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
+      : RTTIFunction(name, flags) {
     m_flags.isMember = false;
   }
 
   /**
    * @brief Destroys the reflected global function descriptor.
    */
-  ~IGlobalFunction() override = default;
+  ~RTTIGlobalFunction() override = default;
 };
 
 /**
@@ -30,7 +30,7 @@ class IGlobalFunction : public IFunction {
  * @tparam F The free-function pointer type to wrap.
  */
 template <FreeFunction F>
-class TGlobalFunction : public TFunction<F, IGlobalFunction> {
+class RTTIGlobalTFunction : public RTTITFunction<F, RTTIGlobalFunction> {
  public:
   using traits = FunctionTraits<F>;
 
@@ -45,7 +45,7 @@ class TGlobalFunction : public TFunction<F, IGlobalFunction> {
   template <typename... ArgNames>
     requires(FreeFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
              (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit TGlobalFunction(std::string_view name, F function, ArgNames&&... argNames)
-      : TFunction<F, IGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  explicit RTTIGlobalTFunction(std::string_view name, F function, ArgNames&&... argNames)
+      : RTTITFunction<F, RTTIGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
 };
 }  // namespace core::rtti

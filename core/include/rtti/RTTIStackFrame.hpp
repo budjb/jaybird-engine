@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <cstring>
 #include <new>
 
@@ -16,7 +15,7 @@ namespace core::rtti {
  * - If the function has a non-void return type, an additional pointer-sized slot is reserved at the end of the frame
  * for the return value.
  */
-class StackFrame {
+class RTTIStackFrame {
  public:
   /**
    * @brief Constructs a @c StackFrame with slots for arguments, return value, and optional @c this pointer.
@@ -28,7 +27,7 @@ class StackFrame {
    * @param hasReturn Whether the function has a non-void return value.
    * @param isMember Whether the function is a non-static member function that requires a "this" pointer.
    */
-  explicit StackFrame(const std::size_t numArgs, const bool hasReturn, const bool isMember) noexcept
+  explicit RTTIStackFrame(const std::size_t numArgs, const bool hasReturn, const bool isMember) noexcept
       : m_numArgs(numArgs), m_hasReturn(hasReturn), m_isMember(isMember) {
     m_buffer = operator new(pointerCount() * POINTER_SIZE, ALIGNMENT);
     memset(m_buffer, 0, pointerCount() * POINTER_SIZE);
@@ -38,7 +37,7 @@ class StackFrame {
    * @brief Destructor for @c StackFrame, which deallocates the buffer used for storing the "this" pointer, argument
    * pointers, and return value pointer to prevent memory leaks.
    */
-  ~StackFrame() {
+  ~RTTIStackFrame() {
     operator delete(m_buffer, pointerCount() * POINTER_SIZE, ALIGNMENT);
   }
 

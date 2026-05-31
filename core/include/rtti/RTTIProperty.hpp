@@ -1,4 +1,5 @@
 #pragma once
+
 #include "IName.hpp"
 #include "RTTIType.hpp"
 
@@ -6,15 +7,15 @@ namespace core::rtti {
 /**
  * @brief Represents a named type, which is useful for class properties and function arguments.
  */
-class Property {
+class RTTIProperty {
  public:
   /**
-   * @brief Constructs a @c Property with the given name and type.
+   * @brief Constructs a @c RTTIProperty with the given name and type.
    *
    * @param name The interned name of the property as an @c IName.
    * @param type The type of the property as a pointer to an @c RTTIType.
    */
-  Property(const IName& name, const RTTIType* type) noexcept : m_name(name), m_type(type) {}
+  RTTIProperty(const IName& name, const RTTIType* type) noexcept : m_name(name), m_type(type) {}
 
   /**
    * @brief Returns the interned name of the property.

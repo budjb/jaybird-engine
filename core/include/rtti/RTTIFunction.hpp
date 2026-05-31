@@ -4,9 +4,9 @@
 
 #include "IName.hpp"
 #include "INamePool.hpp"
-#include "Property.hpp"
+#include "RTTIProperty.hpp"
+#include "RTTIStackFrame.hpp"
 #include "RTTITypeSystem.hpp"
-#include "StackFrame.hpp"
 
 namespace core::rtti {
 /**
@@ -190,7 +190,7 @@ struct FunctionFlags {
  * This interface stores common function metadata and defines the abstract
  * invocation entry point used by stack-frame based dispatch.
  */
-class IFunction {
+class RTTIFunction {
  public:
   /**
    * @brief Constructs a reflected function descriptor with a name and optional flags.
@@ -200,7 +200,7 @@ class IFunction {
    * @param name The name of the function.
    * @param flags The flags indicating properties of the function, such as whether it is native or a member function.
    */
-  explicit IFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
+  explicit RTTIFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
       : m_name(INamePool::get().addName(name)), m_flags(flags) {
     m_flags.isMember = false;
   }
@@ -208,7 +208,7 @@ class IFunction {
   /**
    * @brief Destroys the reflected function descriptor.
    */
-  virtual ~IFunction() = default;
+  virtual ~RTTIFunction() = default;
 
   /**
    * @brief Returns the reflected function name.
@@ -233,8 +233,8 @@ class IFunction {
    *
    * @return This function returns raw pointers to argument properties in declaration order.
    */
-  [[nodiscard]] std::vector<const Property*> arguments() const noexcept {
-    std::vector<const Property*> arguments;
+  [[nodiscard]] std::vector<const RTTIProperty*> arguments() const noexcept {
+    std::vector<const RTTIProperty*> arguments;
     arguments.reserve(m_arguments.size());
 
     for (const auto& arg : m_arguments) {
@@ -253,7 +253,7 @@ class IFunction {
    * @param type The reflected type descriptor for the argument.
    */
   void argument(const std::string_view name, RTTIType* type) noexcept {
-    m_arguments.push_back(std::make_unique<Property>(INamePool::get().addName(name), type));
+    m_arguments.push_back(std::make_unique<RTTIProperty>(INamePool::get().addName(name), type));
   }
 
   /**
@@ -281,8 +281,8 @@ class IFunction {
    *
    * @return A new @c StackFrame initialized for invoking this function.
    */
-  [[nodiscard]] StackFrame createStackFrame() const noexcept {
-    return StackFrame(m_arguments.size(), m_return != nullptr, m_flags.isMember);
+  [[nodiscard]] RTTIStackFrame createStackFrame() const noexcept {
+    return RTTIStackFrame(m_arguments.size(), m_return != nullptr, m_flags.isMember);
   }
 
   /**
@@ -292,7 +292,7 @@ class IFunction {
    * @param frame The stack frame containing the necessary context for invocation, including the "this" pointer,
    * argument values, and return value storage.
    */
-  virtual void invoke(StackFrame& frame) = 0;
+  virtual void invoke(RTTIStackFrame& frame) = 0;
 
  protected:
   /**
@@ -309,7 +309,7 @@ class IFunction {
    * @brief A vector of unique pointers to @c Property objects representing the arguments of the function, including
    * their names and types.
    */
-  std::vector<std::unique_ptr<Property>> m_arguments;
+  std::vector<std::unique_ptr<RTTIProperty>> m_arguments;
 
   /**
    * @brief A pointer to the return type of the function, or @c nullptr if the function has no return type.
@@ -318,7 +318,7 @@ class IFunction {
 };
 
 /**
- * @brief An implementation of @c IClassFunction that wraps a native C++ member function pointer, allowing it to be
+ * @brief An implementation of @c RTTIClassFunction that wraps a native C++ member function pointer, allowing it to be
  * invoked through the RTTI system.
  *
  * This class automatically handles the introspection of the function signature to register argument types and the
@@ -332,7 +332,7 @@ class IFunction {
  * @tparam TBase The reflected function base descriptor type.
  */
 template <typename F, typename TBase>
-class TFunction : public TBase {
+class RTTITFunction : public TBase {
  public:
   /**
    * @brief Traits extracted from the member function pointer type @c F, including the class type, return type, argument
@@ -360,7 +360,7 @@ class TFunction : public TBase {
    */
   template <typename... ArgNames>
     requires(sizeof...(ArgNames) == traits::numArgs && (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit TFunction(const std::string_view name, F function, ArgNames&&... argNames)
+  explicit RTTITFunction(const std::string_view name, F function, ArgNames&&... argNames)
       : TBase(name), m_function(function) {
     this->m_flags.isNative = true;
 
@@ -385,7 +385,7 @@ class TFunction : public TBase {
    * @throws std::runtime_error If the "this" pointer is invalid for member function invocation, or if the return
    * pointer is invalid for member functions with a non-void return type.
    */
-  void invoke(StackFrame& frame) override {
+  void invoke(RTTIStackFrame& frame) override {
     invoke(frame, std::make_index_sequence<traits::numArgs>{});
   }
 
@@ -446,7 +446,7 @@ class TFunction : public TBase {
    * pointer is invalid for member functions with a non-void return type.
    */
   template <std::size_t... Indices>
-  void invoke(StackFrame& frame, std::index_sequence<Indices...>) {
+  void invoke(RTTIStackFrame& frame, std::index_sequence<Indices...>) {
     if constexpr (traits::isMember) {
       typename traits::classType* obj = frame.thisPtr<typename traits::classType>();
 
@@ -494,7 +494,7 @@ class TFunction : public TBase {
    * frame.
    */
   template <typename T>
-  T* getArg(const StackFrame& frame, const std::size_t index) {
+  T* getArg(const RTTIStackFrame& frame, const std::size_t index) {
     auto* value = frame.argPtr<T>(index);
 
     if (!value) {

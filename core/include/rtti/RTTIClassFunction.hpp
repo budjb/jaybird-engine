@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Function.hpp"
+#include "RTTIFunction.hpp"
 #include "RTTITypeSystem.hpp"
 
 namespace core::rtti {
@@ -16,33 +16,33 @@ namespace core::rtti {
  * interface for invocation. Native member functions can be directly invoked using C++ function pointers, while scripted
  * functions would implement the invocation logic to execute the corresponding script code.
  */
-class IClassFunction : public IFunction {
+class RTTIClassFunction : public RTTIFunction {
  public:
   /**
-   * @brief Constructs an @c IClassFunction with the given name and flags, initializing it as a member function.
+   * @brief Constructs an @c RTTIClassFunction with the given name and flags, initializing it as a member function.
    *
    * @param name The name of the function.
    * @param flags The flags indicating properties of the function.
    */
-  explicit IClassFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : IFunction(name, flags) {
+  explicit RTTIClassFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
+      : RTTIFunction(name, flags) {
     m_flags.isMember = true;
   }
 
   /**
-   * @brief Virtual destructor for @c IClassFunction, allowing for proper cleanup of derived classes.
+   * @brief Virtual destructor for @c RTTIClassFunction, allowing for proper cleanup of derived classes.
    */
-  ~IClassFunction() override = default;
+  ~RTTIClassFunction() override = default;
 };
 
 /**
- * @brief A concrete implementation of @c IClassFunction that wraps a native C++ member function pointer, allowing it to
- * be invoked through the RTTI system.
+ * @brief A concrete implementation of @c RTTIClassFunction that wraps a native C++ member function pointer, allowing it
+ * to be invoked through the RTTI system.
  *
  * @tparam F The type of the member function pointer to wrap.
  */
 template <MemberFunction F>
-class TClassFunction : public TFunction<F, IClassFunction> {
+class RTTIClassTFunction : public RTTITFunction<F, RTTIClassFunction> {
  public:
   /**
    * @brief Traits extracted from the member function pointer type @c F, including the class type, return type, argument
@@ -51,8 +51,8 @@ class TClassFunction : public TFunction<F, IClassFunction> {
   using traits = FunctionTraits<F>;
 
   /**
-   * @brief Constructs a @c TClassFunction by wrapping the given member function pointer and registering its argument
-   * types and return type.
+   * @brief Constructs a @c RTTIClassTFunction by wrapping the given member function pointer and registering its
+   * argument types and return type.
    *
    * @tparam ArgNames The types of the argument names, which must be convertible to @c std::string_view and match the
    * number of arguments in the function signature.
@@ -67,7 +67,7 @@ class TClassFunction : public TFunction<F, IClassFunction> {
    */
   template <typename... ArgNames>
     requires(sizeof...(ArgNames) == traits::numArgs && (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit TClassFunction(const std::string_view name, F function, ArgNames&&... argNames)
-      : TFunction<F, IClassFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  explicit RTTIClassTFunction(const std::string_view name, F function, ArgNames&&... argNames)
+      : RTTITFunction<F, RTTIClassFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
 };
 }  // namespace core::rtti

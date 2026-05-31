@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Function.hpp"
+#include "RTTIFunction.hpp"
 
 namespace core::rtti {
 /**
  * @brief Base interface for reflected static functions.
  */
-class IStaticFunction : public IFunction {
+class RTTIStaticFunction : public RTTIFunction {
  public:
   /**
    * @brief Constructs a reflected static function descriptor.
@@ -14,15 +14,15 @@ class IStaticFunction : public IFunction {
    * @param name This value is the reflected function name.
    * @param flags This value initializes the function flags.
    */
-  explicit IStaticFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : IFunction(name, flags) {
+  explicit RTTIStaticFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
+      : RTTIFunction(name, flags) {
     m_flags.isMember = false;
   }
 
   /**
    * @brief Destroys the reflected static function descriptor.
    */
-  ~IStaticFunction() override = default;
+  ~RTTIStaticFunction() override = default;
 };
 
 /**
@@ -31,7 +31,7 @@ class IStaticFunction : public IFunction {
  * @tparam F The static-function pointer type to wrap.
  */
 template <FreeFunction F>
-class TStaticFunction : public TFunction<F, IStaticFunction> {
+class RTTIStaticTFunction : public RTTITFunction<F, RTTIStaticFunction> {
  public:
   using traits = FunctionTraits<F>;
 
@@ -54,7 +54,7 @@ class TStaticFunction : public TFunction<F, IStaticFunction> {
   template <typename... ArgNames>
     requires(FreeFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
              (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit TStaticFunction(const std::string_view name, F function, ArgNames&&... argNames)
-      : TFunction<F, IStaticFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  explicit RTTIStaticTFunction(const std::string_view name, F function, ArgNames&&... argNames)
+      : RTTITFunction<F, RTTIStaticFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
 };
 }  // namespace core::rtti
