@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include "ContainerType.hpp"
 #include "INamePool.hpp"
-#include "TypeName.hpp"
+#include "RTTIContainerType.hpp"
+#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 
@@ -14,7 +14,7 @@ namespace core::rtti {
  * This class describes types whose C++ representation is @c std::shared_ptr<T>, allowing the RTTI system
  * to reason about shared ownership semantics through a common interface.
  */
-class IRefType : public IContainerType {
+class RTTIRefType : public RTTIContainerType {
  public:
   /**
    * @brief Constructs an @c IRefType with the given name, size, alignment, and inner type descriptor.
@@ -22,15 +22,15 @@ class IRefType : public IContainerType {
    * @param name The interned string name of the reference type.
    * @param size The size of the smart pointer type in bytes.
    * @param alignment The alignment requirement of the smart pointer type in bytes.
-   * @param inner A pointer to the @c IType descriptor for the referenced element type.
+   * @param inner A pointer to the @c RTTIType descriptor for the referenced element type.
    */
-  IRefType(const IName& name, const std::size_t size, const std::size_t alignment, const IType* inner) noexcept
-      : IContainerType(name, size, alignment, inner, TypeKind::REF) {}
+  RTTIRefType(const IName& name, const std::size_t size, const std::size_t alignment, const RTTIType* inner) noexcept
+      : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::REF) {}
 
   /**
    * @brief Virtual destructor for @code IRefType@endcode.
    */
-  ~IRefType() override = default;
+  ~RTTIRefType() override = default;
 
   /**
    * @brief Retrieves the raw pointer managed by the @c std::shared_ptr instance at @c instance.
@@ -104,7 +104,7 @@ class IRefType : public IContainerType {
  * @tparam T The element type held by the @c std::shared_ptr this descriptor represents.
  */
 template <typename T>
-class TRefType : public TType<std::shared_ptr<T>, IRefType> {
+class RTTIRefTType : public RTTITType<std::shared_ptr<T>, RTTIRefType> {
  public:
   /**
    * @brief Type alias for the underlying @c std::shared_ptr type described by this descriptor.
@@ -114,15 +114,15 @@ class TRefType : public TType<std::shared_ptr<T>, IRefType> {
   /**
    * @brief Constructs a @c TRefType with the given inner type descriptor.
    *
-   * The type name is automatically derived from @c GetPrefixedTypeName with @c TypeKind::REF,
+   * The type name is automatically derived from @c GetPrefixedTypeName with @c RTTITypeKind::REF,
    * producing a name such as @c "ref:MyType".
    *
    * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
-   * @param inner A pointer to the @c IType descriptor for the element type @code T@endcode.
+   * @param inner A pointer to the @c RTTIType descriptor for the element type @code T@endcode.
    */
   template <typename I>
     requires is_same_element_v<I, T>
-  explicit TRefType(const I* inner);
+  explicit RTTIRefTType(const I* inner);
 
   /**
    * @brief Retrieves the raw pointer from the @c std::shared_ptr<T> at @c instance.
@@ -185,7 +185,7 @@ class TRefType : public TType<std::shared_ptr<T>, IRefType> {
 template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
-TRefType<T>::TRefType(const InnerType* inner)
-    : TType<std::shared_ptr<T>, IRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::REF, T>()),
-                                          static_cast<const IType*>(inner)) {}
+RTTIRefTType<T>::RTTIRefTType(const InnerType* inner)
+    : RTTITType<std::shared_ptr<T>, RTTIRefType>(INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::REF, T>()),
+                                                 static_cast<const RTTIType*>(inner)) {}
 }  // namespace core::rtti

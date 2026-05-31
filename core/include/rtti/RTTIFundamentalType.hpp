@@ -2,8 +2,9 @@
 
 #include "Export.hpp"
 #include "INamePool.hpp"
-#include "IType.hpp"
-#include "TypeName.hpp"
+#include "RTTITType.hpp"
+#include "RTTIType.hpp"
+#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 
@@ -13,7 +14,7 @@ namespace core::rtti {
  * Concrete fundamental-type descriptors derive from this interface, while shared implementation lives in @code
  * TTypeImpl@endcode.
  */
-class JAYBIRD_API IFundamentalType : public IType {
+class JAYBIRD_API RTTIFundamentalType : public RTTIType {
  public:
   /**
    * @brief Constructs an @c IFundamentalType with the given metadata.
@@ -22,12 +23,12 @@ class JAYBIRD_API IFundamentalType : public IType {
    * @param size The size of the fundamental type in bytes.
    * @param alignment The alignment requirement of the fundamental type in bytes.
    */
-  explicit IFundamentalType(const IName& name, std::size_t size, std::size_t alignment) noexcept;
+  explicit RTTIFundamentalType(const IName& name, std::size_t size, std::size_t alignment) noexcept;
 
   /**
    * @brief Virtual destructor for the @c IFundamentalType class.
    */
-  ~IFundamentalType() override;
+  ~RTTIFundamentalType() override;
 };
 
 /**
@@ -42,7 +43,7 @@ class JAYBIRD_API IFundamentalType : public IType {
  */
 template <typename T>
   requires(std::is_fundamental_v<T> && !std::is_void_v<T> && !std::is_pointer_v<T>)
-class TFundamentalType : public TType<T, IFundamentalType> {
+class RTTIFundamentalTType : public RTTITType<T, RTTIFundamentalType> {
  public:
   /**
    * @brief Defines a type alias for the underlying type @code T@endcode.
@@ -53,8 +54,8 @@ class TFundamentalType : public TType<T, IFundamentalType> {
    * @brief Constructs a @c TFundamentalType for the specified type @code T@endcode.
    *
    * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
-   * for type @c T and sets the type kind to @code TypeKind::FUNDAMENTAL@endcode.
+   * for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
    */
-  TFundamentalType() noexcept : TType<T, IFundamentalType>(INamePool::get().addName(GetTypeName<T>())) {}
+  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(INamePool::get().addName(GetTypeName<T>())) {}
 };
 }  // namespace core::rtti

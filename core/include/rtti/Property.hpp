@@ -1,6 +1,6 @@
 #pragma once
 #include "IName.hpp"
-#include "IType.hpp"
+#include "RTTIType.hpp"
 
 namespace core::rtti {
 /**
@@ -12,9 +12,9 @@ class Property {
    * @brief Constructs a @c Property with the given name and type.
    *
    * @param name The interned name of the property as an @c IName.
-   * @param type The type of the property as a pointer to an @c IType.
+   * @param type The type of the property as a pointer to an @c RTTIType.
    */
-  Property(const IName& name, const IType* type) noexcept : m_name(name), m_type(type) {}
+  Property(const IName& name, const RTTIType* type) noexcept : m_name(name), m_type(type) {}
 
   /**
    * @brief Returns the interned name of the property.
@@ -28,9 +28,9 @@ class Property {
   /**
    * @brief Returns the type of the property.
    *
-   * @return The type of the property as a pointer to an @c IType.
+   * @return The type of the property as a pointer to an @c RTTIType.
    */
-  [[nodiscard]] const IType* type() const noexcept {
+  [[nodiscard]] const RTTIType* type() const noexcept {
     return m_type;
   }
 
@@ -45,6 +45,6 @@ class Property {
    * @brief A pointer to the type of the property, which describes the data type of the property and allows for type
    * introspection and dynamic type checking within the RTTI system.
    */
-  const IType* m_type;
+  const RTTIType* m_type;
 };
 }  // namespace core::rtti

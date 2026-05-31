@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Export.hpp"
-#include "TypeRegistry.hpp"
+#include "RTTITypeRegistry.hpp"
 
 #ifdef TESTING_ENABLED
 #define TEST_VISIBILITY public:
@@ -16,10 +16,10 @@ namespace core::rtti {
 /**
  * @brief Top-level manager for the RTTI type system, coordinating type registration and lifecycle.
  *
- * @c TypeSystem is a singleton that owns the @c TypeRegistry and drives a two-phase type
+ * @c RTTITypeSystem is a singleton that owns the @c RTTITypeRegistry and drives a two-phase type
  * registration process (declare then define) via callbacks registered before initialization.
  */
-class JAYBIRD_API TypeSystem {
+class JAYBIRD_API RTTITypeSystem {
  public:
   /**
    * @brief This alias defines the callback type that is executed during initialization.
@@ -27,11 +27,11 @@ class JAYBIRD_API TypeSystem {
   using CallbackFunction = std::function<void()>;
 
   /**
-   * @brief Gets the singleton instance of the @code TypeSystem@endcode.
+   * @brief Gets the singleton instance of the @code RTTITypeSystem@endcode.
    *
-   * @return A reference to the singleton instance of the @code TypeSystem@endcode.
+   * @return A reference to the singleton instance of the @code RTTITypeSystem@endcode.
    */
-  static TypeSystem& get() noexcept;
+  static RTTITypeSystem& get() noexcept;
 
   /**
    * @brief Initializes the type system by executing registered callbacks.
@@ -46,11 +46,11 @@ class JAYBIRD_API TypeSystem {
   bool initialize();
 
   /**
-   * @brief Gets a reference to the @c TypeRegistry managed by the @code TypeSystem@endcode.
+   * @brief Gets a reference to the @c RTTITypeRegistry managed by the @code RTTITypeSystem@endcode.
    *
-   * @return A reference to the @c TypeRegistry instance that is managed by the @code TypeSystem@endcode.
+   * @return A reference to the @c RTTITypeRegistry instance that is managed by the @code RTTITypeSystem@endcode.
    */
-  TypeRegistry& registry() noexcept;
+  RTTITypeRegistry& registry() noexcept;
 
   /**
    * @brief Adds a declaration callback function to the type system.
@@ -79,12 +79,12 @@ class JAYBIRD_API TypeSystem {
   void addCallbacks(const CallbackFunction& declare, const CallbackFunction& define);
 
   /**
-   * @brief Private constructor for the @c TypeSystem singleton.
+   * @brief Private constructor for the @c RTTITypeSystem singleton.
    *
-   * This constructor is private to prevent direct instantiation of the @c TypeSystem class, ensuring that only one
+   * This constructor is private to prevent direct instantiation of the @c RTTITypeSystem class, ensuring that only one
    * instance can exist and that it is accessed through the @c get() method.
    */
-  TEST_VISIBILITY TypeSystem() noexcept;
+  TEST_VISIBILITY RTTITypeSystem() noexcept;
 
  private:
   /**
@@ -101,12 +101,12 @@ class JAYBIRD_API TypeSystem {
   bool m_initialized = false;
 
   /**
-   * @brief The @c TypeRegistry instance that is managed by the @code TypeSystem@endcode.
+   * @brief The @c RTTITypeRegistry instance that is managed by the @code RTTITypeSystem@endcode.
    *
    * This registry is responsible for storing all type information for the RTTI system, and is accessed and modified
-   * through the various registration functions and callback mechanisms provided by the @code TypeSystem@endcode.
+   * through the various registration functions and callback mechanisms provided by the @code RTTITypeSystem@endcode.
    */
-  TypeRegistry m_registry;
+  RTTITypeRegistry m_registry;
 
   /**
    * @brief Collection of callback functions for declaring types in the RTTI system.
@@ -139,12 +139,12 @@ struct TypeResolver {
    * @return This function returns the reflected type descriptor for @c T, or @code nullptr@endcode when no descriptor
    * has been registered.
    */
-  static IType* get() {
+  static RTTIType* get() {
     static bool initialized = false;
-    static IType* type = nullptr;
+    static RTTIType* type = nullptr;
 
     if (!initialized) {
-      type = TypeSystem::get().registry().getType(GetTypeName<T>());
+      type = RTTITypeSystem::get().registry().getType(GetTypeName<T>());
       initialized = true;
     }
 
@@ -157,9 +157,9 @@ struct TypeResolver {
    * @return This function returns the reflected class descriptor for @c T, or @code nullptr@endcode when the resolved
    * type is absent or not a class.
    */
-  static IClassType* getClass() {
-    if (auto* type = get(); type && type->kind() == TypeKind::CLASS) {
-      return reinterpret_cast<IClassType*>(type);
+  static RTTIClassType* getClass() {
+    if (auto* type = get(); type && type->kind() == RTTITypeKind::CLASS) {
+      return reinterpret_cast<RTTIClassType*>(type);
     }
 
     return nullptr;

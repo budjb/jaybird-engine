@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "Function.hpp"
-#include "TypeSystem.hpp"
+#include "RTTITypeSystem.hpp"
 
 namespace core::rtti {
 /**

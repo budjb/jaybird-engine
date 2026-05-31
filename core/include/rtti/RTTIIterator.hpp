@@ -14,7 +14,7 @@ namespace core::rtti {
  * @tparam T The type of the elements in the array.
  */
 template <typename T = void>
-class Iterator {
+class RTTIIterator {
  public:
   /**
    * @brief Constructs an Iterator for the given array type and pointer.
@@ -22,7 +22,7 @@ class Iterator {
    * @param elementSize The size in bytes of one element for type-erased iteration (`T=void`).
    * @param ptr A pointer to the current element in the array.
    */
-  explicit Iterator(const std::size_t elementSize, T* ptr) noexcept : m_elementSize(elementSize), m_ptr(ptr) {}
+  explicit RTTIIterator(const std::size_t elementSize, T* ptr) noexcept : m_elementSize(elementSize), m_ptr(ptr) {}
 
   /**
    * @brief Returns a pointer to the current element in the array, cast to the specified type.
@@ -57,7 +57,7 @@ class Iterator {
    *
    * @return A reference to the iterator after it has been advanced to the next element in the array.
    */
-  Iterator& operator++() noexcept {
+  RTTIIterator& operator++() noexcept {
     if constexpr (std::is_void_v<T>) {
       m_ptr = static_cast<std::byte*>(m_ptr) + m_elementSize;
     } else {
@@ -72,8 +72,8 @@ class Iterator {
    *
    * @return An iterator pointing to the current element in the array before the increment operation was performed.
    */
-  Iterator operator++(int) noexcept {
-    const Iterator tmp(*this);
+  RTTIIterator operator++(int) noexcept {
+    const RTTIIterator tmp(*this);
     ++*this;
     return tmp;
   }
@@ -83,7 +83,7 @@ class Iterator {
    *
    * @return A reference to the iterator after it has been moved to the previous element in the array.
    */
-  Iterator& operator--() noexcept {
+  RTTIIterator& operator--() noexcept {
     if constexpr (std::is_void_v<T>) {
       m_ptr = static_cast<std::byte*>(m_ptr) - m_elementSize;
     } else {
@@ -98,8 +98,8 @@ class Iterator {
    *
    * @return An iterator pointing to the current element in the array before the decrement operation was performed.
    */
-  Iterator operator--(int) noexcept {
-    const Iterator tmp(*this);
+  RTTIIterator operator--(int) noexcept {
+    const RTTIIterator tmp(*this);
     --*this;
     return tmp;
   }
@@ -111,7 +111,7 @@ class Iterator {
    * negative to move backward in the array.
    * @return A reference to the iterator after it has been advanced by the specified offset.
    */
-  Iterator& operator+=(const std::ptrdiff_t offset) noexcept {
+  RTTIIterator& operator+=(const std::ptrdiff_t offset) noexcept {
     if constexpr (std::is_void_v<T>) {
       m_ptr = static_cast<std::byte*>(m_ptr) + m_elementSize * offset;
     } else {
@@ -128,7 +128,7 @@ class Iterator {
    * or negative to move forward in the array.
    * @return A reference to the iterator after it has been moved backward by the specified offset.
    */
-  Iterator& operator-=(const std::ptrdiff_t offset) noexcept {
+  RTTIIterator& operator-=(const std::ptrdiff_t offset) noexcept {
     if constexpr (std::is_void_v<T>) {
       m_ptr = static_cast<std::byte*>(m_ptr) - m_elementSize * offset;
     } else {
@@ -145,8 +145,8 @@ class Iterator {
    * negative to move backward in the array.
    * @return A new iterator that is advanced by the specified offset from the current iterator position.
    */
-  Iterator operator+(const std::ptrdiff_t offset) const noexcept {
-    Iterator tmp(*this);
+  RTTIIterator operator+(const std::ptrdiff_t offset) const noexcept {
+    RTTIIterator tmp(*this);
     tmp += offset;
     return tmp;
   }
@@ -159,8 +159,8 @@ class Iterator {
    * backward or negative to move forward in the array.
    * @return A new iterator that is moved backward by the specified offset from the current iterator position.
    */
-  Iterator operator-(const std::ptrdiff_t offset) const noexcept {
-    Iterator tmp(*this);
+  RTTIIterator operator-(const std::ptrdiff_t offset) const noexcept {
+    RTTIIterator tmp(*this);
     tmp -= offset;
     return tmp;
   }
@@ -174,7 +174,7 @@ class Iterator {
    * same array type and should be comparable.
    * @return The distance between this iterator and the other iterator, measured in the number of elements between them.
    */
-  std::ptrdiff_t operator-(const Iterator& iterator) const noexcept {
+  std::ptrdiff_t operator-(const RTTIIterator& iterator) const noexcept {
     if (m_ptr == iterator.m_ptr) {
       return 0;
     }
@@ -193,7 +193,7 @@ class Iterator {
    * @param iterator The other iterator to compare with this iterator.
    * @return true if both iterators point to the same position in the array, false otherwise.
    */
-  bool operator==(const Iterator& iterator) const noexcept {
+  bool operator==(const RTTIIterator& iterator) const noexcept {
     return m_ptr == iterator.m_ptr;
   }
 
@@ -203,7 +203,7 @@ class Iterator {
    * @param iterator The other iterator to compare with this iterator.
    * @return true if the iterators point to different positions in the array, false if they point to the same position.
    */
-  bool operator!=(const Iterator& iterator) const noexcept {
+  bool operator!=(const RTTIIterator& iterator) const noexcept {
     return m_ptr != iterator.m_ptr;
   }
 
@@ -216,7 +216,7 @@ class Iterator {
    * @return true if this iterator points to a position that is before the position pointed to by the other iterator in
    * the array, false otherwise.
    */
-  bool operator<(const Iterator& iterator) const noexcept {
+  bool operator<(const RTTIIterator& iterator) const noexcept {
     return m_ptr < iterator.m_ptr;
   }
 
@@ -229,7 +229,7 @@ class Iterator {
    * @return true if this iterator points to a position that is before or the same as the position pointed to by the
    * other iterator in the array, false otherwise.
    */
-  bool operator<=(const Iterator& iterator) const noexcept {
+  bool operator<=(const RTTIIterator& iterator) const noexcept {
     return m_ptr <= iterator.m_ptr;
   }
 
@@ -242,7 +242,7 @@ class Iterator {
    * @return true if this iterator points to a position that is after the position pointed to by the other iterator in
    * the array, false otherwise.
    */
-  bool operator>(const Iterator& iterator) const noexcept {
+  bool operator>(const RTTIIterator& iterator) const noexcept {
     return m_ptr > iterator.m_ptr;
   }
 
@@ -255,7 +255,7 @@ class Iterator {
    * @return true if this iterator points to a position that is after or the same as the position pointed to by the
    * other iterator in the array, false otherwise.
    */
-  bool operator>=(const Iterator& iterator) const noexcept {
+  bool operator>=(const RTTIIterator& iterator) const noexcept {
     return m_ptr >= iterator.m_ptr;
   }
 
@@ -289,8 +289,8 @@ class Iterator {
    * by the specified offset from this iterator's position.
    * @return A new iterator that is advanced by the specified offset from the given iterator position.
    */
-  friend Iterator operator+(const std::ptrdiff_t offset, const Iterator& iterator) noexcept {
-    Iterator tmp(iterator);
+  friend RTTIIterator operator+(const std::ptrdiff_t offset, const RTTIIterator& iterator) noexcept {
+    RTTIIterator tmp(iterator);
     tmp += offset;
     return tmp;
   }
@@ -306,8 +306,8 @@ class Iterator {
    * backward by the specified offset from this iterator's position.
    * @return A new iterator that is moved backward by the specified offset from the given iterator position.
    */
-  friend Iterator operator-(const std::ptrdiff_t offset, const Iterator& iterator) noexcept {
-    Iterator tmp(iterator);
+  friend RTTIIterator operator-(const std::ptrdiff_t offset, const RTTIIterator& iterator) noexcept {
+    RTTIIterator tmp(iterator);
     tmp -= offset;
     return tmp;
   }
@@ -349,7 +349,7 @@ class ReverseIterator {
    *
    * @param iterator The regular iterator from which to construct the reverse iterator.
    */
-  explicit ReverseIterator(Iterator<T> iterator) noexcept : m_iterator(iterator) {}
+  explicit ReverseIterator(RTTIIterator<T> iterator) noexcept : m_iterator(iterator) {}
 
   /**
    * @brief Returns a pointer to the current element in the array that the reverse iterator points to, cast to the
@@ -641,7 +641,6 @@ class ReverseIterator {
    * This member is used to implement all the operations of the reverse iterator by manipulating the underlying regular
    * iterator accordingly.
    */
-  Iterator<T> m_iterator;
+  RTTIIterator<T> m_iterator;
 };
-
 }  // namespace core::rtti

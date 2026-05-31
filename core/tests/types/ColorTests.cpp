@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTITypeName.hpp"
 #include "types/Color.hpp"
 
 TEST_CASE("Given a default Color, when constructed, then all channels are initialized to zero",

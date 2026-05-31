@@ -3,8 +3,8 @@
 #include <string_view>
 
 #include "CString.hpp"
-#include "rtti/TypeKind.hpp"
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTITypeKind.hpp"
+#include "rtti/RTTITypeName.hpp"
 
 namespace test_types {
 struct MemberNamedType {
@@ -63,12 +63,12 @@ static_assert(!core::rtti::NamedVectorType<core::Vector<test_types::PlainStruct>
 static_assert(!core::rtti::NamedVectorType<int>);
 }  // namespace
 
-TEST_CASE("Given a TypeKind, when GetTypePrefix is requested, then each supported kind returns the expected prefix",
+TEST_CASE("Given a RTTITypeKind, when GetTypePrefix is requested, then each supported kind returns the expected prefix",
           "[rtti][type_name]") {
-  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::NAME>()) == "");
-  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::ARRAY>()) == "array:");
-  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::REF>()) == "ref:");
-  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::TypeKind::WEAK_REF>()) == "wref:");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::RTTITypeKind::NAME>()) == "");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::RTTITypeKind::ARRAY>()) == "array:");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::RTTITypeKind::REF>()) == "ref:");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetTypePrefix<core::rtti::RTTITypeKind::WEAK_REF>()) == "wref:");
 }
 
 TEST_CASE("Given a type with a NAME member only, when GetTypeName is used, then the NAME value is returned",
@@ -98,8 +98,9 @@ TEST_CASE(
     "Given a compile-time type name, when GetPrefixedTypeName is used, then the prefix and base name are concatenated",
     "[rtti][type_name]") {
   constexpr auto arrayName =
-      core::rtti::GetPrefixedTypeName<core::rtti::TypeKind::ARRAY, test_types::MemberAndMappedType>();
-  constexpr auto refName = core::rtti::GetPrefixedTypeName<core::rtti::TypeKind::REF, test_types::MappedNamedType>();
+      core::rtti::GetPrefixedTypeName<core::rtti::RTTITypeKind::ARRAY, test_types::MemberAndMappedType>();
+  constexpr auto refName =
+      core::rtti::GetPrefixedTypeName<core::rtti::RTTITypeKind::REF, test_types::MappedNamedType>();
 
   REQUIRE(static_cast<std::string_view>(arrayName) == "array:member_priority");
   REQUIRE(static_cast<std::string_view>(refName) == "ref:mapped_named");
@@ -109,7 +110,7 @@ TEST_CASE(
     "Given a runtime base name, when the runtime GetPrefixedTypeName overload is used, then the expected prefixed "
     "string is returned",
     "[rtti][type_name]") {
-  const std::string name = core::rtti::GetPrefixedTypeName<core::rtti::TypeKind::WEAK_REF>("Entity");
+  const std::string name = core::rtti::GetPrefixedTypeName<core::rtti::RTTITypeKind::WEAK_REF>("Entity");
 
   REQUIRE(name == "wref:Entity");
 }

@@ -1,32 +1,32 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "Vector.hpp"
-#include "rtti/ArrayType.hpp"
-#include "rtti/FundamentalType.hpp"
-#include "rtti/Iterator.hpp"
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTIArrayType.hpp"
+#include "rtti/RTTIFundamentalType.hpp"
+#include "rtti/RTTIIterator.hpp"
+#include "rtti/RTTITypeName.hpp"
 
 using core::Vector;
 
 namespace {
 using core::IName;
-using core::rtti::IArrayType;
-using core::rtti::Iterator;
 using core::rtti::ReverseIterator;
-using core::rtti::TArrayType;
-using core::rtti::TFundamentalType;
+using core::rtti::RTTIArrayTType;
+using core::rtti::RTTIArrayType;
+using core::rtti::RTTIFundamentalTType;
+using core::rtti::RTTIIterator;
 
 /**
  * @brief Returns a cached int array type descriptor for testing.
  *
- * The returned @code TArrayType<int>@endcode instance uses @code TFundamentalType<int>@endcode
+ * The returned @code RTTIArrayTType<int>@endcode instance uses @code RTTIFundamentalTType<int>@endcode
  * as its element type. The same instance is reused across all test calls; it should not be deleted.
  *
- * @return A pointer to the cached @code IArrayType@endcode for int arrays.
+ * @return A pointer to the cached @code RTTIArrayType@endcode for int arrays.
  */
-IArrayType* createIntArrayType() {
-  static TFundamentalType<int> intType;
-  static TArrayType<int> arrayType(&intType);
+RTTIArrayType* createIntArrayType() {
+  static RTTIFundamentalTType<int> intType;
+  static RTTIArrayTType<int> arrayType(&intType);
   return &arrayType;
 }
 
@@ -38,14 +38,14 @@ IArrayType* createIntArrayType() {
  * @param arrayType The array type pointer.
  * @return The same pointer unchanged.
  */
-IArrayType* asArrayType(IArrayType* arrayType) {
+RTTIArrayType* asArrayType(RTTIArrayType* arrayType) {
   return arrayType;
 }
 
 }  // namespace
 
 // ============================================================================
-// Forward Iterator Tests
+// Forward RTTIIterator Tests
 // ============================================================================
 TEST_CASE(
     "Given an RTTI array type and vector, when begin and end iterators are compared, then forward range length is "
@@ -54,8 +54,8 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  Iterator<> begin = asArrayType(arrayType)->begin(&values);
-  Iterator<> end = asArrayType(arrayType)->end(&values);
+  RTTIIterator<> begin = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> end = asArrayType(arrayType)->end(&values);
 
   REQUIRE(begin != end);
   REQUIRE(end - begin == 3);
@@ -66,7 +66,7 @@ TEST_CASE(
     "are covered",
     "[rtti][iterator][array_type][coverage]") {
   const auto arrayType = createIntArrayType();
-  const IArrayType& constArrayType = *arrayType;
+  const RTTIArrayType& constArrayType = *arrayType;
 
   Vector values{1, 2, 3};
   const auto& constValues = values;
@@ -143,7 +143,7 @@ TEST_CASE("Given an RTTI array type and vector, when begin and end are iterated,
   const auto arrayType = createIntArrayType();
   Vector values{10, 20, 30};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 10);
 
   ++it;
@@ -161,8 +161,8 @@ TEST_CASE("Given an RTTI iterator, when post-incremented, then the previous posi
   const auto arrayType = createIntArrayType();
   Vector values{5, 6};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values);
-  Iterator<> old = it++;
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> old = it++;
 
   REQUIRE(old == asArrayType(arrayType)->begin(&values));
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 6);
@@ -173,7 +173,7 @@ TEST_CASE("Given an RTTI iterator at end, when pre-decremented, then it moves ba
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  Iterator<> it = asArrayType(arrayType)->end(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->end(&values);
   --it;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 3);
   --it;
@@ -185,9 +185,9 @@ TEST_CASE("Given an RTTI iterator, when post-decremented, then the old position 
   const auto arrayType = createIntArrayType();
   Vector values{7, 8, 9};
 
-  Iterator<> it = asArrayType(arrayType)->end(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->end(&values);
   --it;
-  const Iterator<> old = it--;
+  const RTTIIterator<> old = it--;
 
   REQUIRE(*static_cast<int*>(static_cast<void*>(old)) == 9);
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 8);
@@ -198,7 +198,7 @@ TEST_CASE("Given an RTTI iterator, when adjusted with += and -=, then it moves b
   const auto arrayType = createIntArrayType();
   Vector values{10, 20, 30, 40};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
   it += 2;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
 
@@ -212,12 +212,12 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3, 4};
 
-  const Iterator<> begin = asArrayType(arrayType)->begin(&values);
-  const Iterator<> third = begin + 2;
+  const RTTIIterator<> begin = asArrayType(arrayType)->begin(&values);
+  const RTTIIterator<> third = begin + 2;
   REQUIRE(*static_cast<int*>(static_cast<void*>(third)) == 3);
   REQUIRE(begin == asArrayType(arrayType)->begin(&values));
 
-  const Iterator<> back = third - 1;
+  const RTTIIterator<> back = third - 1;
   REQUIRE(*static_cast<int*>(static_cast<void*>(back)) == 2);
 }
 
@@ -227,8 +227,8 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{10, 20, 30};
 
-  const Iterator<> begin = asArrayType(arrayType)->begin(&values);
-  const Iterator<> shifted = 2 + begin;
+  const RTTIIterator<> begin = asArrayType(arrayType)->begin(&values);
+  const RTTIIterator<> shifted = 2 + begin;
   REQUIRE(*static_cast<int*>(static_cast<void*>(shifted)) == 30);
   REQUIRE(begin == asArrayType(arrayType)->begin(&values));
 }
@@ -238,8 +238,8 @@ TEST_CASE("Given RTTI begin and end iterators, when subtracting them, then signe
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3, 4, 5};
 
-  const Iterator<> first = asArrayType(arrayType)->begin(&values);
-  const Iterator<> last = asArrayType(arrayType)->end(&values);
+  const RTTIIterator<> first = asArrayType(arrayType)->begin(&values);
+  const RTTIIterator<> last = asArrayType(arrayType)->end(&values);
 
   REQUIRE(last - first == 5);
   REQUIRE(first - last == -5);
@@ -250,9 +250,9 @@ TEST_CASE("Given RTTI iterators at different positions, when compared, then orde
   auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  Iterator<> a = asArrayType(arrayType)->begin(&values);
-  Iterator<> b = a + 1;
-  Iterator<> c = a + 1;
+  RTTIIterator<> a = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> b = a + 1;
+  RTTIIterator<> c = a + 1;
 
   REQUIRE(a < b);
   REQUIRE(a <= b);
@@ -269,7 +269,7 @@ TEST_CASE("Given an RTTI iterator, when indexed with operator[], then elements a
   const auto arrayType = createIntArrayType();
   Vector values{100, 200, 300};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
   REQUIRE(*static_cast<int*>(it[0]) == 100);
   REQUIRE(*static_cast<int*>(it[1]) == 200);
   REQUIRE(*static_cast<int*>(it[2]) == 300);
@@ -283,7 +283,7 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{11, 22, 33};
 
-  const Iterator<> it = asArrayType(arrayType)->begin(&values);
+  const RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
 
   void* asBase = it.base();
   void* asGet = it.get();
@@ -301,7 +301,7 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{10, 20, 30, 40};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values) + 2;
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values) + 2;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
 
   it += -1;
@@ -310,7 +310,7 @@ TEST_CASE(
   it -= -1;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 30);
 
-  const Iterator<> shifted = 1 - it;
+  const RTTIIterator<> shifted = 1 - it;
   REQUIRE(*static_cast<int*>(static_cast<void*>(shifted)) == 20);
 }
 
@@ -319,8 +319,8 @@ TEST_CASE("Given an empty RTTI array, when begin and end are compared, then they
   const auto arrayType = createIntArrayType();
   Vector<int> values;
 
-  Iterator<> begin = asArrayType(arrayType)->begin(&values);
-  Iterator<> end = asArrayType(arrayType)->end(&values);
+  RTTIIterator<> begin = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> end = asArrayType(arrayType)->end(&values);
 
   REQUIRE(begin == end);
   REQUIRE(end - begin == 0);
@@ -331,7 +331,7 @@ TEST_CASE("Given an RTTI array with a single element, when iterated, then the el
   const auto arrayType = createIntArrayType();
   Vector values{42};
 
-  Iterator<> it = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->begin(&values);
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 42);
 
   ++it;
@@ -343,7 +343,7 @@ TEST_CASE("Given an RTTI iterator at end, when decremented to begin, then all el
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  Iterator<> it = asArrayType(arrayType)->end(&values);
+  RTTIIterator<> it = asArrayType(arrayType)->end(&values);
   --it;
   REQUIRE(*static_cast<int*>(static_cast<void*>(it)) == 3);
   --it;
@@ -357,15 +357,15 @@ TEST_CASE("Given RTTI iterators to the same position, when subtracted, then zero
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  Iterator<> it1 = asArrayType(arrayType)->begin(&values);
-  Iterator<> it2 = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it1 = asArrayType(arrayType)->begin(&values);
+  RTTIIterator<> it2 = asArrayType(arrayType)->begin(&values);
 
   REQUIRE(it1 - it2 == 0);
   REQUIRE(it1 == it2);
 }
 
 // ============================================================================
-// Reverse Iterator Tests
+// Reverse RTTIIterator Tests
 // ============================================================================
 TEST_CASE(
     "Given an RTTI array type and vector, when rbegin and rend are compared, then reverse range length is correct",
@@ -605,7 +605,7 @@ TEST_CASE("Given RTTI reverse iterators to the same position, when subtracted, t
 }
 
 // ============================================================================
-// Cross Iterator Tests (Forward vs. Reverse Semantics Compatibility)
+// Cross RTTIIterator Tests (Forward vs. Reverse Semantics Compatibility)
 // ============================================================================
 TEST_CASE(
     "Given forward and reverse iterators from the same array, when compared to begin/end equivalents, then forward and "
@@ -614,8 +614,8 @@ TEST_CASE(
   const auto arrayType = createIntArrayType();
   Vector values{1, 2, 3};
 
-  const Iterator<> begin = asArrayType(arrayType)->begin(&values);
-  const Iterator<> end = asArrayType(arrayType)->end(&values);
+  const RTTIIterator<> begin = asArrayType(arrayType)->begin(&values);
+  const RTTIIterator<> end = asArrayType(arrayType)->end(&values);
   const ReverseIterator<> rbegin = asArrayType(arrayType)->rbegin(&values);
   const ReverseIterator<> rend = asArrayType(arrayType)->rend(&values);
 
@@ -624,8 +624,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given an RTTI array, when forward and reverse iterators visit elements in opposite directions, then all elements "
-    "are "
-    "visited exactly once in each direction",
+    "are visited exactly once in each direction",
     "[rtti][iterator][reverse_iterator][semantics]") {
   auto arrayType = createIntArrayType();
   Vector values{10, 20, 30};

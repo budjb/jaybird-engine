@@ -56,29 +56,29 @@ The `core` library is a **static library** (`jaybird-engine-core`). All public A
 
 ### `core/include/`
 
-| File / Folder             | Purpose                                                                                          |
-|---------------------------|--------------------------------------------------------------------------------------------------|
-| `Hash.hpp`                | `core::hash_t` (`uint64_t`) and `constexpr fnv1a_64()` hash function                             |
-| `IName.hpp`               | `core::IName` — interned string handle (stores FNV-1a hash, resolves via `INamePool`)            |
-| `INamePool.hpp`           | `core::INamePool` — singleton map from `hash_t → std::string`, thread-safe with `shared_mutex`   |
-| `SpinLock.hpp`            | `core::SpinLock` — reader-writer spin lock (supports both exclusive and shared locking)          |
-| `rtti/RTTI.hpp`           | Convenience umbrella header — includes all RTTI public headers                                   |
-| `rtti/TypeKind.hpp`       | `enum class TypeKind` — `NAME, CLASS, ARRAY, STRING, SIMPLE`                                     |
-| `rtti/IType.hpp`          | Abstract base for all type descriptors                                                           |
-| `rtti/TType.hpp`          | CRTP helper: `TType<T>` implements `IType` for concrete non-container types                      |
-| `rtti/IContainerType.hpp` | `IContainerType : IType` — adds `inner()` pointer to element type                                |
-| `rtti/IArrayType.hpp`     | `IArrayType : IContainerType` — full dynamic-array API (at, front, back, push/pop, resize, …)    |
-| `rtti/TArrayType.hpp`     | `TArrayType<T>` — implements `IArrayType` over `std::vector<T>`                                  |
-| `rtti/IClassType.hpp`     | `IClassType : IType` — tag class for class/struct types (minimally implemented)                  |
-| `rtti/Iterator.hpp`       | `Iterator<T>` and `ReverseIterator<T>` — type-erased (T=void) or typed iterator pair             |
-| `rtti/TypeRegistry.hpp`   | `TypeRegistry` — singleton, thread-safe `IName → unique_ptr<IType>` map                          |
-| `rtti/TypeRegistrar.hpp`  | `TypeRegistrar` — **[stub, not yet implemented]**                                                |
-| `rtti/types/IntType.hpp`  | `IntType : TType<int>` and `IntArrayType : TArrayType<int>` — reference concrete implementations |
+| File / Folder                | Purpose                                                                                                  |
+|------------------------------|----------------------------------------------------------------------------------------------------------|
+| `Hash.hpp`                   | `core::hash_t` (`uint64_t`) and `constexpr fnv1a_64()` hash function                                     |
+| `IName.hpp`                  | `core::IName` — interned string handle (stores FNV-1a hash, resolves via `INamePool`)                    |
+| `INamePool.hpp`              | `core::INamePool` — singleton map from `hash_t → std::string`, thread-safe with `shared_mutex`           |
+| `SpinLock.hpp`               | `core::SpinLock` — reader-writer spin lock (supports both exclusive and shared locking)                  |
+| `rtti/RTTI.hpp`              | Convenience umbrella header — includes all RTTI public headers                                           |
+| `rtti/RTTITypeKind.hpp`      | `enum class RTTITypeKind` — `NAME, CLASS, ARRAY, STRING, SIMPLE`                                         |
+| `rtti/RTTIType.hpp`          | Abstract base for all type descriptors                                                                   |
+| `rtti/RTTITType.hpp`         | CRTP helper: `RTTITType<T>` implements `RTTIType` for concrete non-container types                       |
+| `rtti/RTTIContainerType.hpp` | `RTTIContainerType : RTTIType` — adds `inner()` pointer to element type                                  |
+| `rtti/RTTIArrayType.hpp`     | `RTTIArrayType : RTTIContainerType` — full dynamic-array API (at, front, back, push/pop, resize, …)      |
+| `rtti/RTTIArrayType.hpp`     | `RTTIArrayTType<T>` — implements `RTTIArrayType` over `std::vector<T>`                                   |
+| `rtti/RTTIClassType.hpp`     | `RTTIClassType : RTTIType` — tag class for class/struct types (minimally implemented)                    |
+| `rtti/Iterator.hpp`          | `Iterator<T>` and `ReverseIterator<T>` — type-erased (T=void) or typed iterator pair                     |
+| `rtti/RTTITypeRegistry.hpp`  | `RTTITypeRegistry` — singleton, thread-safe `IName → unique_ptr<RTTIType>` map                           |
+| `rtti/TypeRegistrar.hpp`     | `TypeRegistrar` — **[stub, not yet implemented]**                                                        |
+| `rtti/types/IntType.hpp`     | `IntType : RTTITType<int>` and `IntArrayType : RTTIArrayTType<int>` — reference concrete implementations |
 
 ### `core/src/`
 
 Mirrors the `include/` structure. Each `.cpp` provides implementations for the corresponding
-header. Template-heavy code (`TType`, `TArrayType`, `Iterator`) lives entirely in headers.
+header. Template-heavy code (`RTTITType`, `RTTIArrayTType`, `Iterator`) lives entirely in headers.
 
 ### `tests/`
 
@@ -87,8 +87,8 @@ header. Template-heavy code (`TType`, `TArrayType`, `Iterator`) lives entirely i
 | `INameTests.cpp`               | `IName` construction, hashing, equality, conversions           |
 | `INamePoolTests.cpp`           | `INamePool` singleton, `addName`, `getName`, `hasName`         |
 | `IntTypeTests.cpp`             | `IntType` lifecycle, assign, equals                            |
-| `IntArrayTypeTests.cpp`        | `IntArrayType` / `TArrayType<int>` full API                    |
-| `TypeRegistryTests.cpp`        | `TypeRegistry` singleton, register, lookup, thread-safety      |
+| `IntArrayTypeTests.cpp`        | `IntArrayType` / `RTTIArrayTType<int>` full API                |
+| `TypeRegistryTests.cpp`        | `RTTITypeRegistry` singleton, register, lookup, thread-safety  |
 | `RttiIteratorTests.cpp`        | `Iterator<>` (void) and `Iterator<int>` arithmetic, comparison |
 | `RttiReverseIteratorTests.cpp` | `ReverseIterator<>` arithmetic, comparison                     |
 | `RttiTestUtils.hpp`            | Shared test helpers (no test cases)                            |
@@ -109,17 +109,17 @@ header. Template-heavy code (`TType`, `TArrayType`, `Iterator`) lives entirely i
 ### 4.2 RTTI Type Hierarchy
 
 ```
-IType  (abstract — name, size, alignment, kind; assign/create/free/construct/destroy/equals)
-├── TType<T>           — generic non-container implementation (all ops via C++ semantics on T)
-│   └── IntType        — TType<int>, kind=SIMPLE
-├── IClassType         — tag subclass, kind=CLASS (fields/methods TBD)
-├── IContainerType     — adds inner() pointer
-│   └── IArrayType     — full std::vector-style API (abstract)
-│       └── TArrayType<T> — concrete impl over std::vector<T>
-│           └── IntArrayType — TArrayType<int>
+RTTIType  (abstract — name, size, alignment, kind; assign/create/free/construct/destroy/equals)
+├── RTTITType<T>           — generic non-container implementation (all ops via C++ semantics on T)
+│   └── IntType        — RTTITType<int>, kind=SIMPLE
+├── RTTIClassType         — tag subclass, kind=CLASS (fields/methods TBD)
+├── RTTIContainerType     — adds inner() pointer
+│   └── RTTIArrayType     — full std::vector-style API (abstract)
+│       └── RTTIArrayTType<T> — concrete impl over std::vector<T>
+│           └── IntArrayType — RTTIArrayTType<int>
 ```
 
-**TypeKind** values:
+**RTTITypeKind** values:
 
 - `SIMPLE` — primitives (int, float, …)
 - `CLASS` — user-defined structs/classes
@@ -129,11 +129,11 @@ IType  (abstract — name, size, alignment, kind; assign/create/free/construct/d
 
 ### 4.3 Type Registry
 
-- Global singleton: `TypeRegistry::get()`.
-- `registerType(unique_ptr<IType>&&)` — takes ownership; **returns false and discards** if name
+- Global singleton: `RTTITypeRegistry::get()`.
+- `registerType(unique_ptr<RTTIType>&&)` — takes ownership; **returns false and discards** if name
   already exists (no overwrite).
-- `getType(IName)` — returns raw `IType*` (non-owning).
-- `getClass(IName)` — convenience that `dynamic_cast`s to `IClassType*`.
+- `getType(IName)` — returns raw `RTTIType*` (non-owning).
+- `getClass(IName)` — convenience that `dynamic_cast`s to `RTTIClassType*`.
 - `hasType(IName)` — existence check.
 - Thread-safe: uses `std::shared_mutex` (shared for reads, exclusive for writes).
 
@@ -143,30 +143,30 @@ IType  (abstract — name, size, alignment, kind; assign/create/free/construct/d
 
 - `operator[]` returns `void*` (not a reference).
 - `operator*` is absent; use `.get()` or the implicit conversion to `T*`.
-- When `T = void` (type-erased mode), pointer arithmetic uses `IArrayType::inner()->size()`.
+- When `T = void` (type-erased mode), pointer arithmetic uses `RTTIArrayType::inner()->size()`.
 - `ReverseIterator` wraps a forward `Iterator`; `.get()` returns one-before-the-wrapped-pos.
 
 ### 4.5 SpinLock
 
 Reader-writer spin lock. Satisfies `BasicLockable` (exclusive) and has `lock_shared` / `unlock_shared`.
-Currently not used by `TypeRegistry` (which uses `std::shared_mutex`).
+Currently not used by `RTTITypeRegistry` (which uses `std::shared_mutex`).
 
 ---
 
 ## 5. Naming Conventions & Style
 
-| Entity                        | Convention                    | Example                                         |
-|-------------------------------|-------------------------------|-------------------------------------------------|
-| Types / classes               | `PascalCase`                  | `IArrayType`, `TType`, `TypeRegistry`           |
-| Interfaces (abstract/virtual) | `I` prefix                    | `IType`, `IArrayType`, `IClassType`             |
-| Template wrappers             | `T` prefix                    | `TType<T>`, `TArrayType<T>`                     |
-| Member variables              | `m_` prefix, `camelCase`      | `m_name`, `m_arrayType`                         |
-| Functions / methods           | `camelCase`                   | `registerType()`, `pushBack()`, `shrinkToFit()` |
-| Namespaces                    | `snake_case`                  | `core`, `core::rtti`                            |
-| Test tags                     | `[subsystem][area]`           | `[rtti][type_registry][thread_safety]`          |
-| Test naming                   | Gherkin-style full sentence   | `"Given X, when Y, then Z"`                     |
-| Header guards                 | `#pragma once` (no `#ifndef`) | —                                               |
-| Implementation in headers     | OK for templates              | `TType.hpp`, `TArrayType.hpp`, `Iterator.hpp`   |
+| Entity                        | Convention                    | Example                                               |
+|-------------------------------|-------------------------------|-------------------------------------------------------|
+| Types / classes               | `PascalCase`                  | `RTTIArrayType`, `RTTITType`, `RTTITypeRegistry`      |
+| Interfaces (abstract/virtual) | `I` prefix                    | `RTTIType`, `RTTIArrayType`, `RTTIClassType`          |
+| Template wrappers             | `T` prefix                    | `RTTITType<T>`, `RTTIArrayTType<T>`                   |
+| Member variables              | `m_` prefix, `camelCase`      | `m_name`, `m_arrayType`                               |
+| Functions / methods           | `camelCase`                   | `registerType()`, `pushBack()`, `shrinkToFit()`       |
+| Namespaces                    | `snake_case`                  | `core`, `core::rtti`                                  |
+| Test tags                     | `[subsystem][area]`           | `[rtti][type_registry][thread_safety]`                |
+| Test naming                   | Gherkin-style full sentence   | `"Given X, when Y, then Z"`                           |
+| Header guards                 | `#pragma once` (no `#ifndef`) | —                                                     |
+| Implementation in headers     | OK for templates              | `RTTITType.hpp`, `RTTIArrayTType.hpp`, `Iterator.hpp` |
 
 Code style broadly follows **Google C++ style** (braces on same line, 2-space indent, `[[nodiscard]]`
 on non-void getters, `noexcept` on non-throwing functions).
@@ -259,65 +259,65 @@ Use the existing `cmake-build-debug-vsenv/` directory (or a similarly named buil
 
 ### Type-erased operations via `void*`
 
-All `IType` virtual methods accept `void*` / `const void*` for instances. The concrete type (e.g.,
-`TType<int>`) knows the real type and `static_cast`s internally. Callers must guarantee that the
+All `RTTIType` virtual methods accept `void*` / `const void*` for instances. The concrete type (e.g.,
+`RTTITType<int>`) knows the real type and `static_cast`s internally. Callers must guarantee that the
 pointer points to a correctly-typed object.
 
 ### Singleton pattern
 
-Both `INamePool` and `TypeRegistry` use a private constructor + `static ... get()` returning a
+Both `INamePool` and `RTTITypeRegistry` use a private constructor + `static ... get()` returning a
 static local instance (or pointer to one). Neither is copyable nor movable.
 
 ### Concept-constrained template construction
 
-`TArrayType<T>` requires its `inner` constructor argument to satisfy the `TypedInnerDescriptorFor`
-concept — i.e., the inner descriptor must derive from `IType` and expose a `::Type` alias equal to
+`RTTIArrayTType<T>` requires its `inner` constructor argument to satisfy the `TypedInnerDescriptorFor`
+concept — i.e., the inner descriptor must derive from `RTTIType` and expose a `::Type` alias equal to
 `T`. This catches mismatched element type descriptors at compile time.
 
 ### Array type names use a prefix
 
-Array types are named `"array:<inner-type-name>"`. The helper `typePrefix<TypeKind::ARRAY>(name)`
-in `IArrayType.hpp` constructs this string. (Marked `TODO: move these`.)
+Array types are named `"array:<inner-type-name>"`. The helper `typePrefix<RTTITypeKind::ARRAY>(name)`
+in `RTTIArrayType.hpp` constructs this string. (Marked `TODO: move these`.)
 
-### `asArray()` on `IType`
+### `asArray()` on `RTTIType`
 
-`IType::asArray()` returns `IArrayType*` if the type is an array kind (checked via `TypeKind`),
+`RTTIType::asArray()` returns `RTTIArrayType*` if the type is an array kind (checked via `RTTITypeKind`),
 otherwise `nullptr`. This avoids needing `dynamic_cast` for the common array-check case.
 
 ---
 
 ## 9. What Exists vs. What Is Planned
 
-| Feature                                           | Status                     |
-|---------------------------------------------------|----------------------------|
-| `IName` / `INamePool` — interned strings          | ✅ Complete                 |
-| `SpinLock`                                        | ✅ Complete                 |
-| `IType` / `TType<T>`                              | ✅ Complete                 |
-| `IContainerType` / `IArrayType` / `TArrayType<T>` | ✅ Complete                 |
-| `Iterator<T>` / `ReverseIterator<T>`              | ✅ Complete                 |
-| `IClassType`                                      | ✅ Stub (constructor only)  |
-| `TypeRegistry`                                    | ✅ Complete                 |
-| `TypeRegistrar`                                   | 🔲 Stub (empty class body) |
-| Concrete `StringType`                             | 🔲 Not started             |
-| Concrete `NameType`                               | 🔲 Not started             |
-| `IClassType` fields/properties/methods            | 🔲 Not started             |
-| Serialisation / reflection helpers                | **[PLACEHOLDER]**          |
-| Scripting / scripting bridge                      | **[PLACEHOLDER]**          |
+| Feature                                                     | Status                     |
+|-------------------------------------------------------------|----------------------------|
+| `IName` / `INamePool` — interned strings                    | ✅ Complete                 |
+| `SpinLock`                                                  | ✅ Complete                 |
+| `RTTIType` / `RTTITType<T>`                                 | ✅ Complete                 |
+| `RTTIContainerType` / `RTTIArrayType` / `RTTIArrayTType<T>` | ✅ Complete                 |
+| `Iterator<T>` / `ReverseIterator<T>`                        | ✅ Complete                 |
+| `RTTIClassType`                                             | ✅ Stub (constructor only)  |
+| `RTTITypeRegistry`                                          | ✅ Complete                 |
+| `TypeRegistrar`                                             | 🔲 Stub (empty class body) |
+| Concrete `StringType`                                       | 🔲 Not started             |
+| Concrete `NameType`                                         | 🔲 Not started             |
+| `RTTIClassType` fields/properties/methods                   | 🔲 Not started             |
+| Serialisation / reflection helpers                          | **[PLACEHOLDER]**          |
+| Scripting / scripting bridge                                | **[PLACEHOLDER]**          |
 
 ---
 
 ## 10. Important Constraints & Gotchas
 
-1. **`TypeRegistry` is a singleton and persists for the whole test binary run.** Tests that
+1. **`RTTITypeRegistry` is a singleton and persists for the whole test binary run.** Tests that
    register types must use unique names (counter-based) to avoid collisions.
 
 2. **`IName` construction does not intern.** Call `INamePool::get().addName(str)` explicitly if
    you need `IName::toString()` / `INamePool::get().getName(name)` to work.
 
-3. **`TArrayType<T>` underlying type is `std::vector<T>`.** All void* pointers passed to its
+3. **`RTTIArrayTType<T>` underlying type is `std::vector<T>`.** All void* pointers passed to its
    methods must actually point to `std::vector<T>` instances.
 
-4. **`Iterator<void>` pointer arithmetic** uses `m_arrayType->inner()->size()` — the `IArrayType*`
+4. **`Iterator<void>` pointer arithmetic** uses `m_arrayType->inner()->size()` — the `RTTIArrayType*`
    must therefore be non-null when constructing a void iterator.
 
 5. **`TypeRegistrar` is not yet implemented** — do not use it or assume it will auto-register
@@ -348,7 +348,7 @@ Please fill in the items below and remove this section once complete.
 | P7  | What is the long-term scope of the engine (2D, 3D, ECS, other)?                                                      |
 | P8  | Are there any third-party libraries planned beyond Catch2 (e.g., rendering, windowing, math)?                        |
 | P9  | What is the target release/milestone timeline (if any)?                                                              |
-| P10 | Is `SpinLock` intended to replace `std::shared_mutex` in `TypeRegistry`, or do they serve different purposes?        |
+| P10 | Is `SpinLock` intended to replace `std::shared_mutex` in `RTTITypeRegistry`, or do they serve different purposes?    |
 
 ## 12. Code Docs
 
@@ -400,25 +400,25 @@ For example:
 
 // This is good: each sentence is on a single line, and we wrap only when a new sentence starts.
 /**
- * @brief Casts a pointer to the derived @code IArrayType@endcode interface.
+ * @brief Casts a pointer to the derived @code RTTIArrayType@endcode interface.
  *
  * Serves mostly as a documentation helper.
  *
  * @param arrayType The pointer to cast.
- * @return The same pointer, explicitly typed as @code IArrayType*@endcode.
+ * @return The same pointer, explicitly typed as @code RTTIArrayType*@endcode.
  */
 
 // This is bad: sentences are split arbitrarily mid-clause.
 /**
- * @brief Casts a type descriptor pointer to an @code IArrayType@endcode
+ * @brief Casts a type descriptor pointer to an @code RTTIArrayType@endcode
  *   pointer.
  *
  * This function is a convenience helper that ensures type safety when
- *   casting a raw pointer to an @code IArrayType@endcode.
+ *   casting a raw pointer to an @code RTTIArrayType@endcode.
  *
- * @param arrayType This parameter is a pointer to an @code IArrayType@endcode to cast.
+ * @param arrayType This parameter is a pointer to an @code RTTIArrayType@endcode to cast.
  * @return This function explicitly returns the pointer as
- *   @code IArrayType*@endcode.
+ *   @code RTTIArrayType*@endcode.
  */
 ```
 
@@ -459,10 +459,10 @@ A code token is considered the "last element" if nothing other than sentence-end
 
 ```cpp
 /**
- * @brief Gets the @c IType descriptor for the given @c name.
+ * @brief Gets the @c RTTIType descriptor for the given @c name.
  *   // "name" is followed by a period, but it is not a code token — fine.
- * @brief Returns a pointer to the @code IType@endcode.
- *   // "IType" is a code token at sentence end — must use @code...@endcode.
+ * @brief Returns a pointer to the @code RTTIType@endcode.
+ *   // "RTTIType" is a code token at sentence end — must use @code...@endcode.
  *
  * @param func The function pointer (of type @code FuncPtr@endcode).
  *   // "FuncPtr" is a code token before closing paren — must use @code...@endcode.

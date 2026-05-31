@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "rtti/RTTITypeName.hpp"
 #include "rtti/StaticFunction.hpp"
-#include "rtti/TypeName.hpp"
 
 namespace test {
 std::int32_t staticAnswer() {
@@ -39,7 +39,7 @@ TEST_CASE(
     "Given a static function with no return and no arguments, when invoked with a valid stack frame, then the "
     "call succeeds",
     "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticVoid", &test::staticVoid);
   auto frame = function.createStackFrame();
@@ -51,7 +51,7 @@ TEST_CASE(
     "Given a static function with a return value and no arguments, when invoked with a valid return pointer, "
     "then the return value is written",
     "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticAnswer", &test::staticAnswer);
   auto frame = function.createStackFrame();
@@ -66,7 +66,7 @@ TEST_CASE(
     "Given a static function with two arguments, when invoked with valid argument pointers, then both "
     "arguments are forwarded in order",
     "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticSum", &test::staticSum, "lhs", "rhs");
   auto frame = function.createStackFrame();
@@ -87,11 +87,11 @@ TEST_CASE(
     "Given a static function with argument names and return value, when arguments are queried, then names "
     "and types match the reflected signature",
     "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticSum_metadata", &test::staticSum, "lhs", "rhs");
   auto args = function.arguments();
-  auto* intType = core::rtti::TypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTITypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
 
   REQUIRE(args.size() == 2);
   REQUIRE(std::string(args[0]->name()) == "lhs");
@@ -104,7 +104,7 @@ TEST_CASE(
     "Given a static function with a return type, when invoke is called without a return pointer, then an "
     "exception is thrown",
     "[rtti][static_function][negative]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticAnswer_missing_return", &test::staticAnswer);
   auto frame = function.createStackFrame();
@@ -114,7 +114,7 @@ TEST_CASE(
 
 TEST_CASE("Given a static function with arguments, when one argument pointer is missing, then invocation throws",
           "[rtti][static_function][negative]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   auto function = core::rtti::TStaticFunction("staticSum_missing_arg", &test::staticSum, "lhs", "rhs");
   auto frame = function.createStackFrame();
@@ -130,7 +130,7 @@ TEST_CASE("Given a static function with arguments, when one argument pointer is 
 
 TEST_CASE("Given a static function with an unregistered return type, when reflected, then construction throws",
           "[rtti][static_function][negative]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   REQUIRE_THROWS_AS(core::rtti::TStaticFunction("staticReturnsUnregistered", &test::staticReturnsUnregistered),
                     std::runtime_error);
@@ -138,7 +138,7 @@ TEST_CASE("Given a static function with an unregistered return type, when reflec
 
 TEST_CASE("Given a static function with an unregistered argument type, when reflected, then construction throws",
           "[rtti][static_function][negative]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   REQUIRE_THROWS_AS(core::rtti::TStaticFunction("staticTakesUnregistered", &test::staticTakesUnregisteredArg, "arg"),
                     std::runtime_error);
@@ -146,7 +146,7 @@ TEST_CASE("Given a static function with an unregistered argument type, when refl
 
 TEST_CASE("Given a static function, when the function name is queried, then it returns the correct name",
           "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   const auto function = core::rtti::TStaticFunction("test_static_name", &test::staticAnswer);
 
@@ -155,17 +155,17 @@ TEST_CASE("Given a static function, when the function name is queried, then it r
 
 TEST_CASE("Given a static function, when return type is queried, then it corresponds to the actual return type",
           "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   const auto function = core::rtti::TStaticFunction("staticAnswer_returntype", &test::staticAnswer);
-  auto* intType = core::rtti::TypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTITypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
 
   REQUIRE(function.returnType() == intType);
 }
 
 TEST_CASE("Given a static function, when flags are queried, then isMember is false and isNative is true",
           "[rtti][static_function]") {
-  core::rtti::TypeSystem::get().initialize();
+  core::rtti::RTTITypeSystem::get().initialize();
 
   const auto function = core::rtti::TStaticFunction("staticAnswer_flags", &test::staticAnswer);
   auto [isNative, isMember] = function.flags();

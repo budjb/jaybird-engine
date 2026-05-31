@@ -5,8 +5,8 @@
 #include "IName.hpp"
 #include "INamePool.hpp"
 #include "Property.hpp"
+#include "RTTITypeSystem.hpp"
 #include "StackFrame.hpp"
-#include "TypeSystem.hpp"
 
 namespace core::rtti {
 /**
@@ -252,7 +252,7 @@ class IFunction {
    * @param name The name of the argument to add.
    * @param type The reflected type descriptor for the argument.
    */
-  void argument(const std::string_view name, IType* type) noexcept {
+  void argument(const std::string_view name, RTTIType* type) noexcept {
     m_arguments.push_back(std::make_unique<Property>(INamePool::get().addName(name), type));
   }
 
@@ -262,16 +262,16 @@ class IFunction {
    * @return This function returns the reflected return type descriptor, or @code nullptr@endcode when the function has
    * no return value.
    */
-  [[nodiscard]] const IType* returnType() const noexcept {
+  [[nodiscard]] const RTTIType* returnType() const noexcept {
     return m_return;
   }
 
   /**
    * @brief Sets the return type of the function.
    *
-   * @param type The return type to set for the function as an @c IType pointer.
+   * @param type The return type to set for the function as an @c RTTIType pointer.
    */
-  void returnType(IType* type) noexcept {
+  void returnType(RTTIType* type) noexcept {
     m_return = type;
   }
 
@@ -314,7 +314,7 @@ class IFunction {
   /**
    * @brief A pointer to the return type of the function, or @c nullptr if the function has no return type.
    */
-  IType* m_return{};
+  RTTIType* m_return{};
 };
 
 /**

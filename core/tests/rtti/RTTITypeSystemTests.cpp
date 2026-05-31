@@ -2,14 +2,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
-#include "rtti/TypeKind.hpp"
-#include "rtti/TypeSystem.hpp"
+#include "rtti/RTTITypeKind.hpp"
+#include "rtti/RTTITypeSystem.hpp"
 
 TEST_CASE(
-    "Given TypeSystem initialization callbacks, when initialize is called, then declare callbacks run before define "
-    "callbacks and built-in types are registered",
+    "Given RTTITypeSystem initialization callbacks, when initialize is called, then declare callbacks run before "
+    "define callbacks and built-in types are registered",
     "[rtti][type_system][initialize]") {
-  core::rtti::TypeSystem typeSystem;
+  core::rtti::RTTITypeSystem typeSystem;
 
   std::vector<int> callbackOrder;
   std::atomic declareCalls{0};
@@ -32,7 +32,7 @@ TEST_CASE(
   REQUIRE(defineCalls.load(std::memory_order_relaxed) == 1);
   REQUIRE(callbackOrder == std::vector<int>{1, 2});
 
-  core::rtti::TypeRegistry& registry = typeSystem.registry();
+  core::rtti::RTTITypeRegistry& registry = typeSystem.registry();
 
   REQUIRE(registry.hasType("int8"));
   REQUIRE(registry.hasType("int32"));
@@ -45,7 +45,7 @@ TEST_CASE(
   REQUIRE(registry.hasType("bool"));
 
   REQUIRE(registry.hasType("IName"));
-  REQUIRE(registry.getType("IName")->kind() == core::rtti::TypeKind::NAME);
+  REQUIRE(registry.getType("IName")->kind() == core::rtti::RTTITypeKind::NAME);
 
   REQUIRE(registry.hasType("Quaternion"));
   REQUIRE(registry.hasType("EulerAngles"));
@@ -59,9 +59,9 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given TypeSystem::addCallbacks, when initialize is called, then both callbacks run in the correct phase order",
+    "Given RTTITypeSystem::addCallbacks, when initialize is called, then both callbacks run in the correct phase order",
     "[rtti][type_system][add_callbacks]") {
-  core::rtti::TypeSystem typeSystem;
+  core::rtti::RTTITypeSystem typeSystem;
 
   std::vector<int> callbackOrder;
   std::atomic callCount{0};

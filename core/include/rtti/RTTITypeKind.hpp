@@ -5,9 +5,9 @@ namespace core::rtti {
 /**
  * @brief Classification of types in the RTTI system.
  *
- * This enumeration describes the runtime descriptor category for each registered @code IType@endcode.
+ * This enumeration describes the runtime descriptor category for each registered @code RTTIType@endcode.
  */
-enum class TypeKind : std::size_t {
+enum class RTTITypeKind : std::size_t {
   /**
    * @brief This value identifies the interned string @code IName@endcode descriptor category.
    */

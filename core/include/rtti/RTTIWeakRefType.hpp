@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
 
-#include "ContainerType.hpp"
 #include "INamePool.hpp"
-#include "TypeName.hpp"
+#include "RTTIContainerType.hpp"
+#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 
@@ -13,7 +13,7 @@ namespace core::rtti {
  * This class describes types whose C++ representation is @c std::weak_ptr<T>, allowing the RTTI
  * system to reason about non-owning, expirable references through a common interface.
  */
-class IWeakRefType : public IContainerType {
+class RTTIWeakRefType : public RTTIContainerType {
  public:
   /**
    * @brief Constructs an @c IWeakRefType with the given name, size, alignment, and inner type descriptor.
@@ -21,16 +21,16 @@ class IWeakRefType : public IContainerType {
    * @param name The interned string name of the weak reference type.
    * @param size The size of the weak pointer type in bytes.
    * @param alignment The alignment requirement of the weak pointer type in bytes.
-   * @param inner A pointer to the @c IType descriptor for the referenced element type.
+   * @param inner A pointer to the @c RTTIType descriptor for the referenced element type.
    */
-  explicit IWeakRefType(const IName& name, const std::size_t size, const std::size_t alignment,
-                        const IType* inner) noexcept
-      : IContainerType(name, size, alignment, inner, TypeKind::WEAK_REF) {}
+  explicit RTTIWeakRefType(const IName& name, const std::size_t size, const std::size_t alignment,
+                           const RTTIType* inner) noexcept
+      : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::WEAK_REF) {}
 
   /**
    * @brief Virtual destructor for @code IWeakRefType@endcode.
    */
-  ~IWeakRefType() override = default;
+  ~RTTIWeakRefType() override = default;
 
   /**
    * @brief Resets the @c std::weak_ptr at @c instance, clearing its reference to the managed object.
@@ -84,7 +84,7 @@ class IWeakRefType : public IContainerType {
  * @brief Concrete RTTI descriptor for @c std::weak_ptr<T> weak reference types.
  *
  * It implements @c IWeakRefType over @c std::weak_ptr<T> and derives its type name from
- * @c GetPrefixedTypeName with @c TypeKind::WEAK_REF, producing a name such as @c "wref:MyType".
+ * @c GetPrefixedTypeName with @c RTTITypeKind::WEAK_REF, producing a name such as @c "wref:MyType".
  * The inner type descriptor must satisfy @c TypedInnerDescriptorFor<InnerType, T>.
  *
  * Because @c std::weak_ptr<T> does not define @c operator==, this class provides its own
@@ -94,7 +94,7 @@ class IWeakRefType : public IContainerType {
  * @tparam T The element type referenced by the @c std::weak_ptr this descriptor represents.
  */
 template <typename T>
-class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
+class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
  public:
   /**
    * @brief Type alias for the underlying @c std::weak_ptr type described by this descriptor.
@@ -104,15 +104,15 @@ class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
   /**
    * @brief Constructs a @c TWeakRefType with the given inner type descriptor.
    *
-   * The type name is automatically derived from @c GetPrefixedTypeName with @c TypeKind::WEAK_REF,
+   * The type name is automatically derived from @c GetPrefixedTypeName with @c RTTITypeKind::WEAK_REF,
    * producing a name such as @c "wref:MyType".
    *
    * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
-   * @param inner A pointer to the @c IType descriptor for the element type @code T@endcode.
+   * @param inner A pointer to the @c RTTIType descriptor for the element type @code T@endcode.
    */
   template <typename I>
     requires is_same_element_v<I, T>
-  explicit TWeakRefType(const I* inner) noexcept;
+  explicit RTTIWeakRefTType(const I* inner) noexcept;
 
   /**
    * @brief Compares two @c std::weak_ptr instances for equality by locking both and comparing
@@ -121,7 +121,7 @@ class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
    * Two expired weak pointers are considered equal (both lock to @c nullptr). Two non-expired
    * weak pointers are equal only if they refer to the same managed object. A null @c void* argument
    * is distinct from an expired weak pointer: if either argument is @c nullptr, the comparison
-   * follows the same null-pointer semantics as @code TType@endcode.
+   * follows the same null-pointer semantics as @code RTTITType@endcode.
    *
    * @param lhs A pointer to the left-hand @c std::weak_ptr instance, or @c nullptr.
    * @param rhs A pointer to the right-hand @c std::weak_ptr instance, or @c nullptr.
@@ -197,12 +197,13 @@ class TWeakRefType : public TType<std::weak_ptr<T>, IWeakRefType> {
 template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
-TWeakRefType<T>::TWeakRefType(const InnerType* inner) noexcept
-    : TType<std::weak_ptr<T>, IWeakRefType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::WEAK_REF, T>()),
-                                            static_cast<const IType*>(inner)) {}
+RTTIWeakRefTType<T>::RTTIWeakRefTType(const InnerType* inner) noexcept
+    : RTTITType<std::weak_ptr<T>, RTTIWeakRefType>(
+          INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::WEAK_REF, T>()),
+          static_cast<const RTTIType*>(inner)) {}
 
 template <typename T>
-bool TWeakRefType<T>::equals(const void* lhs, const void* rhs) const noexcept {
+bool RTTIWeakRefTType<T>::equals(const void* lhs, const void* rhs) const noexcept {
   if (lhs == nullptr || rhs == nullptr) {
     return lhs == rhs;
   }

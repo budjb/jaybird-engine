@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTITypeName.hpp"
 #include "types/EulerAngles.hpp"
 
 TEST_CASE("Given default EulerAngles, when constructed, then all angle components are zero",

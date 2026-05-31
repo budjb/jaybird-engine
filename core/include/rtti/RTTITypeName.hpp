@@ -8,7 +8,7 @@
 
 #include "CString.hpp"
 #include "Vector.hpp"
-#include "rtti/TypeKind.hpp"
+#include "rtti/RTTITypeKind.hpp"
 
 namespace core::rtti {
 namespace detail {
@@ -146,14 +146,14 @@ template <typename T>
 using CanonicalType = detail::CanonicalTypeNameType<T>::type;
 
 /**
- * @brief Returns the string prefix associated with a given @c TypeKind for use in type name construction.
+ * @brief Returns the string prefix associated with a given @c RTTITypeKind for use in type name construction.
  *
  * The base template returns an empty @c CString; specializations provide the appropriate prefix
- * for each kind (e.g., @c "array:" for @code TypeKind::ARRAY@endcode).
+ * for each kind (e.g., @c "array:" for @code RTTITypeKind::ARRAY@endcode).
  *
- * @return The prefix @c CString for the given @c TypeKind, or an empty @c CString if none is defined.
+ * @return The prefix @c CString for the given @c RTTITypeKind, or an empty @c CString if none is defined.
  */
-template <TypeKind>
+template <RTTITypeKind>
 constexpr auto GetTypePrefix() {
   return CString("");
 }
@@ -164,7 +164,7 @@ constexpr auto GetTypePrefix() {
  * @return The string @c "array:" used as a prefix for array type names.
  */
 template <>
-constexpr auto GetTypePrefix<TypeKind::ARRAY>() {
+constexpr auto GetTypePrefix<RTTITypeKind::ARRAY>() {
   return CString("array:");
 }
 
@@ -174,7 +174,7 @@ constexpr auto GetTypePrefix<TypeKind::ARRAY>() {
  * @return The string @c "ref:" used as a prefix for reference type names.
  */
 template <>
-constexpr auto GetTypePrefix<TypeKind::REF>() {
+constexpr auto GetTypePrefix<RTTITypeKind::REF>() {
   return CString("ref:");
 }
 
@@ -184,7 +184,7 @@ constexpr auto GetTypePrefix<TypeKind::REF>() {
  * @return The string @c "wref:" used as a prefix for weak reference type names.
  */
 template <>
-constexpr auto GetTypePrefix<TypeKind::WEAK_REF>() {
+constexpr auto GetTypePrefix<RTTITypeKind::WEAK_REF>() {
   return CString("wref:");
 }
 
@@ -257,14 +257,15 @@ constexpr auto GetTypeName() noexcept {
  * @brief Returns the canonical prefixed type name for element type @c T at compile time.
  *
  * The result is the element type's name prefixed with the string corresponding to @c K (e.g., @c "array:int"
- * for @c TypeKind::ARRAY and @code int@endcode). @c T::NAME is preferred when present; otherwise the @c TypeName<T>
+ * for @c RTTITypeKind::ARRAY and @code int@endcode). @c T::NAME is preferred when present; otherwise the
+ * @c TypeName<T>
  * specialization is used. The @c NamedType constraint guarantees that one of the two is available.
  *
- * @tparam K The @c TypeKind whose prefix to prepend.
+ * @tparam K The @c RTTITypeKind whose prefix to prepend.
  * @tparam T The element type for which to produce the prefixed name. It must satisfy @code NamedType@endcode.
  * @return A @c CString containing the prefixed type name.
  */
-template <TypeKind K, NamedType T>
+template <RTTITypeKind K, NamedType T>
 [[nodiscard]] constexpr auto GetPrefixedTypeName() {
   return GetTypePrefix<K>() + GetTypeName<T>();
 }
@@ -272,11 +273,11 @@ template <TypeKind K, NamedType T>
 /**
  * @brief Returns the canonical type name for a runtime string, prefixed with the string associated with @c K.
  *
- * @tparam K The @c TypeKind whose prefix to prepend.
+ * @tparam K The @c RTTITypeKind whose prefix to prepend.
  * @param name The base type name to prefix.
  * @return A @c std::string containing the concatenated prefix and base name.
  */
-template <TypeKind K>
+template <RTTITypeKind K>
 [[nodiscard]] std::string GetPrefixedTypeName(const std::string_view name) {
   return GetTypePrefix<K>().append(name);
 }
@@ -305,7 +306,7 @@ concept NamedVectorType = VectorType<C> && NamedType<typename std::remove_cvref_
 /**
  * @brief Returns the canonical type name for a @c Vector whose element type satisfies @code NamedType@endcode.
  *
- * The returned name uses the @c TypeKind::ARRAY prefix followed by the element type name
+ * The returned name uses the @c RTTITypeKind::ARRAY prefix followed by the element type name
  * (e.g., @c "array:double" for @code Vector<double>@endcode).
  *
  * @tparam C The container type to name. It must satisfy @code NamedVectorType@endcode.
@@ -313,16 +314,16 @@ concept NamedVectorType = VectorType<C> && NamedType<typename std::remove_cvref_
  */
 template <NamedVectorType C>
 constexpr auto GetTypeName() {
-  return GetPrefixedTypeName<TypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
+  return GetPrefixedTypeName<RTTITypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
 }
 
 }  // namespace core::rtti
 
 /**
- * @brief Macro to register a @c TypeKind prefix for a type name mapping specialization.
+ * @brief Macro to register an @c RTTITypeKind prefix for a type name mapping specialization.
  *
- * @param _kind The @c TypeKind for which to register the prefix (e.g., @c TypeKind::ARRAY).
- * @param _prefix The string prefix to associate with the given @c TypeKind (e.g., @c "array:").
+ * @param _kind The @c RTTITypeKind for which to register the prefix (e.g., @c RTTITypeKind::ARRAY).
+ * @param _prefix The string prefix to associate with the given @c RTTITypeKind (e.g., @c "array:").
  */
 #define REGISTER_TYPE_PREFIX(_kind, _prefix)          \
   template <>                                         \

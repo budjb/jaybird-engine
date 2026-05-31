@@ -1,24 +1,26 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "INamePool.hpp"
-#include "rtti/INameType.hpp"
-#include "rtti/TypeKind.hpp"
+#include "rtti/RTTIINameType.hpp"
+#include "rtti/RTTITypeKind.hpp"
 
-TEST_CASE("Given an INameType descriptor, when inspected through IType, then metadata matches the IName runtime type",
-          "[rtti][iname_type][metadata]") {
-  const core::rtti::INameType descriptor;
-  const core::rtti::IType& asType = descriptor;
+TEST_CASE(
+    "Given an RTTIINameType descriptor, when inspected through RTTIType, then metadata matches the IName runtime type",
+    "[rtti][iname_type][metadata]") {
+  const core::rtti::RTTIINameType descriptor;
+  const core::rtti::RTTIType& asType = descriptor;
 
-  REQUIRE(asType.kind() == core::rtti::TypeKind::NAME);
+  REQUIRE(asType.kind() == core::rtti::RTTITypeKind::NAME);
   REQUIRE(asType.size() == sizeof(core::IName));
   REQUIRE(asType.alignment() == alignof(core::IName));
   REQUIRE(asType.name() == core::IName("IName"));
 }
 
-TEST_CASE("Given an INameType descriptor, when assign and equals are called, then IName values follow value semantics",
-          "[rtti][iname_type][operations]") {
-  core::rtti::INameType descriptor;
-  core::rtti::IType& asType = descriptor;
+TEST_CASE(
+    "Given an RTTIINameType descriptor, when assign and equals are called, then IName values follow value semantics",
+    "[rtti][iname_type][operations]") {
+  const core::rtti::RTTIINameType descriptor;
+  const core::rtti::RTTIType& asType = descriptor;
 
   const core::IName source = core::INamePool::get().addName("iname_type_source");
   core::IName destination = core::INamePool::get().addName("iname_type_destination");

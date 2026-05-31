@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTITypeName.hpp"
 #include "types/Quaternion.hpp"
 
 TEST_CASE("Given a default Quaternion, when constructed, then it is initialized to identity values",

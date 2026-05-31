@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ContainerType.hpp"
 #include "Export.hpp"
 #include "INamePool.hpp"
-#include "Iterator.hpp"
-#include "TypeName.hpp"
+#include "RTTIContainerType.hpp"
+#include "RTTIIterator.hpp"
+#include "RTTITType.hpp"
+#include "RTTITypeName.hpp"
 #include "Vector.hpp"
 
 namespace core::rtti {
@@ -12,22 +13,22 @@ namespace core::rtti {
  * @brief Interface for array type descriptors that provides methods for accessing and manipulating array elements, as
  * well as querying array properties such as length and capacity.
  */
-class JAYBIRD_API IArrayType : public IContainerType {
+class JAYBIRD_API RTTIArrayType : public RTTIContainerType {
  public:
   /**
-   * @brief Constructs an IArrayType with the given name, size, alignment, and inner type descriptor.
+   * @brief Constructs an RTTIArrayType with the given name, size, alignment, and inner type descriptor.
    *
    * @param name The interned string name of the array type.
    * @param size The size of the array type in bytes.
    * @param alignment The alignment requirement of the array type in bytes.
-   * @param inner A pointer to the IType descriptor for the elements contained in the array.
+   * @param inner A pointer to the RTTIType descriptor for the elements contained in the array.
    */
-  explicit IArrayType(const IName& name, std::size_t size, std::size_t alignment, const IType* inner) noexcept;
+  explicit RTTIArrayType(const IName& name, std::size_t size, std::size_t alignment, const RTTIType* inner) noexcept;
 
   /**
-   * @brief Virtual destructor for IArrayType.
+   * @brief Virtual destructor for RTTIArrayType.
    */
-  ~IArrayType() override = default;
+  ~RTTIArrayType() override = default;
 
   /**
    * @brief Returns the number of elements currently stored in the provided array.
@@ -146,7 +147,7 @@ class JAYBIRD_API IArrayType : public IContainerType {
    * @return An iterator pointing to the first element in the array, or an iterator equal to end() if the array is
    * empty.
    */
-  [[nodiscard]] virtual Iterator<> begin(void* array) noexcept = 0;
+  [[nodiscard]] virtual RTTIIterator<> begin(void* array) noexcept = 0;
 
   /**
    * @brief Template method that returns an iterator pointing to the first element, cast to a type.
@@ -159,8 +160,8 @@ class JAYBIRD_API IArrayType : public IContainerType {
    * @return A typed iterator pointing to the first element, or equal to end() if empty.
    */
   template <typename T>
-  [[nodiscard]] Iterator<T> begin(void* array) noexcept {
-    return Iterator<T>(begin(static_cast<T*>(array)));
+  [[nodiscard]] RTTIIterator<T> begin(void* array) noexcept {
+    return RTTIIterator<T>(begin(static_cast<T*>(array)));
   }
 
   /**
@@ -172,7 +173,7 @@ class JAYBIRD_API IArrayType : public IContainerType {
    * @param array A pointer to the array instance from which to retrieve the end iterator.
    * @return An iterator pointing to one past the last element in the array.
    */
-  [[nodiscard]] virtual Iterator<> end(void* array) noexcept = 0;
+  [[nodiscard]] virtual RTTIIterator<> end(void* array) noexcept = 0;
 
   /**
    * @brief Template method that returns a typed iterator to one past the last element, serving as a sentinel.
@@ -185,8 +186,8 @@ class JAYBIRD_API IArrayType : public IContainerType {
    * @return A typed iterator pointing to one past the last element in the array.
    */
   template <typename T>
-  [[nodiscard]] Iterator<T> end(void* array) noexcept {
-    return Iterator<T>(end(static_cast<T*>(array)));
+  [[nodiscard]] RTTIIterator<T> end(void* array) noexcept {
+    return RTTIIterator<T>(end(static_cast<T*>(array)));
   }
 
   /**
@@ -342,36 +343,37 @@ class JAYBIRD_API IArrayType : public IContainerType {
 /**
  * @brief A template class representing an array type descriptor in the RTTI system. This class provides methods for
  * accessing and manipulating array elements, as well as querying array properties such as length and capacity. The
- * TArrayType class is designed to work with @c Vector as the underlying container for the array elements, and it
+ * RTTIArrayTType class is designed to work with @c Vector as the underlying container for the array elements, and it
  * requires that the inner type descriptor provided to its constructor is compatible with the element type of the array.
  *
  * @tparam T The type of the elements in the array. This type must be compatible with the inner type descriptor provided
  * to the constructor, as enforced by the TypedInnerDescriptorFor concept.
  */
 template <typename T>
-class TArrayType : public TType<Vector<T>, IArrayType> {
+class RTTIArrayTType : public RTTITType<Vector<T>, RTTIArrayType> {
  public:
   /**
-   * @brief Defines a type alias for the underlying array type, which is @c Vector<T>. This allows users of TArrayType
-   * to refer to the underlying array type using TArrayType<T>::Type.
+   * @brief Defines a type alias for the underlying array type, which is @c Vector<T>. This allows users of
+   * @c RTTIArrayTType to refer to the underlying array type using @code RTTIArrayTType<T>::Type@endcode.
    */
   using Type = Vector<T>;
 
   /**
-   * @brief Constructs a TArrayType with the given name and inner type descriptor. The size and alignment are
-   * automatically determined based on the underlying array type, and the kind is set to TypeKind::ARRAY. The inner type
-   * descriptor must be compatible with the element type T, as enforced by the TypedInnerDescriptorFor concept.
+   * @brief Constructs an RTTIArrayTType with the given name and inner type descriptor. The size and alignment are
+   * automatically determined based on the underlying array type, and the kind is set to @code
+   * RTTITypeKind::ARRAY@endcode. The inner type descriptor must be compatible with the element type T, as enforced by
+   * the TypedInnerDescriptorFor concept.
    *
    * @tparam InnerType The type of the inner type descriptor, which must satisfy the TypedInnerDescriptorFor concept
    * with respect to T.
-   * @param inner A pointer to the IType descriptor for the elements contained in the array. This must be compatible
+   * @param inner A pointer to the RTTIType descriptor for the elements contained in the array. This must be compatible
    * with the element type T.
    */
   template <typename InnerType>
     requires is_same_element_v<InnerType, T>
-  explicit TArrayType(const InnerType* inner)
-      : TType<Vector<T>, IArrayType>(INamePool::get().addName(GetPrefixedTypeName<TypeKind::ARRAY, T>()),
-                                     static_cast<const IType*>(inner)) {}
+  explicit RTTIArrayTType(const InnerType* inner)
+      : RTTITType<Vector<T>, RTTIArrayType>(INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::ARRAY, T>()),
+                                            static_cast<const RTTIType*>(inner)) {}
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is
@@ -546,12 +548,12 @@ class TArrayType : public TType<Vector<T>, IArrayType> {
    * @return An iterator pointing to the first element in the array, or an iterator equal to end() if the array is
    * empty.
    */
-  Iterator<> begin(void* ptr) noexcept override {
+  RTTIIterator<> begin(void* ptr) noexcept override {
     if (ptr == nullptr) {
-      return Iterator<>(this->inner()->size(), nullptr);
+      return RTTIIterator<>(this->inner()->size(), nullptr);
     }
     auto* vec = static_cast<Type*>(ptr);
-    return Iterator<>(this->inner()->size(), static_cast<void*>(vec->data()));
+    return RTTIIterator<>(this->inner()->size(), static_cast<void*>(vec->data()));
   }
 
   /**
@@ -564,12 +566,12 @@ class TArrayType : public TType<Vector<T>, IArrayType> {
    * @return An iterator pointing to one past the last element in the array, which serves as a sentinel value for the
    * end of the array.
    */
-  Iterator<> end(void* ptr) noexcept override {
+  RTTIIterator<> end(void* ptr) noexcept override {
     if (ptr == nullptr) {
-      return Iterator<>(this->inner()->size(), nullptr);
+      return RTTIIterator<>(this->inner()->size(), nullptr);
     }
     auto* vec = static_cast<Type*>(ptr);
-    return Iterator<>(this->inner()->size(), static_cast<void*>(vec->data() + vec->size()));
+    return RTTIIterator<>(this->inner()->size(), static_cast<void*>(vec->data() + vec->size()));
   }
 
   /**

@@ -1,29 +1,29 @@
 add_library(jaybird-engine-core SHARED
         src/INamePool.cpp
         src/IName.cpp
-        src/rtti/TypeRegistry.cpp
-        include/rtti/TypeRegistry.hpp
+        src/rtti/RTTITypeRegistry.cpp
+        include/rtti/RTTITypeRegistry.hpp
         src/SpinLock.cpp
         include/SpinLock.hpp
-        include/rtti/IType.hpp
-        include/rtti/TypeKind.hpp
-        src/rtti/IType.cpp
-        include/rtti/ContainerType.hpp
-        src/rtti/ContainerType.cpp
-        src/rtti/ArrayType.cpp
-        include/rtti/ArrayType.hpp
-        include/rtti/ClassType.hpp
-        src/rtti/ClassType.cpp
-        include/rtti/FundamentalType.hpp
-        src/rtti/FundamentalType.cpp
-        include/rtti/Iterator.hpp
-        include/rtti/TypeName.hpp
+        include/rtti/RTTIType.hpp
+        include/rtti/RTTITypeKind.hpp
+        src/rtti/RTTIType.cpp
+        include/rtti/RTTIContainerType.hpp
+        src/rtti/RTTIContainerType.cpp
+        src/rtti/RTTIArrayType.cpp
+        include/rtti/RTTIArrayType.hpp
+        include/rtti/RTTIClassType.hpp
+        src/rtti/RTTIClassType.cpp
+        include/rtti/RTTIFundamentalType.hpp
+        src/rtti/RTTIFundamentalType.cpp
+        include/rtti/RTTIIterator.hpp
+        include/rtti/RTTITypeName.hpp
         include/Vector.hpp
         include/CString.hpp
-        src/rtti/TypeSystem.cpp
-        include/rtti/TypeSystem.hpp
-        include/rtti/RefType.hpp
-        include/rtti/WeakRefType.hpp
+        src/rtti/RTTITypeSystem.cpp
+        include/rtti/RTTITypeSystem.hpp
+        include/rtti/RTTIRefType.hpp
+        include/rtti/RTTIWeakRefType.hpp
         src/types/Quaternion.cpp
         include/types/Quaternion.hpp
         src/types/EulerAngles.cpp
@@ -36,6 +36,7 @@ add_library(jaybird-engine-core SHARED
         include/rtti/Function.hpp
         include/rtti/GlobalFunction.hpp
         include/rtti/StaticFunction.hpp
+        include/rtti/RTTITType.hpp
 )
 
 include(GenerateExportHeader)
@@ -62,16 +63,16 @@ if (BUILD_TESTING)
           tests/types/QuaternionTests.cpp
           tests/types/EulerAnglesTests.cpp
           tests/types/ColorTests.cpp
-          tests/rtti/FundamentalTypeTests.cpp
-          tests/rtti/ClassTypeTests.cpp
-          tests/rtti/ArrayTypeTests.cpp
-          tests/rtti/IteratorTests.cpp
-          tests/rtti/RefTypeTests.cpp
-          tests/rtti/WeakRefTypeTests.cpp
-          tests/rtti/INameTypeTests.cpp
-          tests/rtti/TypeSystemTests.cpp
-          tests/rtti/TypeRegistryTests.cpp
-          tests/rtti/TypeNameTests.cpp
+          tests/rtti/RTTIFundamentalTypeTests.cpp
+          tests/rtti/RTTIClassTypeTests.cpp
+          tests/rtti/RTTIArrayTypeTests.cpp
+          tests/rtti/RTTIIteratorTests.cpp
+          tests/rtti/RTTIRefTypeTests.cpp
+          tests/rtti/RTTIWeakRefTypeTests.cpp
+          tests/rtti/RTTIINameTypeTests.cpp
+          tests/rtti/RTTITypeSystemTests.cpp
+          tests/rtti/RTTITypeRegistryTests.cpp
+          tests/rtti/RTTITypeNameTests.cpp
           tests/rtti/ClassFunctionTests.cpp
           tests/rtti/GlobalFunctionTests.cpp
           tests/rtti/StaticFunctionTests.cpp

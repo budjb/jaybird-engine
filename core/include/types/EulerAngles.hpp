@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "rtti/TypeName.hpp"
+#include "rtti/RTTITypeName.hpp"
 
 namespace core {
 /**
