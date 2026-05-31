@@ -30,7 +30,12 @@ add_library(jaybird-engine-core SHARED
         include/types/EulerAngles.hpp
         src/types/Color.cpp
         include/types/Color.hpp
-
+        include/rtti/ClassFunction.hpp
+        include/rtti/Property.hpp
+        include/rtti/StackFrame.hpp
+        include/rtti/Function.hpp
+        include/rtti/GlobalFunction.hpp
+        include/rtti/StaticFunction.hpp
 )
 
 include(GenerateExportHeader)
@@ -67,6 +72,10 @@ if (BUILD_TESTING)
           tests/rtti/TypeSystemTests.cpp
           tests/rtti/TypeRegistryTests.cpp
           tests/rtti/TypeNameTests.cpp
+          tests/rtti/ClassFunctionTests.cpp
+          tests/rtti/GlobalFunctionTests.cpp
+          tests/rtti/StaticFunctionTests.cpp
+          tests/rtti/StackFrameTests.cpp
   )
 
   target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)

@@ -10,16 +10,6 @@
 #include "types/EulerAngles.hpp"
 #include "types/Quaternion.hpp"
 
-REGISTER_TYPE_NAME(int8_t, "int8");
-REGISTER_TYPE_NAME(int32_t, "int32");
-REGISTER_TYPE_NAME(int64_t, "int64");
-REGISTER_TYPE_NAME(uint8_t, "uint8");
-REGISTER_TYPE_NAME(uint32_t, "uint32");
-REGISTER_TYPE_NAME(uint64_t, "uint64");
-REGISTER_TYPE_NAME(float, "float");
-REGISTER_TYPE_NAME(double, "double");
-REGISTER_TYPE_NAME(bool, "bool");
-
 namespace core::rtti {
 TypeSystem& TypeSystem::get() noexcept {
   static TypeSystem typeSystem{};

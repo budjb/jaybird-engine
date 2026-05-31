@@ -1,0 +1,51 @@
+#pragma once
+#include "Function.hpp"
+
+namespace core::rtti {
+/**
+ * @brief Base interface for reflected global (non-member) functions.
+ */
+class IGlobalFunction : public IFunction {
+ public:
+  /**
+   * @brief Constructs a reflected global function descriptor.
+   *
+   * @param name This value is the reflected function name.
+   * @param flags This value initializes the function flags.
+   */
+  explicit IGlobalFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
+      : IFunction(name, flags) {
+    m_flags.isMember = false;
+  }
+
+  /**
+   * @brief Destroys the reflected global function descriptor.
+   */
+  ~IGlobalFunction() override = default;
+};
+
+/**
+ * @brief Concrete reflected wrapper for free functions.
+ *
+ * @tparam F The free-function pointer type to wrap.
+ */
+template <FreeFunction F>
+class TGlobalFunction : public TFunction<F, IGlobalFunction> {
+ public:
+  using traits = FunctionTraits<F>;
+
+  /**
+   * @brief Constructs a reflected wrapper for a global function from a function name.
+   *
+   * @tparam ArgNames These types provide one name per function argument.
+   * @param name This value is the reflected function name.
+   * @param function This value is the global function pointer to wrap.
+   * @param argNames These values provide argument names in declaration order.
+   */
+  template <typename... ArgNames>
+    requires(FreeFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
+             (std::convertible_to<ArgNames, std::string_view> && ...))
+  explicit TGlobalFunction(std::string_view name, F function, ArgNames&&... argNames)
+      : TFunction<F, IGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+};
+}  // namespace core::rtti

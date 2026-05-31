@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -10,6 +11,140 @@
 #include "rtti/TypeKind.hpp"
 
 namespace core::rtti {
+namespace detail {
+/**
+ * @brief Maps integral signedness and width to a fixed-width integer type.
+ *
+ * The primary template maps unsupported combinations to @c void so callers can
+ * fall back to the original source type.
+ *
+ * @tparam IsSigned This value indicates whether the source type is signed.
+ * @tparam Size The width in bytes.
+ */
+template <bool IsSigned, std::size_t Size>
+struct FixedWidthIntegral {
+  using type = void;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code int8_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<true, 1> {
+  using type = std::int8_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code int16_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<true, 2> {
+  using type = std::int16_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code int32_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<true, 4> {
+  using type = std::int32_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code int64_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<true, 8> {
+  using type = std::int64_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code uint8_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<false, 1> {
+  using type = std::uint8_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code uint16_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<false, 2> {
+  using type = std::uint16_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code uint32_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<false, 4> {
+  using type = std::uint32_t;
+};
+
+/**
+ * @brief Specialization of @c FixedWidthIntegral for @code uint64_t@endcode.
+ */
+template <>
+struct FixedWidthIntegral<false, 8> {
+  using type = std::uint64_t;
+};
+
+/**
+ * @brief Maps a source type to the canonical key used for @c TypeName lookups.
+ *
+ * This mapper removes cv-ref qualifiers and normalizes non-boolean, non-character integral types to fixed-width signed
+ * or unsigned integer types by width.
+ *
+ * This ensures that fixed width types are portable since the size of native C++ types are not guaranteed.
+ *
+ * @tparam T The source type to map.
+ */
+template <typename T>
+struct CanonicalTypeNameType {
+ private:
+  /**
+   * @brief The type to base the fixed width type lookup on.
+   */
+  using BaseType = std::remove_cvref_t<T>;
+
+  /**
+   * @brief Whether the base type is a character type that should be excluded from integral normalization.
+   */
+  static constexpr bool isCharacterCategory = std::same_as<BaseType, char> || std::same_as<BaseType, wchar_t> ||
+                                              std::same_as<BaseType, char8_t> || std::same_as<BaseType, char16_t> ||
+                                              std::same_as<BaseType, char32_t>;
+
+  /**
+   * @brief Whether the base type is an integral type that is a candidate for normalization to a fixed-width type.
+   */
+  static constexpr bool isIntegralCandidate =
+      std::is_integral_v<BaseType> && !std::same_as<BaseType, bool> && !isCharacterCategory;
+
+  /**
+   * @brief The canonical integral type corresponding to the base type's signedness and width, or @c void if the base
+   * type is not a candidate for normalization.
+   */
+  using CanonicalIntegral = FixedWidthIntegral<std::is_signed_v<BaseType>, sizeof(BaseType)>::type;
+
+ public:
+  /**
+   * @brief The canonical type to use for @c TypeName lookups, which is either the normalized fixed-width integral type
+   * or the original base type if it is not a candidate for normalization.
+   */
+  using type =
+      std::conditional_t<isIntegralCandidate && !std::same_as<CanonicalIntegral, void>, CanonicalIntegral, BaseType>;
+};
+}  // namespace detail
+
+/**
+ * @brief Returns the canonical type used as a @c TypeName lookup key.
+ *
+ * @tparam T The source type to normalize.
+ */
+template <typename T>
+using CanonicalType = detail::CanonicalTypeNameType<T>::type;
+
 /**
  * @brief Returns the string prefix associated with a given @c TypeKind for use in type name construction.
  *
@@ -57,7 +192,7 @@ constexpr auto GetTypePrefix<TypeKind::WEAK_REF>() {
  * @brief Primary template for mapping a C++ type @c T to its RTTI string name.
  *
  * Specialize this struct for any type that cannot declare a @c static constexpr NAME member, providing a
- * @c static constexpr CString value member with the desired name.
+ * @code static constexpr CString value@endcode member with the desired name.
  *
  * @tparam T The type for which to declare a name mapping.
  */
@@ -65,8 +200,8 @@ template <typename T>
 struct TypeName;
 
 /**
- * @brief Variable template that is @c true when @c T exposes a static @c NAME member convertible to a
- * @c CString or character array.
+ * @brief Variable template that is @c true when @c T exposes a static @c NAME member convertible to a @c CString or
+ * character array.
  *
  * It allows a type to declare its own RTTI name inline rather than through a @c TypeName specialization.
  *
@@ -74,7 +209,7 @@ struct TypeName;
  */
 template <typename T>
 constexpr bool has_type_name_member_v = requires {
-  { T::NAME } -> CStringConvertible;
+  { CanonicalType<T>::NAME } -> CStringConvertible;
 };
 
 /**
@@ -85,7 +220,7 @@ constexpr bool has_type_name_member_v = requires {
  */
 template <typename T>
 constexpr bool has_type_name_mapping_v = requires {
-  { TypeName<T>::value } -> CStringConvertible;
+  { TypeName<CanonicalType<T>>::value } -> CStringConvertible;
 };
 
 /**
@@ -109,10 +244,12 @@ concept NamedType = has_type_name_member_v<T> || has_type_name_mapping_v<T>;
  */
 template <NamedType T>
 constexpr auto GetTypeName() noexcept {
-  if constexpr (has_type_name_member_v<T>) {
-    return CString(T::NAME);
-  } else if constexpr (has_type_name_mapping_v<T>) {
-    return CString(TypeName<T>::value);
+  using Type = CanonicalType<T>;
+
+  if constexpr (has_type_name_member_v<Type>) {
+    return CString(Type::NAME);
+  } else if constexpr (has_type_name_mapping_v<Type>) {
+    return CString(TypeName<Type>::value);
   }
 }
 
@@ -129,13 +266,7 @@ constexpr auto GetTypeName() noexcept {
  */
 template <TypeKind K, NamedType T>
 [[nodiscard]] constexpr auto GetPrefixedTypeName() {
-  constexpr auto prefix = GetTypePrefix<K>();
-
-  if constexpr (has_type_name_member_v<T>) {
-    return prefix + CString(T::NAME);
-  } else if constexpr (has_type_name_mapping_v<T>) {
-    return prefix + CString(TypeName<T>::value);
-  }
+  return GetTypePrefix<K>() + GetTypeName<T>();
 }
 
 /**
@@ -184,6 +315,7 @@ template <NamedVectorType C>
 constexpr auto GetTypeName() {
   return GetPrefixedTypeName<TypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
 }
+
 }  // namespace core::rtti
 
 /**
@@ -209,3 +341,15 @@ constexpr auto GetTypeName() {
   struct core::rtti::TypeName<_type> {           \
     static constexpr core::CString value{_name}; \
   }
+
+REGISTER_TYPE_NAME(std::int8_t, "int8");
+REGISTER_TYPE_NAME(std::int16_t, "int16");
+REGISTER_TYPE_NAME(std::int32_t, "int32");
+REGISTER_TYPE_NAME(std::int64_t, "int64");
+REGISTER_TYPE_NAME(std::uint8_t, "uint8");
+REGISTER_TYPE_NAME(std::uint16_t, "uint16");
+REGISTER_TYPE_NAME(std::uint32_t, "uint32");
+REGISTER_TYPE_NAME(std::uint64_t, "uint64");
+REGISTER_TYPE_NAME(float, "float");
+REGISTER_TYPE_NAME(double, "double");
+REGISTER_TYPE_NAME(bool, "bool");

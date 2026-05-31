@@ -223,7 +223,7 @@ $buildDir = Join-Path $repoRoot "cmake-build-debug-vsenv"
 $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
 $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 $vsDevCmd = Join-Path $vsPath "Common7\Tools\VsDevCmd.bat"
-cmd /c '"' + $vsDevCmd + '" -arch=x64 -host_arch=x64 >nul && cmake -S "' + $repoRoot + '" -B "' + $buildDir + '" -G Ninja && cmake --build "' + $buildDir + '" --target core-tests'
+cmd /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 >nul && cmake -S `"$repoRoot`" -B `"$buildDir`" -G Ninja && cmake --build `"$buildDir`" --target core-tests"
 ```
 
 Use the existing `cmake-build-debug-vsenv/` directory (or a similarly named build directory) for MSVC-based agent runs.
@@ -354,8 +354,10 @@ Please fill in the items below and remove this section once complete.
 
 Code is documented with Doxygen-style comments. Public API in `core/include/` should have full doc comments; internal
 implementation files in `core/src/` may have minimal or no comments, but should still be reasonably clear. Use
-multi-line comments with `/** ... */` for all classes, functions, or properties. Do not consolidate these documents into
-single lines. Additionally, descriptions must begin with `@brief`. For example:
+multi-line comments with `/** ... */` for all classes, structs, concepts, functions, constructors, conversion operators,
+and properties. Class-level and struct-level documentation blocks are mandatory and must not be omitted even when member
+functions are fully documented. Do not consolidate these documents into single lines. Additionally, descriptions must
+begin with `@brief`. For example:
 
 ### Line Wrapping
 

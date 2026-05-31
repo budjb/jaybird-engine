@@ -16,7 +16,6 @@ static_assert(core::is_char_array_v<char[4]>);
 static_assert(core::is_char_array_v<const char[4]>);
 static_assert(core::is_cstring_convertible_v<CString<4>>);
 static_assert(core::is_cstring_convertible_v<const char[4]>);
-
 }  // namespace
 
 TEST_CASE(
@@ -32,21 +31,18 @@ TEST_CASE(
   REQUIRE(std::string(text.c_str()) == "bird");
 }
 
-TEST_CASE("Given an empty CString, when converted to bool, then conversion follows the empty-state semantics",
-          "[cstring]") {
+TEST_CASE("Given an empty CString, when converted to bool, then conversion returns false", "[cstring]") {
   constexpr CString empty("");
 
   REQUIRE(empty.empty());
-  REQUIRE(static_cast<bool>(empty));
+  REQUIRE_FALSE(static_cast<bool>(empty));
 }
 
-TEST_CASE(
-    "Given a non-empty CString, when converted to bool, then conversion returns false because bool mirrors empty()",
-    "[cstring]") {
+TEST_CASE("Given a non-empty CString, when converted to bool, then conversion returns true", "[cstring]") {
   constexpr CString nonEmpty("x");
 
   REQUIRE_FALSE(nonEmpty.empty());
-  REQUIRE_FALSE(static_cast<bool>(nonEmpty));
+  REQUIRE(static_cast<bool>(nonEmpty));
 }
 
 TEST_CASE(
@@ -122,4 +118,3 @@ TEST_CASE(
   REQUIRE_FALSE(a == "hi!");
   REQUIRE_FALSE(b == "hi");
 }
-

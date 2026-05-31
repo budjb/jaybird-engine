@@ -7,14 +7,6 @@
 #include "rtti/FundamentalType.hpp"
 #include "rtti/TypeName.hpp"
 
-REGISTER_TYPE_NAME(std::int32_t, "int32");
-REGISTER_TYPE_NAME(std::uint32_t, "uint32");
-REGISTER_TYPE_NAME(std::int64_t, "int64");
-REGISTER_TYPE_NAME(std::uint64_t, "uint64");
-REGISTER_TYPE_NAME(float, "float");
-REGISTER_TYPE_NAME(double, "double");
-REGISTER_TYPE_NAME(bool, "bool");
-
 namespace {
 using core::IName;
 using core::rtti::IFundamentalType;
@@ -93,7 +85,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][assign]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, float,
     double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("assign_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   auto source = valueA<TestType>();
   auto destination = valueB<TestType>();
@@ -109,7 +101,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][assign][negative]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t,
     float, double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("assign_null_destination_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   auto source = valueA<TestType>();
   auto destination = valueB<TestType>();
@@ -168,7 +160,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][allocate]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, float,
     double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("allocate_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   void* allocated = type.allocate();
   REQUIRE(allocated != nullptr);
@@ -184,7 +176,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][construct]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, float,
     double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("construct_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   void* allocated = type.allocate();
   type.construct(allocated);
@@ -201,7 +193,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][construct][negative]", std::int32_t, std::uint32_t, std::int64_t,
     std::uint64_t, float, double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("construct_null_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   type.construct(nullptr);
   SUCCEED();
@@ -214,7 +206,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][create]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, float,
     double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("create_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   void* created = type.create();
   REQUIRE(created != nullptr);
@@ -229,7 +221,7 @@ TEMPLATE_TEST_CASE(
     "[rtti][fundamental_type][operations][destroy][negative]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t,
     float, double, bool) {
   NamedFundamentalType<TestType> descriptor(IName("destroy_null_type"));
-  IType& type = descriptor;
+  const IType& type = descriptor;
 
   type.destroy(nullptr);
   SUCCEED();

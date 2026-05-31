@@ -78,6 +78,19 @@ class JAYBIRD_API TypeRegistry {
   bool registerType(std::unique_ptr<D>&& type);
 
   /**
+   * @brief Unregisters a type descriptor by its name.
+   *
+   * This method removes the type descriptor associated with the given name from the registry. If the type is found and
+   * successfully unregistered, it returns @c true; otherwise, it returns @c false. Note that unregistering a type that
+   * has dependent types (e.g., an array type that depends on a fundamental type) may lead to dangling pointers in the
+   * registry, so it should be used with caution.
+   *
+   * @param name The @c IName of the type to remove.
+   * @return @c true if the type existed and was removed, or @c false if no matching type was registered.
+   */
+  bool unregisterType(const IName& name);
+
+  /**
    * @brief Checks whether a type with the given name is registered.
    *
    * @param name The @c IName of the type to check.

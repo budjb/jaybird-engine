@@ -28,6 +28,14 @@ IName IType::name() const noexcept {
   return m_name;
 }
 
+IType* IType::parent() const noexcept {
+  return m_parent;
+}
+
+void IType::parent(IType* parent) noexcept {
+  m_parent = parent;
+}
+
 IArrayType* IType::asArray() const noexcept {
   if (auto* type = TypeSystem::get().registry().getType(GetPrefixedTypeName<TypeKind::ARRAY>(m_name));
       type && type->kind() == TypeKind::ARRAY) {

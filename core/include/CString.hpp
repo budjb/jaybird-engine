@@ -115,12 +115,12 @@ class CString {
   /**
    * @brief Implicit conversion to @code bool@endcode.
    *
-   * It returns @c true if the string is empty (i.e., @c empty() returns @c true), and @c false otherwise.
+   * It returns @c true when the string is not empty, and it returns @c false when @c empty() is @c true.
    *
-   * @return @c true if the string is empty, @c false otherwise.
+   * @return @c true if the string is not empty, or @c false if the string is empty.
    */
   constexpr operator bool() const noexcept {
-    return empty();
+    return !empty();
   }
 
   /**

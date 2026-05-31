@@ -73,6 +73,23 @@ class JAYBIRD_API IType {
   [[nodiscard]] IName name() const noexcept;
 
   /**
+   * @brief Returns a pointer to the parent type descriptor if this type is derived from another type, or @c nullptr if
+   * it has no parent.
+   *
+   * @return A pointer to the parent type descriptor if this type is derived from another type, or @c nullptr if it has
+   * no parent.
+   */
+  [[nodiscard]] IType* parent() const noexcept;
+
+  /**
+   * @brief Sets the parent type descriptor for this type. This establishes an inheritance relationship between this
+   * type and the specified parent type.
+   *
+   * @param parent A pointer to the parent type descriptor to set for this type.
+   */
+  void parent(IType* parent) noexcept;
+
+  /**
    * @brief Assigns the value from the source pointer to the destination pointer.
    *
    * The actual assignment logic is defined in derived classes, as it may involve complex copying or move semantics
@@ -83,7 +100,7 @@ class JAYBIRD_API IType {
    * @param dst The destination pointer where the value should be assigned.
    * @param src The source pointer from which the value should be assigned.
    */
-  virtual void assign(void* dst, const void* src) = 0;
+  virtual void assign(void* dst, const void* src) const = 0;
 
   /**
    * @brief Allocates memory for an instance of the type.
@@ -94,7 +111,7 @@ class JAYBIRD_API IType {
    *
    * @return A pointer to the allocated memory for an instance of the type.
    */
-  virtual void* allocate() = 0;
+  [[nodiscard]] virtual void* allocate() const = 0;
 
   /**
    * @brief Frees the raw memory allocated for an instance of the type without calling the destructor.
@@ -107,7 +124,7 @@ class JAYBIRD_API IType {
    *
    * @param ptr A pointer to the memory to free.
    */
-  virtual void deallocate(void* ptr) = 0;
+  virtual void deallocate(void* ptr) const = 0;
 
   /**
    * @brief Constructs an instance of the type at the provided memory location.
@@ -117,7 +134,7 @@ class JAYBIRD_API IType {
    *
    * @param memory A pointer to the memory where the instance should be constructed.
    */
-  virtual void construct(void* memory) noexcept = 0;
+  virtual void construct(void* memory) const noexcept = 0;
 
   /**
    * @brief Destructs an instance of the type located at the given memory location.
@@ -127,7 +144,7 @@ class JAYBIRD_API IType {
    *
    * @param memory A pointer to the memory where the instance should be destructed.
    */
-  virtual void destruct(void* memory) noexcept = 0;
+  virtual void destruct(void* memory) const noexcept = 0;
 
   /**
    * @brief Creates and returns a new instance of the type by allocating memory and constructing it.
@@ -137,7 +154,7 @@ class JAYBIRD_API IType {
    *
    * @return A pointer to the allocated memory containing a default-constructed instance.
    */
-  virtual void* create() = 0;
+  [[nodiscard]] virtual void* create() const = 0;
 
   /**
    * @brief Destroys the provided instance by calling its destructor and deallocating its memory.
@@ -147,7 +164,7 @@ class JAYBIRD_API IType {
    *
    * @param memory A pointer to the memory that should be destroyed.
    */
-  virtual void destroy(void* memory) = 0;
+  virtual void destroy(void* memory) const = 0;
 
   /**
    * @brief Compares two instances of the type for equality.
@@ -166,6 +183,9 @@ class JAYBIRD_API IType {
    * nullptr@endcode.
    *
    * This avoids the need for a @c dynamic_cast in the common array-check case.
+   *
+   * @return A pointer to this descriptor as @code IArrayType*@endcode when the kind is @c TypeKind::ARRAY, or
+   * @code nullptr@endcode otherwise.
    */
   [[nodiscard]] IArrayType* asArray() const noexcept;
 
@@ -191,22 +211,28 @@ class JAYBIRD_API IType {
    *
    * This name uniquely identifies the type within the RTTI system and enables type lookup and comparison.
    */
-  const IName m_name;
+  IName m_name;
 
   /**
    * @brief The size of the type in bytes.
    */
-  const std::size_t m_size;
+  std::size_t m_size;
 
   /**
    * @brief The alignment requirement of the type in bytes.
    */
-  const std::size_t m_alignment;
+  std::size_t m_alignment;
+
+  /**
+   * @brief A pointer to the parent type descriptor if this type is derived from another type, or @c nullptr if it has
+   * no parent.
+   */
+  IType* m_parent = nullptr;
 
   /**
    * @brief The kind of the type, represented as a TypeKind enumeration value.
    */
-  const TypeKind m_kind;
+  TypeKind m_kind;
 };
 
 /**
@@ -273,7 +299,7 @@ class TType : public TBase {
    * @param destination A pointer to the destination instance of the type where the value will be assigned.
    * @param source A pointer to the source instance of the type from which the value will be copied.
    */
-  void assign(void* destination, const void* source) override {
+  void assign(void* destination, const void* source) const override {
     if (destination == nullptr) {
       return;
     }
@@ -293,7 +319,7 @@ class TType : public TBase {
    *
    * @return A pointer to the allocated memory for an instance of the type.
    */
-  void* allocate() noexcept override {
+  [[nodiscard]] void* allocate() const noexcept override {
     return operator new(sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
   }
 
@@ -304,7 +330,7 @@ class TType : public TBase {
    *
    * @param memory A pointer to the memory that should be freed.
    */
-  void deallocate(void* memory) noexcept override {
+  void deallocate(void* memory) const noexcept override {
     operator delete(memory, sizeof(Type), static_cast<std::align_val_t>(alignof(Type)));
   }
 
@@ -315,7 +341,7 @@ class TType : public TBase {
    *
    * @param memory A pointer to the memory where the instance should be constructed.
    */
-  void construct(void* memory) noexcept override {
+  void construct(void* memory) const noexcept override {
     if (memory) {
       std::construct_at<Type>(static_cast<Type*>(memory));
     }
@@ -326,7 +352,7 @@ class TType : public TBase {
    *
    * @param memory A pointer to the memory where the instance should be destructed.
    */
-  void destruct(void* memory) noexcept override {
+  void destruct(void* memory) const noexcept override {
     std::destroy_at<Type>(static_cast<Type*>(memory));
   }
 
@@ -335,7 +361,7 @@ class TType : public TBase {
    *
    * @return A pointer to the allocated memory containing a default-constructed instance of the type.
    */
-  void* create() noexcept override {
+  [[nodiscard]] void* create() const noexcept override {
     void* memory = allocate();
     if (memory) {
       construct(memory);
@@ -348,7 +374,7 @@ class TType : public TBase {
    *
    * @param memory A pointer to the memory that should be freed.
    */
-  void destroy(void* memory) noexcept override {
+  void destroy(void* memory) const noexcept override {
     if (memory != nullptr) {
       destruct(memory);
       deallocate(memory);

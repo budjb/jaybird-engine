@@ -8,17 +8,6 @@
 
 using core::Vector;
 
-/**
- * @brief This struct specializes @code TypeName@endcode for @code int@endcode.
- */
-template <>
-struct core::rtti::TypeName<int> {
-  /**
-   * @brief This static member provides the compile-time name for @code int@endcode.
-   */
-  static constexpr CString value{"int"};
-};  // namespace core::rtti
-
 namespace {
 using core::IName;
 using core::rtti::IArrayType;
