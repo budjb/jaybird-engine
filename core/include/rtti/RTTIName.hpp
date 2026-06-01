@@ -91,7 +91,7 @@ struct FixedWidthIntegral<false, 8> {
 };
 
 /**
- * @brief Maps a source type to the canonical key used for @c TypeName lookups.
+ * @brief Maps a source type to the canonical key used for @c RTTINameProvider lookups.
  *
  * This mapper removes cv-ref qualifiers and normalizes non-boolean, non-character integral types to fixed-width signed
  * or unsigned integer types by width.
@@ -129,8 +129,8 @@ struct CanonicalTypeNameType {
 
  public:
   /**
-   * @brief The canonical type to use for @c TypeName lookups, which is either the normalized fixed-width integral type
-   * or the original base type if it is not a candidate for normalization.
+   * @brief The canonical type to use for @c RTTINameProvider lookups, which is either the normalized fixed-width
+   * integral type or the original base type if it is not a candidate for normalization.
    */
   using type =
       std::conditional_t<isIntegralCandidate && !std::same_as<CanonicalIntegral, void>, CanonicalIntegral, BaseType>;
@@ -138,7 +138,7 @@ struct CanonicalTypeNameType {
 }  // namespace detail
 
 /**
- * @brief Returns the canonical type used as a @c TypeName lookup key.
+ * @brief Returns the canonical type used as a @c RTTINameProvider lookup key.
  *
  * @tparam T The source type to normalize.
  */
@@ -189,21 +189,21 @@ constexpr auto GetRTTIPrefix<RTTITypeKind::WEAK_REF>() {
 }
 
 /**
- * @brief Primary template for mapping a C++ type @c T to its RTTI string name.
+ * @brief Provider template for mapping a C++ type @c T to its RTTI string name.
  *
  * Specialize this struct for any type that cannot declare a @c static constexpr NAME member, providing a
  * @code static constexpr CString value@endcode member with the desired name.
  *
- * @tparam T The type for which to declare a name mapping.
+ * @tparam T The type for which to declare a name provider.
  */
 template <typename T>
-struct RTTIName;
+struct RTTINameProvider;
 
 /**
  * @brief Variable template that is @c true when @c T exposes a static @c NAME member convertible to a @c CString or
  * character array.
  *
- * It allows a type to declare its own RTTI name inline rather than through a @c TypeName specialization.
+ * It allows a type to declare its own RTTI name inline rather than through a @c RTTINameProvider specialization.
  *
  * @tparam T The type to check for a static @c NAME member.
  */
@@ -213,33 +213,33 @@ constexpr bool has_type_name_member_v = requires {
 };
 
 /**
- * @brief Variable template that is @c true when a @c TypeName<T> specialization exists and defines a @c value member
- * convertible to a @c CString or character array.
+ * @brief Variable template that is @c true when a @c RTTINameProvider<T> specialization exists and defines a @c value
+ * member convertible to a @c CString or character array.
  *
- * @tparam T The type to check for a @c TypeName mapping.
+ * @tparam T The type to check for a @code RTTINameProvider@endcode.
  */
 template <typename T>
-constexpr bool has_type_name_mapping_v = requires {
-  { RTTIName<CanonicalType<T>>::value } -> CStringConvertible;
+constexpr bool has_type_name_provider_v = requires {
+  { RTTINameProvider<CanonicalType<T>>::value } -> CStringConvertible;
 };
 
 /**
  * @brief Concept that is satisfied when a type name can be resolved for @c T, either via a @c T::NAME member
- * or a @c TypeName<T> specialization.
+ * or a @c RTTINameProvider<T> specialization.
  *
  * @tparam T The type to check for an available type name.
  */
 template <typename T>
-concept NamedRTTIType = has_type_name_member_v<T> || has_type_name_mapping_v<T>;
+concept NamedRTTIType = has_type_name_member_v<T> || has_type_name_provider_v<T>;
 
 /**
  * @brief Retrieves the type name for @c T as a compile-time @code CString@endcode.
  *
  * The name is resolved by checking @c T::NAME first (via @code has_type_name_member_v@endcode), then falling back to
- * a @c TypeName<T> specialization (via @code has_type_name_mapping_v@endcode). The @c NamedType constraint
+ * a @c RTTINameProvider<T> specialization (via @code has_type_name_provider_v@endcode). The @c NamedRTTIType constraint
  * guarantees that at least one of the two paths is available.
  *
- * @tparam T The type whose name is to be retrieved. It must satisfy @code NamedType@endcode.
+ * @tparam T The type whose name is to be retrieved. It must satisfy @code NamedRTTIType@endcode.
  * @return The type name as a @code CString@endcode.
  */
 template <NamedRTTIType T>
@@ -248,8 +248,8 @@ constexpr auto GetRTTIName() noexcept {
 
   if constexpr (has_type_name_member_v<Type>) {
     return CString(Type::NAME);
-  } else if constexpr (has_type_name_mapping_v<Type>) {
-    return CString(RTTIName<Type>::value);
+  } else if constexpr (has_type_name_provider_v<Type>) {
+    return CString(RTTINameProvider<Type>::value);
   }
 }
 
@@ -258,11 +258,11 @@ constexpr auto GetRTTIName() noexcept {
  *
  * The result is the element type's name prefixed with the string corresponding to @c K (e.g., @c "array:int"
  * for @c RTTITypeKind::ARRAY and @code int@endcode). @c T::NAME is preferred when present; otherwise the
- * @c TypeName<T>
- * specialization is used. The @c NamedType constraint guarantees that one of the two is available.
+ * @c RTTINameProvider<T> specialization is used. The @c NamedRTTIType constraint guarantees that one of the two is
+ * available.
  *
  * @tparam K The @c RTTITypeKind whose prefix to prepend.
- * @tparam T The element type for which to produce the prefixed name. It must satisfy @code NamedType@endcode.
+ * @tparam T The element type for which to produce the prefixed name. It must satisfy @code NamedRTTIType@endcode.
  * @return A @c CString containing the prefixed type name.
  */
 template <RTTITypeKind K, NamedRTTIType T>
@@ -296,7 +296,7 @@ concept VectorType = requires { typename std::remove_cvref_t<C>::value_type; } &
 
 /**
  * @brief Concept that is satisfied when @c C is a @c Vector and its element type satisfies
- * @code NamedType@endcode.
+ * @code NamedRTTIType@endcode.
  *
  * @tparam C The type to check.
  */
@@ -304,7 +304,7 @@ template <typename C>
 concept NamedVectorType = VectorType<C> && NamedRTTIType<typename std::remove_cvref_t<C>::value_type>;
 
 /**
- * @brief Returns the canonical type name for a @c Vector whose element type satisfies @code NamedType@endcode.
+ * @brief Returns the canonical type name for a @c Vector whose element type satisfies @code NamedRTTIType@endcode.
  *
  * The returned name uses the @c RTTITypeKind::ARRAY prefix followed by the element type name
  * (e.g., @c "array:double" for @code Vector<double>@endcode).
@@ -320,7 +320,7 @@ constexpr auto GetRTTIName() {
 }  // namespace core::rtti
 
 /**
- * @brief Macro to register an @c RTTITypeKind prefix for a type name mapping specialization.
+ * @brief Macro to create a specialization of @c GetRTTIPrefix for the given @c RTTITypeKind enumeration.
  *
  * @param _kind The @c RTTITypeKind for which to register the prefix (e.g., @c RTTITypeKind::ARRAY).
  * @param _prefix The string prefix to associate with the given @c RTTITypeKind (e.g., @c "array:").
@@ -332,14 +332,14 @@ constexpr auto GetRTTIName() {
   }
 
 /**
- * @brief Macro to register a type name mapping for a type that cannot declare a static @c NAME member.
+ * @brief Macro to register a type name provider for a type that cannot declare a static @c NAME member.
  *
- * @param _type The C++ type for which to register the name mapping (e.g., @c Vector<int>).
+ * @param _type The C++ type for which to register the name provider (e.g., @c Vector<int>).
  * @param _name The string name to associate with the given type (e.g., @c "array:int").
  */
 #define REGISTER_TYPE_NAME(_type, _name)         \
   template <>                                    \
-  struct core::rtti::RTTIName<_type> {           \
+  struct core::rtti::RTTINameProvider<_type> {   \
     static constexpr core::CString value{_name}; \
   }
 

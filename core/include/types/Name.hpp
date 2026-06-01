@@ -10,7 +10,7 @@
 
 namespace core::rtti {
 template <typename T>
-struct RTTIName;
+struct RTTINameProvider;
 }
 
 namespace core {
@@ -156,6 +156,6 @@ struct std::hash<core::Name> {
  * @brief Specialization of @code TypeName@endcode that maps @code core::Name@endcode to the canonical RTTI name.
  */
 template <>
-struct core::rtti::RTTIName<core::Name> {
+struct core::rtti::RTTINameProvider<core::Name> {
   static constexpr char value[] = "Name";
 };

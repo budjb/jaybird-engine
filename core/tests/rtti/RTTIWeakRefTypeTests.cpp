@@ -17,7 +17,7 @@ struct WeakTarget {
 };
 
 template <>
-struct core::rtti::RTTIName<WeakTarget> {
+struct core::rtti::RTTINameProvider<WeakTarget> {
   static constexpr CString value{"weak_target"};
 };  // namespace core::rtti
 

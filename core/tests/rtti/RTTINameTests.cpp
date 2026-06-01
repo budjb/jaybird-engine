@@ -38,11 +38,11 @@ static_assert(core::rtti::has_type_name_member_v<test_types::MemberAndMappedType
 static_assert(!core::rtti::has_type_name_member_v<test_types::MappedNamedType>);
 static_assert(!core::rtti::has_type_name_member_v<test_types::PlainStruct>);
 
-// --- has_type_name_mapping_v ---
-static_assert(core::rtti::has_type_name_mapping_v<test_types::MappedNamedType>);
-static_assert(core::rtti::has_type_name_mapping_v<test_types::MemberAndMappedType>);
-static_assert(!core::rtti::has_type_name_mapping_v<test_types::MemberNamedType>);
-static_assert(!core::rtti::has_type_name_mapping_v<test_types::PlainStruct>);
+// --- has_type_name_provider_v ---
+static_assert(core::rtti::has_type_name_provider_v<test_types::MappedNamedType>);
+static_assert(core::rtti::has_type_name_provider_v<test_types::MemberAndMappedType>);
+static_assert(!core::rtti::has_type_name_provider_v<test_types::MemberNamedType>);
+static_assert(!core::rtti::has_type_name_provider_v<test_types::PlainStruct>);
 
 // --- NamedType concept ---
 static_assert(core::rtti::NamedRTTIType<test_types::MemberNamedType>);

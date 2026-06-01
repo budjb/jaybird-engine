@@ -44,17 +44,17 @@ struct NonTrivialStruct {
 };
 
 template <>
-struct core::rtti::RTTIName<TrivialStruct> {
+struct core::rtti::RTTINameProvider<TrivialStruct> {
   static constexpr CString value{"trivial_struct"};
 };
 
 template <>
-struct core::rtti::RTTIName<AlignedStruct> {
+struct core::rtti::RTTINameProvider<AlignedStruct> {
   static constexpr CString value{"aligned_struct"};
 };
 
 template <>
-struct core::rtti::RTTIName<NonTrivialStruct> {
+struct core::rtti::RTTINameProvider<NonTrivialStruct> {
   static constexpr CString value{"non_trivial_struct"};
 };
 

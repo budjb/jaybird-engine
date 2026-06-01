@@ -16,7 +16,7 @@ struct RefTarget {
 };
 
 template <>
-struct core::rtti::RTTIName<RefTarget> {
+struct core::rtti::RTTINameProvider<RefTarget> {
   static constexpr CString value{"ref_target"};
 };  // namespace core::rtti
 
