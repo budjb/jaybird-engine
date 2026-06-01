@@ -2,11 +2,11 @@
 
 #include <array>
 
-#include "Name.hpp"
 #include "NamePool.hpp"
 #include "RTTIArgument.hpp"
 #include "RTTIStackFrame.hpp"
 #include "RTTISystem.hpp"
+#include "types/Name.hpp"
 
 namespace core::rtti {
 /**

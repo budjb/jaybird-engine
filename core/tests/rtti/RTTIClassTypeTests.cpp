@@ -3,9 +3,9 @@
 #include <string>
 #include <type_traits>
 
-#include "CString.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIName.hpp"
+#include "types/CString.hpp"
 
 /**
  * @brief A trivially copyable struct with a single int field.

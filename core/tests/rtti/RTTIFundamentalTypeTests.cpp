@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "CString.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
 #include "rtti/RTTIName.hpp"
+#include "types/CString.hpp"
 
 namespace {
 using core::Name;

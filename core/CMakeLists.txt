@@ -1,6 +1,6 @@
 add_library(jaybird-engine-core SHARED
         src/NamePool.cpp
-        src/Name.cpp
+        src/types/Name.cpp
         src/rtti/RTTIRegistry.cpp
         include/rtti/RTTIRegistry.hpp
         src/SpinLock.cpp
@@ -19,7 +19,7 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIIterator.hpp
         include/rtti/RTTIName.hpp
         include/Vector.hpp
-        include/CString.hpp
+        include/types/CString.hpp
         src/rtti/RTTISystem.cpp
         include/rtti/RTTISystem.hpp
         include/rtti/RTTIRefType.hpp
@@ -54,9 +54,9 @@ target_include_directories(jaybird-engine-core
 
 if (BUILD_TESTING)
   add_executable(core-tests
-          tests/NameTests.cpp
+          tests/types/NameTests.cpp
           tests/NamePoolTests.cpp
-          tests/CStringTests.cpp
+          tests/types/CStringTests.cpp
           tests/HashTests.cpp
           tests/SpinLockTests.cpp
           tests/types/QuaternionTests.cpp

@@ -1,5 +1,6 @@
+#include "types/Name.hpp"
+
 #include "NamePool.hpp"
-#include "Name.hpp"
 
 namespace core {
 constexpr Name::Name(const hash_t hash) noexcept : m_hash(hash) {}

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Name.hpp"
 #include "NamePool.hpp"
 #include "rtti/RTTIName.hpp"
 #include "rtti/RTTITType.hpp"
 #include "rtti/RTTIType.hpp"
+#include "types/Name.hpp"
 
 namespace core::rtti {
 /**

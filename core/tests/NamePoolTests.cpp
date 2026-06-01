@@ -6,8 +6,8 @@
 
 #include "Hash.hpp"
 #include "NamePool.hpp"
-#include "Name.hpp"
 #include "Vector.hpp"
+#include "types/Name.hpp"
 
 using core::Vector;
 
@@ -24,8 +24,7 @@ std::string uniqueNameText(const char* prefix) {
 
 }  // namespace
 
-TEST_CASE("Given NamePool::get, when called repeatedly, then the same singleton instance is returned",
-          "[iname_pool]") {
+TEST_CASE("Given NamePool::get, when called repeatedly, then the same singleton instance is returned", "[iname_pool]") {
   NamePool& first = NamePool::get();
   NamePool& second = NamePool::get();
 

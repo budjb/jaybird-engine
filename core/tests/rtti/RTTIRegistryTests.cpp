@@ -3,12 +3,12 @@
 #include <memory>
 #include <thread>
 
-#include "CString.hpp"
 #include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
 #include "rtti/RTTIRegistry.hpp"
 #include "rtti/RTTISystem.hpp"
+#include "types/CString.hpp"
 
 using core::Vector;
 

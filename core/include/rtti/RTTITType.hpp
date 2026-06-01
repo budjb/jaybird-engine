@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Name.hpp"
 #include "RTTIType.hpp"
+#include "types/Name.hpp"
 
 namespace core::rtti {
 /**

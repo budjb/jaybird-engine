@@ -6,7 +6,7 @@
 
 #include "Export.hpp"
 #include "Hash.hpp"
-#include "Name.hpp"
+#include "types/Name.hpp"
 
 namespace core {
 /**

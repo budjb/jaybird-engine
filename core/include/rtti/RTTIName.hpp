@@ -6,9 +6,9 @@
 #include <string_view>
 #include <type_traits>
 
-#include "CString.hpp"
 #include "Vector.hpp"
 #include "rtti/RTTITypeKind.hpp"
+#include "types/CString.hpp"
 
 namespace core::rtti {
 namespace detail {

@@ -3,10 +3,10 @@
 #include <string>
 #include <type_traits>
 
-#include "CString.hpp"
 #include "Vector.hpp"
 #include "rtti/RTTIArrayType.hpp"
 #include "rtti/RTTIClassType.hpp"
+#include "types/CString.hpp"
 
 using core::Vector;
 

@@ -3,7 +3,7 @@
 
 #include "Hash.hpp"
 #include "NamePool.hpp"
-#include "Name.hpp"
+#include "types/Name.hpp"
 
 namespace {
 using core::fnv1a_64;

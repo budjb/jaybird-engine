@@ -2,9 +2,9 @@
 #include <string>
 #include <string_view>
 
-#include "CString.hpp"
 #include "Hash.hpp"
-#include "Name.hpp"
+#include "types/CString.hpp"
+#include "types/Name.hpp"
 
 namespace {
 using core::CString;

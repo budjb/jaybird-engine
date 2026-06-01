@@ -1,10 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
-#include "CString.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIName.hpp"
 #include "rtti/RTTIRefType.hpp"
+#include "types/CString.hpp"
 
 /**
  * @brief A simple class type used as the managed element for RefType tests.

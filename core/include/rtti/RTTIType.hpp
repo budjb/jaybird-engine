@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Export.hpp"
-#include "Name.hpp"
 #include "RTTITypeKind.hpp"
+#include "types/Name.hpp"
 
 namespace core::rtti {
 class RTTIClassType;

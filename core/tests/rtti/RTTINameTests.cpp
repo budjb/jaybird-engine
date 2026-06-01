@@ -2,9 +2,9 @@
 #include <string>
 #include <string_view>
 
-#include "CString.hpp"
 #include "rtti/RTTIName.hpp"
 #include "rtti/RTTITypeKind.hpp"
+#include "types/CString.hpp"
 
 namespace test_types {
 struct MemberNamedType {

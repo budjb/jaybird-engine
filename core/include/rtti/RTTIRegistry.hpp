@@ -6,10 +6,10 @@
 #include <unordered_map>
 
 #include "Export.hpp"
-#include "Name.hpp"
 #include "RTTIArrayType.hpp"
 #include "RTTIName.hpp"
 #include "RTTIType.hpp"
+#include "types/Name.hpp"
 
 namespace core::rtti {
 /**
