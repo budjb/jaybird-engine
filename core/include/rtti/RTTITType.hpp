@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IName.hpp"
+#include "Name.hpp"
 #include "RTTIType.hpp"
 
 namespace core::rtti {
@@ -27,7 +27,7 @@ class RTTITType : public TBase {
    * @param name The name of the type.
    * @param kind The kind of the type.
    */
-  explicit RTTITType(const IName& name, const RTTITypeKind kind)
+  explicit RTTITType(const Name& name, const RTTITypeKind kind)
     requires std::same_as<TBase, RTTIType>
       : TBase(name, sizeof(Type), alignof(Type), kind) {}
 
@@ -36,7 +36,7 @@ class RTTITType : public TBase {
    *
    * @param name The name of the type.
    */
-  explicit RTTITType(const IName& name)
+  explicit RTTITType(const Name& name)
     requires std::same_as<TBase, RTTIFundamentalType>
       : TBase(name, sizeof(Type), alignof(Type)) {}
 
@@ -45,7 +45,7 @@ class RTTITType : public TBase {
    *
    * @param name The name of the type.
    */
-  explicit RTTITType(const IName& name)
+  explicit RTTITType(const Name& name)
     requires std::same_as<TBase, RTTIClassType>
       : TBase(name, sizeof(Type), alignof(Type)) {}
 
@@ -55,7 +55,7 @@ class RTTITType : public TBase {
    * @param name The name of the container type.
    * @param inner A pointer to the inner type descriptor.
    */
-  explicit RTTITType(const IName& name, const RTTIType* inner)
+  explicit RTTITType(const Name& name, const RTTIType* inner)
     requires std::derived_from<TBase, RTTIContainerType>
       : TBase(name, sizeof(Type), alignof(Type), inner) {}
 

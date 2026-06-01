@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Export.hpp"
-#include "RTTITypeRegistry.hpp"
+#include "RTTIRegistry.hpp"
 
 #ifdef TESTING_ENABLED
 #define TEST_VISIBILITY public:
@@ -16,10 +16,10 @@ namespace core::rtti {
 /**
  * @brief Top-level manager for the RTTI type system, coordinating type registration and lifecycle.
  *
- * @c RTTITypeSystem is a singleton that owns the @c RTTITypeRegistry and drives a two-phase type
+ * @c RTTISystem is a singleton that owns the @c RTTIRegistry and drives a two-phase type
  * registration process (declare then define) via callbacks registered before initialization.
  */
-class JAYBIRD_API RTTITypeSystem {
+class JAYBIRD_API RTTISystem {
  public:
   /**
    * @brief This alias defines the callback type that is executed during initialization.
@@ -27,11 +27,11 @@ class JAYBIRD_API RTTITypeSystem {
   using CallbackFunction = std::function<void()>;
 
   /**
-   * @brief Gets the singleton instance of the @code RTTITypeSystem@endcode.
+   * @brief Gets the singleton instance of the @code RTTISystem@endcode.
    *
-   * @return A reference to the singleton instance of the @code RTTITypeSystem@endcode.
+   * @return A reference to the singleton instance of the @code RTTISystem@endcode.
    */
-  static RTTITypeSystem& get() noexcept;
+  static RTTISystem& get() noexcept;
 
   /**
    * @brief Initializes the type system by executing registered callbacks.
@@ -46,11 +46,11 @@ class JAYBIRD_API RTTITypeSystem {
   bool initialize();
 
   /**
-   * @brief Gets a reference to the @c RTTITypeRegistry managed by the @code RTTITypeSystem@endcode.
+   * @brief Gets a reference to the @c RTTIRegistry managed by the @code RTTISystem@endcode.
    *
-   * @return A reference to the @c RTTITypeRegistry instance that is managed by the @code RTTITypeSystem@endcode.
+   * @return A reference to the @c RTTIRegistry instance that is managed by the @code RTTISystem@endcode.
    */
-  RTTITypeRegistry& registry() noexcept;
+  RTTIRegistry& registry() noexcept;
 
   /**
    * @brief Adds a declaration callback function to the type system.
@@ -79,12 +79,12 @@ class JAYBIRD_API RTTITypeSystem {
   void addCallbacks(const CallbackFunction& declare, const CallbackFunction& define);
 
   /**
-   * @brief Private constructor for the @c RTTITypeSystem singleton.
+   * @brief Private constructor for the @c RTTISystem singleton.
    *
-   * This constructor is private to prevent direct instantiation of the @c RTTITypeSystem class, ensuring that only one
+   * This constructor is private to prevent direct instantiation of the @c RTTISystem class, ensuring that only one
    * instance can exist and that it is accessed through the @c get() method.
    */
-  TEST_VISIBILITY RTTITypeSystem() noexcept;
+  TEST_VISIBILITY RTTISystem() noexcept;
 
  private:
   /**
@@ -101,12 +101,12 @@ class JAYBIRD_API RTTITypeSystem {
   bool m_initialized = false;
 
   /**
-   * @brief The @c RTTITypeRegistry instance that is managed by the @code RTTITypeSystem@endcode.
+   * @brief The @c RTTIRegistry instance that is managed by the @code RTTISystem@endcode.
    *
    * This registry is responsible for storing all type information for the RTTI system, and is accessed and modified
-   * through the various registration functions and callback mechanisms provided by the @code RTTITypeSystem@endcode.
+   * through the various registration functions and callback mechanisms provided by the @code RTTISystem@endcode.
    */
-  RTTITypeRegistry m_registry;
+  RTTIRegistry m_registry;
 
   /**
    * @brief Collection of callback functions for declaring types in the RTTI system.
@@ -144,7 +144,7 @@ struct TypeResolver {
     static RTTIType* type = nullptr;
 
     if (!initialized) {
-      type = RTTITypeSystem::get().registry().getType(GetTypeName<T>());
+      type = RTTISystem::get().registry().getType(GetTypeName<T>());
       initialized = true;
     }
 

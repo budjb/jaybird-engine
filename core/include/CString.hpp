@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-#include "IName.hpp"
+#include "Name.hpp"
 
 namespace core {
 /**
@@ -104,12 +104,12 @@ class CString {
   }
 
   /**
-   * @brief Implicit conversion to @code IName@endcode.
+   * @brief Implicit conversion to @code Name@endcode.
    *
-   * @return An @c IName constructed by hashing the string data.
+   * @return An @c Name constructed by hashing the string data.
    */
-  constexpr operator IName() const {
-    return IName{value};
+  constexpr operator Name() const {
+    return Name{value};
   }
 
   /**

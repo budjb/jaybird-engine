@@ -59,7 +59,7 @@ struct core::rtti::TypeName<NonTrivialStruct> {
 };
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::RTTIClassTType;
 using core::rtti::RTTIClassType;
 using core::rtti::RTTITType;
@@ -82,7 +82,7 @@ class NamedClassType final : public RTTITType<T, RTTIClassType> {
    *
    * @param name The name to assign to this type descriptor.
    */
-  explicit NamedClassType(const IName& name) : RTTITType<T, RTTIClassType>(name) {}
+  explicit NamedClassType(const Name& name) : RTTITType<T, RTTIClassType>(name) {}
 };
 
 /**
@@ -149,7 +149,7 @@ TEMPLATE_TEST_CASE(
     "Given a concrete RTTIClassType descriptor, when observed through RTTIType, then metadata matches the underlying "
     "class type",
     "[rtti][class_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("test_named_class"));
+  NamedClassType<TestType> descriptor(Name("test_named_class"));
   RTTIType* asType = &descriptor;
   RTTIClassType* asClass = &descriptor;
 
@@ -158,7 +158,7 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType->kind() == RTTITypeKind::CLASS);
   REQUIRE(asType->size() == sizeof(TestType));
   REQUIRE(asType->alignment() == alignof(TestType));
-  REQUIRE(asType->name() == IName("test_named_class"));
+  REQUIRE(asType->name() == Name("test_named_class"));
 }
 
 // ============================================================================
@@ -177,7 +177,7 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType.kind() == RTTITypeKind::CLASS);
   REQUIRE(asType.size() == sizeof(TestType));
   REQUIRE(asType.alignment() == alignof(TestType));
-  REQUIRE(asType.name() == IName(classTypeName<TestType>()));
+  REQUIRE(asType.name() == Name(classTypeName<TestType>()));
   REQUIRE(asType.name().toString() == classTypeName<TestType>());
 }
 
@@ -189,8 +189,8 @@ TEMPLATE_TEST_CASE(
     "Given two RTTIClassType descriptors with the same name, when compared with operator==, then they are considered "
     "equal",
     "[rtti][class_type][equality]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> a(IName("same_name"));
-  NamedClassType<TestType> b(IName("same_name"));
+  NamedClassType<TestType> a(Name("same_name"));
+  NamedClassType<TestType> b(Name("same_name"));
 
   REQUIRE(static_cast<RTTIType&>(a) == static_cast<RTTIType&>(b));
   REQUIRE_FALSE(static_cast<RTTIType&>(a) != static_cast<RTTIType&>(b));
@@ -199,8 +199,8 @@ TEMPLATE_TEST_CASE(
 TEMPLATE_TEST_CASE(
     "Given two RTTIClassType descriptors with different names, when compared with operator!=, then they are not equal",
     "[rtti][class_type][equality][negative]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> a(IName("name_a"));
-  NamedClassType<TestType> b(IName("name_b"));
+  NamedClassType<TestType> a(Name("name_a"));
+  NamedClassType<TestType> b(Name("name_b"));
 
   REQUIRE(static_cast<RTTIType&>(a) != static_cast<RTTIType&>(b));
   REQUIRE_FALSE(static_cast<RTTIType&>(a) == static_cast<RTTIType&>(b));
@@ -214,7 +214,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and valid source/destination values, when assign is called through RTTIType, "
     "then destination receives source value",
     "[rtti][class_type][operations][assign]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("assign_class_type"));
+  NamedClassType<TestType> descriptor(Name("assign_class_type"));
   const RTTIType& type = descriptor;
 
   auto source = makeValueA<TestType>();
@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and a null destination, when assign is called through RTTIType, then the "
     "operation is a no-op and the source value is unchanged",
     "[rtti][class_type][operations][assign][negative]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("assign_null_dst_class_type"));
+  NamedClassType<TestType> descriptor(Name("assign_null_dst_class_type"));
   const RTTIType& type = descriptor;
 
   auto source = makeValueA<TestType>();
@@ -245,7 +245,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and two equal values, when equals is called through RTTIType, then it returns "
     "true",
     "[rtti][class_type][operations][equals]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("equals_equal_class_type"));
+  NamedClassType<TestType> descriptor(Name("equals_equal_class_type"));
   const RTTIType& type = descriptor;
 
   auto lhs = makeValueA<TestType>();
@@ -258,7 +258,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and two different values, when equals is called through RTTIType, then it "
     "returns false",
     "[rtti][class_type][operations][equals][negative]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("equals_not_equal_class_type"));
+  NamedClassType<TestType> descriptor(Name("equals_not_equal_class_type"));
   const RTTIType& type = descriptor;
 
   auto lhs = makeValueA<TestType>();
@@ -271,7 +271,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor, when equals receives null combinations, then null-null is true and mixed-null "
     "is false",
     "[rtti][class_type][operations][equals][null]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("equals_null_class_type"));
+  NamedClassType<TestType> descriptor(Name("equals_null_class_type"));
   const RTTIType& type = descriptor;
 
   auto value = makeValueA<TestType>();
@@ -289,7 +289,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor, when allocate is called through RTTIType, then returned memory is non-null and "
     "aligned for the underlying type",
     "[rtti][class_type][operations][allocate]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("allocate_class_type"));
+  NamedClassType<TestType> descriptor(Name("allocate_class_type"));
   const RTTIType& type = descriptor;
 
   void* allocated = type.allocate();
@@ -307,7 +307,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and allocated storage, when construct is called through RTTIType, then the "
     "object is default-initialized",
     "[rtti][class_type][operations][construct]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("construct_class_type"));
+  NamedClassType<TestType> descriptor(Name("construct_class_type"));
   const RTTIType& type = descriptor;
 
   void* allocated = type.allocate();
@@ -323,7 +323,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and null storage, when construct is called through RTTIType, then the operation "
     "is safe and does nothing",
     "[rtti][class_type][operations][construct][negative]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("construct_null_class_type"));
+  NamedClassType<TestType> descriptor(Name("construct_null_class_type"));
   const RTTIType& type = descriptor;
 
   type.construct(nullptr);
@@ -334,7 +334,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor, when construct then destruct is called, then the full object lifecycle "
     "completes without error",
     "[rtti][class_type][operations][construct][destruct]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("lifecycle_class_type"));
+  NamedClassType<TestType> descriptor(Name("lifecycle_class_type"));
   const RTTIType& type = descriptor;
 
   void* memory = type.allocate();
@@ -358,7 +358,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor, when create is called through RTTIType, then a default-constructed heap object "
     "is returned",
     "[rtti][class_type][operations][create]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("create_class_type"));
+  NamedClassType<TestType> descriptor(Name("create_class_type"));
   const RTTIType& type = descriptor;
 
   void* created = type.create();
@@ -372,7 +372,7 @@ TEMPLATE_TEST_CASE(
     "Given an RTTIClassType descriptor and a null instance pointer, when destroy is called through RTTIType, then the "
     "operation is safe and does nothing",
     "[rtti][class_type][operations][destroy][negative]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(IName("destroy_null_class_type"));
+  NamedClassType<TestType> descriptor(Name("destroy_null_class_type"));
   const RTTIType& type = descriptor;
 
   type.destroy(nullptr);

@@ -1,9 +1,9 @@
 #include "rtti/RTTIClassType.hpp"
+#include "rtti/RTTIRegistry.hpp"
 #include "rtti/RTTIType.hpp"
-#include "rtti/RTTITypeRegistry.hpp"
 
 namespace core::rtti {
-RTTIType* RTTITypeRegistry::getType(const IName& name) const {
+RTTIType* RTTIRegistry::getType(const Name& name) const {
   std::shared_lock lock(m_mutex);
 
   if (m_types.contains(name)) {
@@ -12,14 +12,14 @@ RTTIType* RTTITypeRegistry::getType(const IName& name) const {
   return nullptr;
 }
 
-RTTIClassType* RTTITypeRegistry::getClass(const IName& name) const {
+RTTIClassType* RTTIRegistry::getClass(const Name& name) const {
   if (auto* type = getType(name); type && type->kind() == RTTITypeKind::CLASS) {
     return reinterpret_cast<RTTIClassType*>(type);
   }
   return nullptr;
 }
 
-bool RTTITypeRegistry::unregisterType(const IName& name) {
+bool RTTIRegistry::unregisterType(const Name& name) {
   std::unique_lock lock(m_mutex);
 
   const auto it = m_types.find(name);
@@ -46,7 +46,7 @@ bool RTTITypeRegistry::unregisterType(const IName& name) {
   return true;
 }
 
-bool RTTITypeRegistry::hasType(const IName& name) const noexcept {
+bool RTTIRegistry::hasType(const Name& name) const noexcept {
   std::shared_lock lock(m_mutex);
   return m_types.contains(name);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "INamePool.hpp"
+#include "NamePool.hpp"
 #include "RTTITType.hpp"
 #include "RTTIType.hpp"
 #include "RTTITypeName.hpp"
@@ -18,11 +18,11 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
   /**
    * @brief Constructs an @c RTTIClassType with the given metadata.
    *
-   * @param name The name of the class type, represented as an IName.
+   * @param name The name of the class type, represented as an Name.
    * @param size The size of the class type in bytes.
    * @param alignment The alignment requirement of the class type in bytes.
    */
-  explicit RTTIClassType(const IName& name, std::size_t size, std::size_t alignment) noexcept;
+  explicit RTTIClassType(const Name& name, std::size_t size, std::size_t alignment) noexcept;
 
   /**
    * @brief Virtual destructor for the @c RTTIClassType interface.
@@ -47,6 +47,6 @@ class RTTIClassTType : public RTTITType<T, RTTIClassType> {
   /**
    * @brief Constructs a @c TClassType for the specified type @code T@endcode.
    */
-  explicit RTTIClassTType() : RTTITType<T, RTTIClassType>(INamePool::get().addName(GetTypeName<T>())) {}
+  explicit RTTIClassTType() : RTTITType<T, RTTIClassType>(NamePool::get().addName(GetTypeName<T>())) {}
 };
 }  // namespace core::rtti

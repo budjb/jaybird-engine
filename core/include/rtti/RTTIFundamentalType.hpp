@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "INamePool.hpp"
+#include "NamePool.hpp"
 #include "RTTITType.hpp"
 #include "RTTIType.hpp"
 #include "RTTITypeName.hpp"
@@ -23,7 +23,7 @@ class JAYBIRD_API RTTIFundamentalType : public RTTIType {
    * @param size The size of the fundamental type in bytes.
    * @param alignment The alignment requirement of the fundamental type in bytes.
    */
-  explicit RTTIFundamentalType(const IName& name, std::size_t size, std::size_t alignment) noexcept;
+  explicit RTTIFundamentalType(const Name& name, std::size_t size, std::size_t alignment) noexcept;
 
   /**
    * @brief Virtual destructor for the @c IFundamentalType class.
@@ -56,6 +56,6 @@ class RTTIFundamentalTType : public RTTITType<T, RTTIFundamentalType> {
    * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
    * for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
    */
-  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(INamePool::get().addName(GetTypeName<T>())) {}
+  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(NamePool::get().addName(GetTypeName<T>())) {}
 };
 }  // namespace core::rtti

@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "Export.hpp"
-#include "IName.hpp"
+#include "Name.hpp"
 #include "RTTIArrayType.hpp"
 #include "RTTIType.hpp"
 #include "RTTITypeName.hpp"
@@ -37,17 +37,17 @@ concept TypeDescriptor = std::derived_from<D, RTTIType> && requires { typename D
  * guaranteed to be available throughout the application's lifetime, enabling features like type introspection and
  * dynamic casting.
  *
- * Types are accessed through @c RTTITypeSystem::get().registry() rather than a direct singleton on this class.
+ * Types are accessed through @c RTTISystem::get().registry() rather than a direct singleton on this class.
  */
-class JAYBIRD_API RTTITypeRegistry {
+class JAYBIRD_API RTTIRegistry {
  public:
   /**
    * @brief Retrieves the type descriptor for a given type name.
    *
-   * @param name The @c IName of the type to look up.
+   * @param name The @c Name of the type to look up.
    * @return A pointer to the @c RTTIType descriptor, or @c nullptr if no type with that name is registered.
    */
-  RTTIType* getType(const IName& name) const;
+  RTTIType* getType(const Name& name) const;
 
   /**
    * @brief Retrieves the class type descriptor for a given type name.
@@ -55,11 +55,11 @@ class JAYBIRD_API RTTITypeRegistry {
    * This is a convenience method that returns @c nullptr both when the type is not found and when it
    * is found but is not a class type.
    *
-   * @param name The @c IName of the type to look up.
+   * @param name The @c Name of the type to look up.
    * @return A pointer to the @c RTTIClassType descriptor, or @c nullptr if the type is not found or is not a class
    * type.
    */
-  RTTIClassType* getClass(const IName& name) const;
+  RTTIClassType* getClass(const Name& name) const;
 
   /**
    * @brief Registers a type descriptor and, when applicable, automatically registers its corresponding
@@ -86,18 +86,18 @@ class JAYBIRD_API RTTITypeRegistry {
    * has dependent types (e.g., an array type that depends on a fundamental type) may lead to dangling pointers in the
    * registry, so it should be used with caution.
    *
-   * @param name The @c IName of the type to remove.
+   * @param name The @c Name of the type to remove.
    * @return @c true if the type existed and was removed, or @c false if no matching type was registered.
    */
-  bool unregisterType(const IName& name);
+  bool unregisterType(const Name& name);
 
   /**
    * @brief Checks whether a type with the given name is registered.
    *
-   * @param name The @c IName of the type to check.
+   * @param name The @c Name of the type to check.
    * @return @c true if a type with that name exists in the registry, @c false otherwise.
    */
-  bool hasType(const IName& name) const noexcept;
+  bool hasType(const Name& name) const noexcept;
 
  private:
   /**
@@ -128,25 +128,25 @@ class JAYBIRD_API RTTITypeRegistry {
   mutable std::shared_mutex m_mutex;
 
   /**
-   * @brief A pointer to the singleton instance of the RTTITypeRegistry.
+   * @brief A pointer to the singleton instance of the RTTIRegistry.
    */
-  static RTTITypeRegistry* s_instance;
+  static RTTIRegistry* s_instance;
 
   /**
    * @brief A map of type names to their corresponding type information. This is the core of the type registry, allowing
    * for fast lookups of types by name.
    */
-  std::unordered_map<IName, std::unique_ptr<RTTIType>> m_types;
+  std::unordered_map<Name, std::unique_ptr<RTTIType>> m_types;
 };
 
 template <TypeDescriptor D>
-bool RTTITypeRegistry::registerType(std::unique_ptr<D>&& type) {
+bool RTTIRegistry::registerType(std::unique_ptr<D>&& type) {
   std::unique_lock lock(m_mutex);
   return registerTypeImpl(std::move(type));
 }
 
 template <TypeDescriptor D>
-bool RTTITypeRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
+bool RTTIRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
   auto* instance = type.get();
 
   if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {

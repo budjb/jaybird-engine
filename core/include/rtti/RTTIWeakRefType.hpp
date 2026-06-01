@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "INamePool.hpp"
+#include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
 #include "RTTITypeName.hpp"
 
@@ -23,7 +23,7 @@ class RTTIWeakRefType : public RTTIContainerType {
    * @param alignment The alignment requirement of the weak pointer type in bytes.
    * @param inner A pointer to the @c RTTIType descriptor for the referenced element type.
    */
-  explicit RTTIWeakRefType(const IName& name, const std::size_t size, const std::size_t alignment,
+  explicit RTTIWeakRefType(const Name& name, const std::size_t size, const std::size_t alignment,
                            const RTTIType* inner) noexcept
       : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::WEAK_REF) {}
 
@@ -199,7 +199,7 @@ template <typename InnerType>
   requires is_same_element_v<InnerType, T>
 RTTIWeakRefTType<T>::RTTIWeakRefTType(const InnerType* inner) noexcept
     : RTTITType<std::weak_ptr<T>, RTTIWeakRefType>(
-          INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::WEAK_REF, T>()),
+          NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::WEAK_REF, T>()),
           static_cast<const RTTIType*>(inner)) {}
 
 template <typename T>

@@ -5,16 +5,16 @@
 #include <thread>
 
 #include "Hash.hpp"
-#include "IName.hpp"
-#include "INamePool.hpp"
+#include "NamePool.hpp"
+#include "Name.hpp"
 #include "Vector.hpp"
 
 using core::Vector;
 
 namespace {
 using core::fnv1a_64;
-using core::IName;
-using core::INamePool;
+using core::Name;
+using core::NamePool;
 
 std::string uniqueNameText(const char* prefix) {
   static std::atomic<std::size_t> counter{0};
@@ -24,22 +24,22 @@ std::string uniqueNameText(const char* prefix) {
 
 }  // namespace
 
-TEST_CASE("Given INamePool::get, when called repeatedly, then the same singleton instance is returned",
+TEST_CASE("Given NamePool::get, when called repeatedly, then the same singleton instance is returned",
           "[iname_pool]") {
-  INamePool& first = INamePool::get();
-  INamePool& second = INamePool::get();
+  NamePool& first = NamePool::get();
+  NamePool& second = NamePool::get();
 
   REQUIRE(&first == &second);
 }
 
-TEST_CASE("Given a fresh text value, when addName is called, then the name is interned and retrievable by IName",
+TEST_CASE("Given a fresh text value, when addName is called, then the name is interned and retrievable by Name",
           "[iname_pool]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   const std::string text = uniqueNameText("pool_add");
 
-  const IName name = pool.addName(text);
+  const Name name = pool.addName(text);
 
-  REQUIRE(name == IName(text));
+  REQUIRE(name == Name(text));
   REQUIRE(name.hash() == fnv1a_64(text));
   REQUIRE(pool.hasName(name));
   REQUIRE(pool.getName(name) == text);
@@ -49,11 +49,11 @@ TEST_CASE(
     "Given an interned text, when addName is called again with the same content, then the same hash identity is "
     "returned",
     "[iname_pool]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   const std::string text = uniqueNameText("pool_duplicate");
 
-  const IName first = pool.addName(text);
-  const IName second = pool.addName(text);
+  const Name first = pool.addName(text);
+  const Name second = pool.addName(text);
 
   REQUIRE(first == second);
   REQUIRE(first.hash() == second.hash());
@@ -64,11 +64,11 @@ TEST_CASE(
     "Given a mutable source string, when addName is called, then the pool stores an owned copy independent of later "
     "source changes",
     "[iname_pool]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   std::string source = uniqueNameText("pool_copy_semantics");
   const std::string expected = source;
 
-  const IName name = pool.addName(std::string_view(source));
+  const Name name = pool.addName(std::string_view(source));
 
   source.assign("mutated_after_add");
 
@@ -76,26 +76,26 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given an interned text, when accessed through operator[] overloads, then both IName and hash lookups return the "
+    "Given an interned text, when accessed through operator[] overloads, then both Name and hash lookups return the "
     "same content",
     "[iname_pool]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   const std::string text = uniqueNameText("pool_index_operator");
 
-  const IName name = pool.addName(text);
+  const Name name = pool.addName(text);
 
   REQUIRE(pool[name] == text);
   REQUIRE(pool[name.hash()] == text);
 }
 
 TEST_CASE(
-    "Given an interned name, when converted back through IName::toString and string_view conversion, then pooled text "
+    "Given an interned name, when converted back through Name::toString and string_view conversion, then pooled text "
     "is returned",
     "[iname_pool]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   const std::string text = uniqueNameText("pool_iname_to_string");
 
-  const IName name = pool.addName(text);
+  const Name name = pool.addName(text);
 
   REQUIRE(name.toString() == text);
   REQUIRE(static_cast<std::string_view>(name) == text);
@@ -103,17 +103,17 @@ TEST_CASE(
 
 TEST_CASE("Given a name hash that was never interned, when queried with hasName, then false is returned",
           "[iname_pool][negative]") {
-  const INamePool& pool = INamePool::get();
-  const IName missing(uniqueNameText("pool_missing_name"));
+  const NamePool& pool = NamePool::get();
+  const Name missing(uniqueNameText("pool_missing_name"));
 
   REQUIRE_FALSE(pool.hasName(missing));
 }
 
 TEST_CASE("Given an empty string, when addName is called, then it is interned and retrievable as an empty string",
           "[iname_pool][negative]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
 
-  const IName name = pool.addName("");
+  const Name name = pool.addName("");
 
   REQUIRE(pool.hasName(name));
   REQUIRE(pool.getName(name).empty());
@@ -121,7 +121,7 @@ TEST_CASE("Given an empty string, when addName is called, then it is interned an
 
 TEST_CASE("Given many unique texts, when concurrent writers call addName, then all names are interned and retrievable",
           "[iname_pool][thread_safety]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   constexpr int writerCount = 12;
 
   Vector<std::string> texts;
@@ -136,7 +136,7 @@ TEST_CASE("Given many unique texts, when concurrent writers call addName, then a
 
   for (int i = 0; i < writerCount; ++i) {
     writers.emplaceBack([&pool, &texts, &hashes, i]() {
-      const IName name = pool.addName(texts[static_cast<std::size_t>(i)]);
+      const Name name = pool.addName(texts[static_cast<std::size_t>(i)]);
       hashes[static_cast<std::size_t>(i)] = name.hash();
     });
   }
@@ -146,7 +146,7 @@ TEST_CASE("Given many unique texts, when concurrent writers call addName, then a
   }
 
   for (int i = 0; i < writerCount; ++i) {
-    const IName name(hashes[static_cast<std::size_t>(i)]);
+    const Name name(hashes[static_cast<std::size_t>(i)]);
     REQUIRE(pool.hasName(name));
     REQUIRE(pool.getName(name) == texts[static_cast<std::size_t>(i)]);
   }
@@ -156,7 +156,7 @@ TEST_CASE(
     "Given one shared text, when concurrent writers call addName, then all returned identities are equal and retrieval "
     "remains correct",
     "[iname_pool][thread_safety]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
   const std::string text = uniqueNameText("pool_concurrent_duplicate");
   constexpr int writerCount = 16;
 
@@ -166,7 +166,7 @@ TEST_CASE(
 
   for (int i = 0; i < writerCount; ++i) {
     writers.emplaceBack([&pool, &text, &hashes, i]() {
-      const IName name = pool.addName(text);
+      const Name name = pool.addName(text);
       hashes[static_cast<std::size_t>(i)] = name.hash();
     });
   }
@@ -180,7 +180,7 @@ TEST_CASE(
     REQUIRE(hash == expectedHash);
   }
 
-  const IName shared(expectedHash);
+  const Name shared(expectedHash);
   REQUIRE(pool.hasName(shared));
   REQUIRE(pool.getName(shared) == text);
 }
@@ -189,12 +189,12 @@ TEST_CASE(
     "Given interned names, when many concurrent readers query hasName and getName, then observed values stay "
     "consistent",
     "[iname_pool][thread_safety]") {
-  INamePool& pool = INamePool::get();
+  NamePool& pool = NamePool::get();
 
   const std::string aText = uniqueNameText("pool_concurrent_reader_a");
   const std::string bText = uniqueNameText("pool_concurrent_reader_b");
-  const IName aName = pool.addName(aText);
-  const IName bName = pool.addName(bText);
+  const Name aName = pool.addName(aText);
+  const Name bName = pool.addName(bText);
 
   constexpr int readerCount = 8;
   constexpr int iterationsPerReader = 5000;

@@ -1,8 +1,8 @@
 add_library(jaybird-engine-core SHARED
-        src/INamePool.cpp
-        src/IName.cpp
-        src/rtti/RTTITypeRegistry.cpp
-        include/rtti/RTTITypeRegistry.hpp
+        src/NamePool.cpp
+        src/Name.cpp
+        src/rtti/RTTIRegistry.cpp
+        include/rtti/RTTIRegistry.hpp
         src/SpinLock.cpp
         include/SpinLock.hpp
         include/rtti/RTTIType.hpp
@@ -20,8 +20,8 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTITypeName.hpp
         include/Vector.hpp
         include/CString.hpp
-        src/rtti/RTTITypeSystem.cpp
-        include/rtti/RTTITypeSystem.hpp
+        src/rtti/RTTISystem.cpp
+        include/rtti/RTTISystem.hpp
         include/rtti/RTTIRefType.hpp
         include/rtti/RTTIWeakRefType.hpp
         src/types/Quaternion.cpp
@@ -55,8 +55,8 @@ target_include_directories(jaybird-engine-core
 
 if (BUILD_TESTING)
   add_executable(core-tests
-          tests/INameTests.cpp
-          tests/INamePoolTests.cpp
+          tests/NameTests.cpp
+          tests/NamePoolTests.cpp
           tests/CStringTests.cpp
           tests/HashTests.cpp
           tests/SpinLockTests.cpp
@@ -69,9 +69,9 @@ if (BUILD_TESTING)
           tests/rtti/RTTIIteratorTests.cpp
           tests/rtti/RTTIRefTypeTests.cpp
           tests/rtti/RTTIWeakRefTypeTests.cpp
-          tests/rtti/RTTIINameTypeTests.cpp
-          tests/rtti/RTTITypeSystemTests.cpp
-          tests/rtti/RTTITypeRegistryTests.cpp
+          tests/rtti/RTTINameTypeTests.cpp
+          tests/rtti/RTTISystemTests.cpp
+          tests/rtti/RTTIRegistryTests.cpp
           tests/rtti/RTTITypeNameTests.cpp
           tests/rtti/RTTIClassFunctionTests.cpp
           tests/rtti/RTTIGlobalFunctionTests.cpp

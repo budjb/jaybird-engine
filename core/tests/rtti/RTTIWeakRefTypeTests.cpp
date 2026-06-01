@@ -22,7 +22,7 @@ struct core::rtti::TypeName<WeakTarget> {
 };  // namespace core::rtti
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::RTTIClassTType;
 using core::rtti::RTTIContainerType;
 using core::rtti::RTTIType;
@@ -70,7 +70,7 @@ TEST_CASE(
   const RTTIClassTType<WeakTarget> inner;
   RTTIWeakRefTType<WeakTarget> descriptor(&inner);
 
-  REQUIRE(static_cast<RTTIType&>(descriptor).name() == IName("wref:weak_target"));
+  REQUIRE(static_cast<RTTIType&>(descriptor).name() == Name("wref:weak_target"));
   REQUIRE(static_cast<RTTIType&>(descriptor).name().toString() == "wref:weak_target");
 }
 

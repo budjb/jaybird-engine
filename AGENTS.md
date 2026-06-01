@@ -71,7 +71,7 @@ The `core` library is a **static library** (`jaybird-engine-core`). All public A
 | `rtti/RTTIArrayType.hpp`     | `RTTIArrayTType<T>` — implements `RTTIArrayType` over `std::vector<T>`                                   |
 | `rtti/RTTIClassType.hpp`     | `RTTIClassType : RTTIType` — tag class for class/struct types (minimally implemented)                    |
 | `rtti/Iterator.hpp`          | `Iterator<T>` and `ReverseIterator<T>` — type-erased (T=void) or typed iterator pair                     |
-| `rtti/RTTITypeRegistry.hpp`  | `RTTITypeRegistry` — singleton, thread-safe `IName → unique_ptr<RTTIType>` map                           |
+| `rtti/RTTIRegistry.hpp`  | `RTTITypeRegistry` — singleton, thread-safe `IName → unique_ptr<RTTIType>` map                           |
 | `rtti/TypeRegistrar.hpp`     | `TypeRegistrar` — **[stub, not yet implemented]**                                                        |
 | `rtti/types/IntType.hpp`     | `IntType : RTTITType<int>` and `IntArrayType : RTTIArrayTType<int>` — reference concrete implementations |
 

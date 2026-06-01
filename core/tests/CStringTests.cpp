@@ -4,11 +4,11 @@
 
 #include "CString.hpp"
 #include "Hash.hpp"
-#include "IName.hpp"
+#include "Name.hpp"
 
 namespace {
 using core::CString;
-using core::IName;
+using core::Name;
 
 static_assert(core::is_cstring_v<CString<4>>);
 static_assert(core::is_cstring_v<const CString<4>&>);
@@ -71,10 +71,10 @@ TEST_CASE(
   REQUIRE(plusAppended == "array:float");
 }
 
-TEST_CASE("Given a CString, when converted to IName, then the resulting hash matches fnv1a_64 of its text",
+TEST_CASE("Given a CString, when converted to Name, then the resulting hash matches fnv1a_64 of its text",
           "[cstring]") {
   constexpr CString text("convert_me");
-  const IName name = text;
+  const Name name = text;
 
   REQUIRE(name.hash() == core::fnv1a_64("convert_me"));
 }

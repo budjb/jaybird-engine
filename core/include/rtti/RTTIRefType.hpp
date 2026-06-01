@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "INamePool.hpp"
+#include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
 #include "RTTITypeName.hpp"
 
@@ -24,7 +24,7 @@ class RTTIRefType : public RTTIContainerType {
    * @param alignment The alignment requirement of the smart pointer type in bytes.
    * @param inner A pointer to the @c RTTIType descriptor for the referenced element type.
    */
-  RTTIRefType(const IName& name, const std::size_t size, const std::size_t alignment, const RTTIType* inner) noexcept
+  RTTIRefType(const Name& name, const std::size_t size, const std::size_t alignment, const RTTIType* inner) noexcept
       : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::REF) {}
 
   /**
@@ -186,6 +186,6 @@ template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
 RTTIRefTType<T>::RTTIRefTType(const InnerType* inner)
-    : RTTITType<std::shared_ptr<T>, RTTIRefType>(INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::REF, T>()),
+    : RTTITType<std::shared_ptr<T>, RTTIRefType>(NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::REF, T>()),
                                                  static_cast<const RTTIType*>(inner)) {}
 }  // namespace core::rtti

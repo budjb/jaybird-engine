@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "IName.hpp"
+#include "Name.hpp"
 #include "RTTITypeKind.hpp"
 
 namespace core::rtti {
@@ -22,21 +22,21 @@ class JAYBIRD_API RTTIType {
    * @brief Constructs an RTTIType with the given name, size, and kind. The alignment is set to maximum alignment by
    * default.
    *
-   * @param name The name of the type, represented as an IName.
+   * @param name The name of the type, represented as an Name.
    * @param size The size of the type in bytes.
    * @param kind The kind of the type, represented as an RTTITypeKind enumeration value.
    */
-  explicit RTTIType(const IName& name, std::size_t size, RTTITypeKind kind) noexcept;
+  explicit RTTIType(const Name& name, std::size_t size, RTTITypeKind kind) noexcept;
 
   /**
    * @brief Constructs an RTTIType with the given name, size, alignment, and kind.
    *
-   * @param name The name of the type, represented as an IName.
+   * @param name The name of the type, represented as an Name.
    * @param size The size of the type in bytes.
    * @param alignment The alignment requirement of the type in bytes.
    * @param kind The kind of the type, represented as an RTTITypeKind enumeration value.
    */
-  explicit RTTIType(const IName& name, std::size_t size, std::size_t alignment, RTTITypeKind kind) noexcept;
+  explicit RTTIType(const Name& name, std::size_t size, std::size_t alignment, RTTITypeKind kind) noexcept;
 
   /**
    * @brief Virtual destructor for the RTTIType interface. This allows for proper cleanup of derived classes when
@@ -66,11 +66,11 @@ class JAYBIRD_API RTTIType {
   [[nodiscard]] RTTITypeKind kind() const noexcept;
 
   /**
-   * @brief Returns the name of the type, represented as an IName.
+   * @brief Returns the name of the type, represented as an Name.
    *
-   * @return The name of the type, represented as an IName.
+   * @return The name of the type, represented as an Name.
    */
-  [[nodiscard]] IName name() const noexcept;
+  [[nodiscard]] Name name() const noexcept;
 
   /**
    * @brief Returns a pointer to the parent type descriptor if this type is derived from another type, or @c nullptr if
@@ -207,11 +207,11 @@ class JAYBIRD_API RTTIType {
 
  private:
   /**
-   * @brief The name of the type, represented as an IName.
+   * @brief The name of the type, represented as an Name.
    *
    * This name uniquely identifies the type within the RTTI system and enables type lookup and comparison.
    */
-  IName m_name;
+  Name m_name;
 
   /**
    * @brief The size of the type in bytes.

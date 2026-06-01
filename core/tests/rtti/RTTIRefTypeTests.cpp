@@ -21,7 +21,7 @@ struct core::rtti::TypeName<RefTarget> {
 };  // namespace core::rtti
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::RTTIClassTType;
 using core::rtti::RTTIContainerType;
 using core::rtti::RTTIRefTType;
@@ -66,7 +66,7 @@ TEST_CASE("Given a RTTIRefTType descriptor, when name is queried, then it is the
   const RTTIClassTType<RefTarget> inner;
   RTTIRefTType<RefTarget> descriptor(&inner);
 
-  REQUIRE(static_cast<RTTIType&>(descriptor).name() == IName("ref:ref_target"));
+  REQUIRE(static_cast<RTTIType&>(descriptor).name() == Name("ref:ref_target"));
   REQUIRE(static_cast<RTTIType&>(descriptor).name().toString() == "ref:ref_target");
 }
 

@@ -9,7 +9,7 @@
 using core::Vector;
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::ReverseIterator;
 using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;

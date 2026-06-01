@@ -1,22 +1,21 @@
-#include "rtti/RTTITypeSystem.hpp"
-
 #include <algorithm>
 #include <cstdint>
 
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
-#include "rtti/RTTIINameType.hpp"
+#include "rtti/RTTINameType.hpp"
+#include "rtti/RTTISystem.hpp"
 #include "types/Color.hpp"
 #include "types/EulerAngles.hpp"
 #include "types/Quaternion.hpp"
 
 namespace core::rtti {
-RTTITypeSystem& RTTITypeSystem::get() noexcept {
-  static RTTITypeSystem typeSystem{};
+RTTISystem& RTTISystem::get() noexcept {
+  static RTTISystem typeSystem{};
   return typeSystem;
 }
 
-bool RTTITypeSystem::initialize() {
+bool RTTISystem::initialize() {
   if (m_initialized) {
     return false;
   }
@@ -28,28 +27,28 @@ bool RTTITypeSystem::initialize() {
   return true;
 }
 
-RTTITypeRegistry& RTTITypeSystem::registry() noexcept {
+RTTIRegistry& RTTISystem::registry() noexcept {
   return m_registry;
 }
 
-void RTTITypeSystem::addDeclareCallback(const CallbackFunction& function) {
+void RTTISystem::addDeclareCallback(const CallbackFunction& function) {
   m_declareFunctions.push_back(function);
 }
 
-void RTTITypeSystem::addDefineCallback(const CallbackFunction& function) {
+void RTTISystem::addDefineCallback(const CallbackFunction& function) {
   m_defineFunctions.push_back(function);
 }
 
-void RTTITypeSystem::addCallbacks(const CallbackFunction& declare, const CallbackFunction& define) {
+void RTTISystem::addCallbacks(const CallbackFunction& declare, const CallbackFunction& define) {
   m_declareFunctions.push_back(declare);
   m_defineFunctions.push_back(define);
 }
 
-RTTITypeSystem::RTTITypeSystem() noexcept {
+RTTISystem::RTTISystem() noexcept {
   addDeclareCallback([this] { registerBuiltInTypes(); });
 }
 
-void RTTITypeSystem::registerBuiltInTypes() noexcept {
+void RTTISystem::registerBuiltInTypes() noexcept {
   m_registry.registerType(std::make_unique<RTTIFundamentalTType<int8_t>>());
   m_registry.registerType(std::make_unique<RTTIFundamentalTType<int32_t>>());
   m_registry.registerType(std::make_unique<RTTIFundamentalTType<int64_t>>());
@@ -60,7 +59,7 @@ void RTTITypeSystem::registerBuiltInTypes() noexcept {
   m_registry.registerType(std::make_unique<RTTIFundamentalTType<double>>());
   m_registry.registerType(std::make_unique<RTTIFundamentalTType<bool>>());
 
-  m_registry.registerType(std::make_unique<RTTIINameType>());
+  m_registry.registerType(std::make_unique<RTTINameType>());
   m_registry.registerType(std::make_unique<RTTIClassTType<Quaternion>>());
   m_registry.registerType(std::make_unique<RTTIClassTType<EulerAngles>>());
   m_registry.registerType(std::make_unique<RTTIClassTType<Color>>());

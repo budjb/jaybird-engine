@@ -34,7 +34,7 @@ REGISTER_TYPE_NAME(TrivialElement, "trivial_element");
 REGISTER_TYPE_NAME(NonTrivialElement, "non_trivial_element");
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;
 using core::rtti::RTTIClassTType;
@@ -119,7 +119,7 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType->size() == sizeof(Vector<TestType>));
   REQUIRE(asType->alignment() == alignof(Vector<TestType>));
   REQUIRE(asArray->inner() == static_cast<const RTTIType*>(&inner));
-  REQUIRE(asType->name() == IName(arrayTypeName<TestType>()));
+  REQUIRE(asType->name() == Name(arrayTypeName<TestType>()));
   REQUIRE(asType->name().toString() == arrayTypeName<TestType>());
 }
 

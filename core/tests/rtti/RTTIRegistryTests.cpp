@@ -7,8 +7,8 @@
 #include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
-#include "rtti/RTTITypeRegistry.hpp"
-#include "rtti/RTTITypeSystem.hpp"
+#include "rtti/RTTIRegistry.hpp"
+#include "rtti/RTTISystem.hpp"
 
 using core::Vector;
 
@@ -38,7 +38,7 @@ struct RegTargetC {
   bool operator==(const RegTargetC&) const = default;
 };
 
-/** @brief Test struct D — used for IName hash equivalence lookup. */
+/** @brief Test struct D — used for Name hash equivalence lookup. */
 struct RegTargetD {
   // ReSharper disable once CppDeclaratorNeverUsed
   int v{0};
@@ -109,15 +109,15 @@ REGISTER_TYPE_NAME(RegTargetA_Solo, "reg_target_a_solo");
 REGISTER_TYPE_NAME(RegTargetB_Solo, "reg_target_b_solo");
 
 namespace {
-using core::IName;
+using core::Name;
 using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;
 using core::rtti::RTTIClassTType;
 using core::rtti::RTTIClassType;
+using core::rtti::RTTIRegistry;
+using core::rtti::RTTISystem;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
-using core::rtti::RTTITypeRegistry;
-using core::rtti::RTTITypeSystem;
 }  // namespace
 
 // =============================================================================
@@ -125,11 +125,11 @@ using core::rtti::RTTITypeSystem;
 // =============================================================================
 
 TEST_CASE(
-    "Given RTTITypeSystem::get, when registry() is called multiple times, then the same RTTITypeRegistry instance is "
+    "Given RTTISystem::get, when registry() is called multiple times, then the same RTTIRegistry instance is "
     "returned",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& first = RTTITypeSystem::get().registry();
-  RTTITypeRegistry& second = RTTITypeSystem::get().registry();
+  RTTIRegistry& first = RTTISystem::get().registry();
+  RTTIRegistry& second = RTTISystem::get().registry();
 
   REQUIRE(&first == &second);
 }
@@ -139,11 +139,11 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given an unregistered type name, when queried in RTTITypeRegistry, then hasType returns false and retrieval APIs "
+    "Given an unregistered type name, when queried in RTTIRegistry, then hasType returns false and retrieval APIs "
     "return nullptr",
     "[rtti][type_registry]") {
-  const RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
-  const IName missing("registry_test_missing_xyz_1234");
+  const RTTIRegistry& registry = RTTISystem::get().registry();
+  const Name missing("registry_test_missing_xyz_1234");
 
   REQUIRE_FALSE(registry.hasType(missing));
   REQUIRE(registry.getType(missing) == nullptr);
@@ -155,10 +155,10 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType descriptor, when registered in RTTITypeRegistry, then registerType returns true and the "
+    "Given a RTTIClassTType descriptor, when registered in RTTIRegistry, then registerType returns true and the "
     "type is retrievable",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<RTTIClassTType<RegTargetA_Solo>>()));
   REQUIRE(registry.hasType("reg_target_a_solo"));
@@ -167,7 +167,7 @@ TEST_CASE(
 
 TEST_CASE("Given a registered RTTIClassTType, when getType is called, then the returned descriptor has kind CLASS",
           "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetA>>());
 
@@ -176,12 +176,12 @@ TEST_CASE("Given a registered RTTIClassTType, when getType is called, then the r
 
 TEST_CASE("Given a registered RTTIClassTType, when getClass is called, then it returns the same descriptor as getType",
           "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetA>>());
 
   RTTIType* asType = registry.getType("reg_target_a");
-  RTTIClassType* asClass = registry.getClass(IName("reg_target_a"));
+  RTTIClassType* asClass = registry.getClass(Name("reg_target_a"));
 
   REQUIRE(asClass != nullptr);
   REQUIRE(static_cast<RTTIType*>(asClass) == asType);
@@ -192,23 +192,23 @@ TEST_CASE("Given a registered RTTIClassTType, when getClass is called, then it r
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTITypeRegistry, when the companion array name is queried, then it is also "
+    "Given a RTTIClassTType registered in RTTIRegistry, when the companion array name is queried, then it is also "
     "registered automatically",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<RTTIClassTType<RegTargetB_Solo>>()));
 
-  const IName arrayName("array:reg_target_b_solo");
+  const Name arrayName("array:reg_target_b_solo");
   REQUIRE(registry.hasType(arrayName));
   REQUIRE(registry.getType(arrayName) != nullptr);
 }
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTITypeRegistry, when the companion array type is retrieved, then it has "
+    "Given a RTTIClassTType registered in RTTIRegistry, when the companion array type is retrieved, then it has "
     "kind ARRAY and its inner descriptor matches the original type",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetB>>());
   RTTIType* baseType = registry.getType("reg_target_b");
@@ -223,21 +223,21 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTITypeRegistry, when getClass is called for the companion array name, then "
+    "Given a RTTIClassTType registered in RTTIRegistry, when getClass is called for the companion array name, then "
     "it returns nullptr since an array type is not a class type",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetB>>());
 
-  REQUIRE(registry.getClass(IName("array:reg_target_b")) == nullptr);
+  REQUIRE(registry.getClass(Name("array:reg_target_b")) == nullptr);
 }
 
 TEST_CASE(
-    "Given an RTTIArrayTType registered directly in RTTITypeRegistry, when the registry is queried, then no "
+    "Given an RTTIArrayTType registered directly in RTTIRegistry, when the registry is queried, then no "
     "second-order array is automatically created",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetI>>());
   RTTIType* inner = registry.getType("reg_target_i");
@@ -258,7 +258,7 @@ TEST_CASE(
 
 TEST_CASE("Given a type already registered, when the same name is registered again, then registerType returns false",
           "[rtti][type_registry][negative]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>());
 
@@ -269,7 +269,7 @@ TEST_CASE(
     "Given a type already registered, when a second descriptor with the same name is rejected, then the original "
     "descriptor remains retrievable",
     "[rtti][type_registry][negative]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>());
   RTTIType* original = registry.getType("reg_target_c");
@@ -281,18 +281,18 @@ TEST_CASE(
 }
 
 // =============================================================================
-// IName hash equivalence
+// Name hash equivalence
 // =============================================================================
 
 TEST_CASE(
-    "Given a registered type, when looked up by a different IName instance with the same hash, then the descriptor "
+    "Given a registered type, when looked up by a different Name instance with the same hash, then the descriptor "
     "is returned",
     "[rtti][type_registry]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetD>>());
 
-  const IName byHash(IName("reg_target_d").hash());
+  const Name byHash(Name("reg_target_d").hash());
 
   REQUIRE(registry.hasType(byHash));
   REQUIRE(registry.getType(byHash) == registry.getType("reg_target_d"));
@@ -306,11 +306,11 @@ TEST_CASE(
     "Given a registered type, when an unrelated name is looked up, then hasType returns false and getType returns "
     "nullptr",
     "[rtti][type_registry][negative]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetF>>());
 
-  const IName unrelated("totally_unrelated_name_xyz_9999");
+  const Name unrelated("totally_unrelated_name_xyz_9999");
   REQUIRE_FALSE(registry.hasType(unrelated));
   REQUIRE(registry.getType(unrelated) == nullptr);
   REQUIRE(registry.getClass(unrelated) == nullptr);
@@ -324,7 +324,7 @@ TEST_CASE(
     "Given many concurrent threads all trying to register the same type name, when all threads complete, then "
     "exactly one registration succeeds and the auto-array companion is also present",
     "[rtti][type_registry][thread_safety]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
   constexpr int writerCount = 16;
 
   Vector successes(writerCount, 0);
@@ -357,10 +357,10 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a registered type, when many concurrent readers repeatedly query RTTITypeRegistry, then all reads remain "
+    "Given a registered type, when many concurrent readers repeatedly query RTTIRegistry, then all reads remain "
     "consistent and return the expected descriptor",
     "[rtti][type_registry][thread_safety]") {
-  RTTITypeRegistry& registry = RTTITypeSystem::get().registry();
+  RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetG>>());
   RTTIType* expected = registry.getType("reg_target_g");
@@ -384,7 +384,7 @@ TEST_CASE(
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }
-        if (registry.getClass(IName("reg_target_g")) == nullptr) {
+        if (registry.getClass(Name("reg_target_g")) == nullptr) {
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }

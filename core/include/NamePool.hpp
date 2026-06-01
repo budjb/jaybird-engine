@@ -6,7 +6,7 @@
 
 #include "Export.hpp"
 #include "Hash.hpp"
-#include "IName.hpp"
+#include "Name.hpp"
 
 namespace core {
 /**
@@ -14,33 +14,33 @@ namespace core {
  *
  * It is thread-safe for concurrent reads via @c std::shared_mutex; writes acquire an exclusive lock.
  */
-class JAYBIRD_API INamePool {
+class JAYBIRD_API NamePool {
  public:
   /**
-   * @brief Returns the singleton instance of the @code INamePool@endcode.
+   * @brief Returns the singleton instance of the @code NamePool@endcode.
    *
-   * @return A reference to the singleton @code INamePool@endcode.
+   * @return A reference to the singleton @code NamePool@endcode.
    */
-  static INamePool& get();
+  static NamePool& get();
 
   /**
-   * @brief Interns a string and returns its associated @code IName@endcode.
+   * @brief Interns a string and returns its associated @code Name@endcode.
    *
-   * This method is thread-safe. If the string is already interned, the existing @c IName is returned without
+   * This method is thread-safe. If the string is already interned, the existing @c Name is returned without
    * modification.
    *
    * @param str The string to intern.
-   * @return An @c IName representing the hash of the string.
+   * @return A @c Name representing the hash of the string.
    */
-  IName addName(std::string_view str) noexcept;
+  Name addName(std::string_view str) noexcept;
 
   /**
-   * @brief Retrieves the string associated with the given @code IName@endcode.
+   * @brief Retrieves the string associated with the given @code Name@endcode.
    *
-   * @param str The @c IName to look up.
+   * @param str The @c Name to look up.
    * @return The interned string view, or an empty view if not found.
    */
-  [[nodiscard]] std::string_view getName(const IName& str) const noexcept;
+  [[nodiscard]] std::string_view getName(const Name& str) const noexcept;
 
   /**
    * @brief Retrieves the string associated with the given hash value.
@@ -51,20 +51,20 @@ class JAYBIRD_API INamePool {
   [[nodiscard]] std::string_view getName(hash_t hash) const noexcept;
 
   /**
-   * @brief Checks whether the given @c IName is present in the pool.
+   * @brief Checks whether the given @c Name is present in the pool.
    *
-   * @param str The @c IName to check.
+   * @param str The @c Name to check.
    * @return @c true if the name exists, @c false otherwise.
    */
-  bool hasName(const IName& str) const noexcept;
+  bool hasName(const Name& str) const noexcept;
 
   /**
-   * @brief Returns the string associated with the given @code IName@endcode.
+   * @brief Returns the string associated with the given @code Name@endcode.
    *
-   * @param str The @c IName to look up.
+   * @param str The @c Name to look up.
    * @return The interned string view, or an empty view if not found.
    */
-  std::string_view operator[](const IName& str) const noexcept {
+  std::string_view operator[](const Name& str) const noexcept {
     return getName(str);
   }
 
@@ -82,7 +82,7 @@ class JAYBIRD_API INamePool {
   /**
    * @brief Private constructor, enforcing singleton access via @code get()@endcode.
    */
-  INamePool() = default;
+  NamePool() = default;
 
   /**
    * @brief Protects concurrent access to the pool.
@@ -92,6 +92,6 @@ class JAYBIRD_API INamePool {
   /**
    * @brief Maps interned hashes to their corresponding strings.
    */
-  std::unordered_map<IName, std::string> m_names;
+  std::unordered_map<Name, std::string> m_names;
 };
 }  // namespace core

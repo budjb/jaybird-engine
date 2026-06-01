@@ -1,15 +1,15 @@
 #include "rtti/RTTIType.hpp"
 
 #include "rtti/RTTIArrayType.hpp"
+#include "rtti/RTTIRegistry.hpp"
+#include "rtti/RTTISystem.hpp"
 #include "rtti/RTTITypeName.hpp"
-#include "rtti/RTTITypeRegistry.hpp"
-#include "rtti/RTTITypeSystem.hpp"
 
 namespace core::rtti {
-RTTIType::RTTIType(const IName& name, const std::size_t size, const RTTITypeKind kind) noexcept
+RTTIType::RTTIType(const Name& name, const std::size_t size, const RTTITypeKind kind) noexcept
     : RTTIType(name, size, alignof(std::max_align_t), kind) {}
 
-RTTIType::RTTIType(const IName& name, const std::size_t size, const std::size_t alignment,
+RTTIType::RTTIType(const Name& name, const std::size_t size, const std::size_t alignment,
                    const RTTITypeKind kind) noexcept
     : m_name(name), m_size(size), m_alignment(alignment), m_kind(kind) {}
 
@@ -25,7 +25,7 @@ RTTITypeKind RTTIType::kind() const noexcept {
   return m_kind;
 }
 
-IName RTTIType::name() const noexcept {
+Name RTTIType::name() const noexcept {
   return m_name;
 }
 
@@ -38,7 +38,7 @@ void RTTIType::parent(RTTIType* parent) noexcept {
 }
 
 RTTIArrayType* RTTIType::asArray() const noexcept {
-  if (auto* type = RTTITypeSystem::get().registry().getType(GetPrefixedTypeName<RTTITypeKind::ARRAY>(m_name));
+  if (auto* type = RTTISystem::get().registry().getType(GetPrefixedTypeName<RTTITypeKind::ARRAY>(m_name));
       type && type->kind() == RTTITypeKind::ARRAY) {
     return reinterpret_cast<RTTIArrayType*>(type);
   }

@@ -35,7 +35,7 @@ class JAYBIRD_API RTTIContainerType : public RTTIType {
    * @param kind The @c RTTITypeKind value classifying this container (e.g., @c RTTITypeKind::ARRAY or
    * @c RTTITypeKind::REF).
    */
-  explicit RTTIContainerType(const IName& name, std::size_t size, std::size_t alignment, const RTTIType* inner,
+  explicit RTTIContainerType(const Name& name, std::size_t size, std::size_t alignment, const RTTIType* inner,
                              RTTITypeKind kind) noexcept;
 
   /**

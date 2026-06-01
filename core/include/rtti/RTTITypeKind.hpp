@@ -9,7 +9,7 @@ namespace core::rtti {
  */
 enum class RTTITypeKind : std::size_t {
   /**
-   * @brief This value identifies the interned string @code IName@endcode descriptor category.
+   * @brief This value identifies the interned string @code Name@endcode descriptor category.
    */
   NAME,
 

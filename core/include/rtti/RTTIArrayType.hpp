@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "INamePool.hpp"
+#include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
 #include "RTTIIterator.hpp"
 #include "RTTITType.hpp"
@@ -23,7 +23,7 @@ class JAYBIRD_API RTTIArrayType : public RTTIContainerType {
    * @param alignment The alignment requirement of the array type in bytes.
    * @param inner A pointer to the RTTIType descriptor for the elements contained in the array.
    */
-  explicit RTTIArrayType(const IName& name, std::size_t size, std::size_t alignment, const RTTIType* inner) noexcept;
+  explicit RTTIArrayType(const Name& name, std::size_t size, std::size_t alignment, const RTTIType* inner) noexcept;
 
   /**
    * @brief Virtual destructor for RTTIArrayType.
@@ -372,7 +372,7 @@ class RTTIArrayTType : public RTTITType<Vector<T>, RTTIArrayType> {
   template <typename InnerType>
     requires is_same_element_v<InnerType, T>
   explicit RTTIArrayTType(const InnerType* inner)
-      : RTTITType<Vector<T>, RTTIArrayType>(INamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::ARRAY, T>()),
+      : RTTITType<Vector<T>, RTTIArrayType>(NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::ARRAY, T>()),
                                             static_cast<const RTTIType*>(inner)) {}
 
   /**

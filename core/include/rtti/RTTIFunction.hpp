@@ -2,11 +2,11 @@
 
 #include <array>
 
-#include "IName.hpp"
-#include "INamePool.hpp"
+#include "Name.hpp"
+#include "NamePool.hpp"
 #include "RTTIProperty.hpp"
 #include "RTTIStackFrame.hpp"
-#include "RTTITypeSystem.hpp"
+#include "RTTISystem.hpp"
 
 namespace core::rtti {
 /**
@@ -201,7 +201,7 @@ class RTTIFunction {
    * @param flags The flags indicating properties of the function, such as whether it is native or a member function.
    */
   explicit RTTIFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : m_name(INamePool::get().addName(name)), m_flags(flags) {
+      : m_name(NamePool::get().addName(name)), m_flags(flags) {
     m_flags.isMember = false;
   }
 
@@ -215,7 +215,7 @@ class RTTIFunction {
    *
    * @return This function returns the reflected function name.
    */
-  [[nodiscard]] const IName& name() const noexcept {
+  [[nodiscard]] const Name& name() const noexcept {
     return m_name;
   }
 
@@ -253,7 +253,7 @@ class RTTIFunction {
    * @param type The reflected type descriptor for the argument.
    */
   void argument(const std::string_view name, RTTIType* type) noexcept {
-    m_arguments.push_back(std::make_unique<RTTIProperty>(INamePool::get().addName(name), type));
+    m_arguments.push_back(std::make_unique<RTTIProperty>(NamePool::get().addName(name), type));
   }
 
   /**
@@ -298,7 +298,7 @@ class RTTIFunction {
   /**
    * @brief The interned name of the function.
    */
-  IName m_name;
+  Name m_name;
 
   /**
    * @brief Flags indicating properties of the function.

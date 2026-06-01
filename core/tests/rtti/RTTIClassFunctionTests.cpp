@@ -48,7 +48,7 @@ REGISTER_TYPE_NAME(test::UnregisteredArg, "ClassFunctionTests.UnregisteredArg");
 REGISTER_TYPE_NAME(test::UnregisteredReturn, "ClassFunctionTests.UnregisteredReturn");
 
 static_assert(requires { core::rtti::RTTIClassTFunction("ok", &test::Sample::sum, "lhs", "rhs"); });
-static_assert(!std::is_constructible_v<core::rtti::RTTIClassTFunction<decltype(&test::Sample::sum)>, const core::IName&,
+static_assert(!std::is_constructible_v<core::rtti::RTTIClassTFunction<decltype(&test::Sample::sum)>, const core::Name&,
                                        decltype(&test::Sample::sum), const char*>);
 
 TEST_CASE(
@@ -56,7 +56,7 @@ TEST_CASE(
     "call "
     "succeeds",
     "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("touch", &test::Sample::touch);
   auto frame = function.createStackFrame();
@@ -70,7 +70,7 @@ TEST_CASE(
     "Given a member function with a return value, when invoked with valid this and return pointers, then the return "
     "value is written",
     "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("answer", &test::Sample::answer);
   auto frame = function.createStackFrame();
@@ -88,7 +88,7 @@ TEST_CASE(
     "Given a member function with two arguments, when invoked with valid argument pointers, then both arguments are "
     "forwarded in order",
     "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("sum", &test::Sample::sum, "lhs", "rhs");
   auto frame = function.createStackFrame();
@@ -111,11 +111,11 @@ TEST_CASE(
     "Given argument names during function registration, when arguments are queried, then names and types match the "
     "reflected signature",
     "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("sum_metadata", &test::Sample::sum, "lhs", "rhs");
   auto args = function.arguments();
-  auto* intType = core::rtti::RTTITypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
 
   REQUIRE(args.size() == 2);
   REQUIRE(std::string(args[0]->name()) == "lhs");
@@ -127,7 +127,7 @@ TEST_CASE(
 TEST_CASE(
     "Given a member function invocation without a \"this\" pointer, when invoke is called, then an exception is thrown",
     "[rtti][class_function][negative]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("answer_missing_this", &test::Sample::answer);
   auto frame = function.createStackFrame();
@@ -142,7 +142,7 @@ TEST_CASE(
     "Given a member function with a non-void return type, when invoke is called without a return pointer, then an "
     "exception is thrown",
     "[rtti][class_function][negative]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("answer_missing_return", &test::Sample::answer);
   auto frame = function.createStackFrame();
@@ -154,7 +154,7 @@ TEST_CASE(
 
 TEST_CASE("Given a member function with arguments, when one argument pointer is missing, then invocation throws",
           "[rtti][class_function][negative]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("sum_missing_arg", &test::Sample::sum, "lhs", "rhs");
   auto frame = function.createStackFrame();
@@ -172,7 +172,7 @@ TEST_CASE("Given a member function with arguments, when one argument pointer is 
 
 TEST_CASE("Given a member function with an unregistered argument type, when reflected, then construction throws",
           "[rtti][class_function][negative]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   REQUIRE_THROWS_AS(core::rtti::RTTIClassTFunction("bad_arg", &test::Sample::takesUnregisteredArg, "value"),
                     std::runtime_error);
@@ -180,7 +180,7 @@ TEST_CASE("Given a member function with an unregistered argument type, when refl
 
 TEST_CASE("Given a member function with an unregistered return type, when reflected, then construction throws",
           "[rtti][class_function][negative]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   REQUIRE_THROWS_AS(core::rtti::RTTIClassTFunction("bad_return", &test::Sample::returnsUnregisteredType),
                     std::runtime_error);
@@ -188,7 +188,7 @@ TEST_CASE("Given a member function with an unregistered return type, when reflec
 
 TEST_CASE("Given a member function, when the function name is queried, then it returns the correct name",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("member_test_name", &test::Sample::answer);
 
@@ -197,17 +197,17 @@ TEST_CASE("Given a member function, when the function name is queried, then it r
 
 TEST_CASE("Given a member function, when return type is queried, then it corresponds to the actual return type",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("answer_returntype", &test::Sample::answer);
-  auto* intType = core::rtti::RTTITypeSystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
 
   REQUIRE(function.returnType() == intType);
 }
 
 TEST_CASE("Given a member function with no return type, when return type is queried, then nullptr is returned",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("touch_no_return", &test::Sample::touch);
 
@@ -216,7 +216,7 @@ TEST_CASE("Given a member function with no return type, when return type is quer
 
 TEST_CASE("Given a member function, when flags are queried, then isMember is true and isNative is true",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("answer_flags", &test::Sample::answer);
   auto [isNative, isMember] = function.flags();
@@ -227,7 +227,7 @@ TEST_CASE("Given a member function, when flags are queried, then isMember is tru
 
 TEST_CASE("Given a member function, when a stack frame is created, then the frame includes a \"this\" pointer slot",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("sum_frame", &test::Sample::sum, "lhs", "rhs");
   auto frame = function.createStackFrame();
@@ -245,7 +245,7 @@ TEST_CASE(
     "Given a member function with no arguments, when a stack frame is created, then only this and return slots "
     "exist",
     "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIClassTFunction("answer_noargs", &test::Sample::answer);
   const auto frame = function.createStackFrame();
@@ -257,7 +257,7 @@ TEST_CASE(
 
 TEST_CASE("Given a member function with a void return, when a stack frame is created, then no return slot exists",
           "[rtti][class_function]") {
-  core::rtti::RTTITypeSystem::get().initialize();
+  core::rtti::RTTISystem::get().initialize();
 
   auto function = core::rtti::RTTIClassTFunction("touch_noreturn", &test::Sample::touch);
   auto frame = function.createStackFrame();
