@@ -1,5 +1,6 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -48,6 +49,16 @@ struct NonTrivialStruct {
 
   std::string value{};
   bool operator==(const NonTrivialStruct&) const = default;
+};
+
+class FunctionHost {
+ public:
+  void touch() {}
+
+  // ReSharper disable once CppMemberFunctionMayBeStatic
+  [[nodiscard]] int answer() const {
+    return 42;
+  }
 };
 
 template <>
@@ -455,4 +466,141 @@ TEST_CASE(
 
   REQUIRE(stringDescriptor.kind() == RTTITypeKind::CLASS);
   REQUIRE(vectorDescriptor.kind() == RTTITypeKind::CLASS);
+}
+
+// ============================================================================
+// RTTIClassType property and function registry tests
+// ============================================================================
+
+TEST_CASE(
+    "Given a RTTIClassType descriptor, when properties are added with both overloads, then they are retrievable by "
+    "name and visible in the properties snapshot",
+    "[rtti][class_type][properties]") {
+  NamedClassType<NonTrivialStruct> descriptor(Name("property_registry_type"));
+  NamedClassType<TrivialStruct> propertyValueType(Name("property_value_type"));
+
+  auto hpProperty = std::make_shared<core::rtti::RTTIProperty>(Name("hp"), &propertyValueType);
+  const auto hpRaw = hpProperty.get();
+  descriptor.property(std::move(hpProperty));
+
+  REQUIRE(hpProperty == nullptr);
+
+  auto speedProperty = std::make_shared<core::rtti::RTTIProperty>(Name("speed"), &propertyValueType);
+  descriptor.property(speedProperty);
+
+  const RTTIClassType& asConst = descriptor;
+  auto hpLookup = asConst.property(Name("hp"));
+  auto speedLookup = asConst.property(Name("speed"));
+  auto propertiesSnapshot = asConst.properties();
+
+  REQUIRE(hpLookup != nullptr);
+  REQUIRE(hpLookup.get() == hpRaw);
+  REQUIRE(hpLookup->type() == &propertyValueType);
+
+  REQUIRE(speedLookup != nullptr);
+  REQUIRE(speedLookup == speedProperty);
+  REQUIRE(speedLookup->type() == &propertyValueType);
+
+  REQUIRE(propertiesSnapshot.size() == 2);
+  REQUIRE(propertiesSnapshot.contains(Name("hp")));
+  REQUIRE(propertiesSnapshot.contains(Name("speed")));
+  REQUIRE(propertiesSnapshot.at(Name("hp")) == hpLookup);
+  REQUIRE(propertiesSnapshot.at(Name("speed")) == speedLookup);
+}
+
+TEST_CASE("Given a RTTIClassType descriptor, when a property is queried by an unknown name, then nullptr is returned",
+          "[rtti][class_type][properties][negative]") {
+  const NamedClassType<NonTrivialStruct> descriptor(Name("property_registry_negative_type"));
+
+  REQUIRE(descriptor.property(Name("missing_property")) == nullptr);
+}
+
+TEST_CASE(
+    "Given a RTTIClassType descriptor, when a property with an existing name is added again, then the latest property "
+    "replaces the previous one",
+    "[rtti][class_type][properties]") {
+  NamedClassType<NonTrivialStruct> descriptor(Name("property_registry_replace_type"));
+  NamedClassType<TrivialStruct> propertyValueType(Name("property_replace_value_type"));
+
+  auto firstProperty = std::make_shared<core::rtti::RTTIProperty>(Name("state"), &propertyValueType);
+  auto replacementProperty = std::make_shared<core::rtti::RTTIProperty>(Name("state"), &propertyValueType);
+
+  descriptor.property(firstProperty);
+  descriptor.property(replacementProperty);
+
+  auto lookup = descriptor.property(Name("state"));
+
+  REQUIRE(lookup != nullptr);
+  REQUIRE(lookup == replacementProperty);
+  REQUIRE(lookup != firstProperty);
+  REQUIRE(descriptor.properties().size() == 1);
+}
+
+TEST_CASE(
+    "Given a RTTIClassType descriptor, when functions are added with both overloads, then they are retrievable by "
+    "name and visible in the functions snapshot",
+    "[rtti][class_type][functions]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  NamedClassType<NonTrivialStruct> descriptor(Name("function_registry_type"));
+
+  using TouchFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::touch)>;
+  auto touch = std::make_shared<TouchFunction>("touch", &FunctionHost::touch);
+  const auto touchRaw = touch.get();
+  descriptor.function(std::move(touch));
+
+  REQUIRE(touch == nullptr);
+
+  using AnswerFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::answer)>;
+  auto answer = std::make_shared<AnswerFunction>("answer", &FunctionHost::answer);
+  descriptor.function(answer);
+
+  const RTTIClassType& asConst = descriptor;
+  auto touchLookup = asConst.function(Name("touch"));
+  auto answerLookup = asConst.function(Name("answer"));
+  auto functionsSnapshot = asConst.functions();
+
+  REQUIRE(touchLookup != nullptr);
+  REQUIRE(touchLookup.get() == touchRaw);
+
+  REQUIRE(answerLookup != nullptr);
+  REQUIRE(answerLookup == answer);
+
+  REQUIRE(functionsSnapshot.size() == 2);
+  REQUIRE(functionsSnapshot.contains(Name("touch")));
+  REQUIRE(functionsSnapshot.contains(Name("answer")));
+  REQUIRE(functionsSnapshot.at(Name("touch")) == touchLookup);
+  REQUIRE(functionsSnapshot.at(Name("answer")) == answerLookup);
+}
+
+TEST_CASE("Given a RTTIClassType descriptor, when a function is queried by an unknown name, then nullptr is returned",
+          "[rtti][class_type][functions][negative]") {
+  const NamedClassType<NonTrivialStruct> descriptor(Name("function_registry_negative_type"));
+
+  REQUIRE(descriptor.function(Name("missing_function")) == nullptr);
+}
+
+TEST_CASE(
+    "Given a RTTIClassType descriptor, when a function with an existing name is added again, then the latest function "
+    "replaces the previous one",
+    "[rtti][class_type][functions]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  NamedClassType<NonTrivialStruct> descriptor(Name("function_registry_replace_type"));
+
+  using FirstFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::touch)>;
+  using ReplacementFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::answer)>;
+
+  auto first = std::make_shared<FirstFunction>("duplicate_name", &FunctionHost::touch);
+  auto replacement = std::make_shared<ReplacementFunction>("duplicate_name", &FunctionHost::answer);
+
+  descriptor.function(first);
+  descriptor.function(replacement);
+
+  auto lookup = descriptor.function(Name("duplicate_name"));
+
+  REQUIRE(lookup != nullptr);
+  REQUIRE(lookup == replacement);
+  REQUIRE(lookup != first);
+  REQUIRE(descriptor.functions().size() == 1);
 }

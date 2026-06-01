@@ -62,7 +62,15 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @return A shared pointer to the @c RTTIProperty object if found, or @c nullptr if no property with the given name
    * exists.
    */
-  std::shared_ptr<RTTIProperty> property(const Name& name) noexcept;
+  [[nodiscard]] std::shared_ptr<RTTIProperty> property(const Name& name) const noexcept;
+
+  /**
+   * @brief Retrieves all properties of the class type descriptor.
+   *
+   * @return An unordered map containing all properties of the class type descriptor, where the keys are property names
+   * represented as @code Name@endcode and the values are shared pointers to the corresponding @c RTTIProperty objects.
+   */
+  [[nodiscard]] std::unordered_map<Name, std::shared_ptr<RTTIProperty>> properties() const noexcept;
 
   /**
    * @brief Adds a member function to the class type descriptor.
@@ -85,7 +93,16 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @return A shared pointer to the @c RTTIClassFunction object if found, or @c nullptr if no member function with the
    * given name exists.
    */
-  std::shared_ptr<RTTIClassFunction> function(const Name& name) noexcept;
+  [[nodiscard]] std::shared_ptr<RTTIClassFunction> function(const Name& name) const noexcept;
+
+  /**
+   * @brief Retrieves all member functions of the class type descriptor.
+   *
+   * @return An unordered map containing all member functions of the class type descriptor, where the keys are function
+   * names represented as @code Name@endcode and the values are shared pointers to the corresponding @c
+   * RTTIClassFunction objects.
+   */
+  [[nodiscard]] std::unordered_map<Name, std::shared_ptr<RTTIClassFunction>> functions() const noexcept;
 
  private:
   /**

@@ -19,10 +19,14 @@ void RTTIClassType::property(const std::shared_ptr<RTTIProperty>& property) noex
   m_properties[property->name()] = property;
 }
 
-std::shared_ptr<RTTIProperty> RTTIClassType::property(const Name& name) noexcept {
+std::shared_ptr<RTTIProperty> RTTIClassType::property(const Name& name) const noexcept {
   std::shared_lock lock(m_propertiesMutex);
   const auto it = m_properties.find(name);
   return it != m_properties.end() ? it->second : nullptr;
+}
+
+std::unordered_map<Name, std::shared_ptr<RTTIProperty>> RTTIClassType::properties() const noexcept {
+  return m_properties;
 }
 
 void RTTIClassType::function(std::shared_ptr<RTTIClassFunction>&& function) noexcept {
@@ -35,9 +39,13 @@ void RTTIClassType::function(const std::shared_ptr<RTTIClassFunction>& function)
   m_functions[function->name()] = function;
 }
 
-std::shared_ptr<RTTIClassFunction> RTTIClassType::function(const Name& name) noexcept {
+std::shared_ptr<RTTIClassFunction> RTTIClassType::function(const Name& name) const noexcept {
   std::shared_lock lock(m_functionsMutex);
   const auto it = m_functions.find(name);
   return it != m_functions.end() ? it->second : nullptr;
+}
+
+std::unordered_map<Name, std::shared_ptr<RTTIClassFunction>> RTTIClassType::functions() const noexcept {
+  return m_functions;
 }
 }  // namespace core::rtti
