@@ -3,8 +3,8 @@
 
 #include "CString.hpp"
 #include "rtti/RTTIClassType.hpp"
+#include "rtti/RTTIName.hpp"
 #include "rtti/RTTIRefType.hpp"
-#include "rtti/RTTITypeName.hpp"
 
 /**
  * @brief A simple class type used as the managed element for RefType tests.
@@ -16,7 +16,7 @@ struct RefTarget {
 };
 
 template <>
-struct core::rtti::TypeName<RefTarget> {
+struct core::rtti::RTTIName<RefTarget> {
   static constexpr CString value{"ref_target"};
 };  // namespace core::rtti
 

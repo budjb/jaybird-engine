@@ -15,7 +15,7 @@ class RTTIGlobalFunction : public RTTIFunction {
    */
   explicit RTTIGlobalFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
       : RTTIFunction(name, flags) {
-    m_flags.isMember = false;
+    m_flags.isStatic = true;
   }
 
   /**
@@ -29,7 +29,7 @@ class RTTIGlobalFunction : public RTTIFunction {
  *
  * @tparam F The free-function pointer type to wrap.
  */
-template <FreeFunction F>
+template <StaticFunction F>
 class RTTIGlobalTFunction : public RTTITFunction<F, RTTIGlobalFunction> {
  public:
   using traits = FunctionTraits<F>;
@@ -43,7 +43,7 @@ class RTTIGlobalTFunction : public RTTITFunction<F, RTTIGlobalFunction> {
    * @param argNames These values provide argument names in declaration order.
    */
   template <typename... ArgNames>
-    requires(FreeFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
+    requires(StaticFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
              (std::convertible_to<ArgNames, std::string_view> && ...))
   explicit RTTIGlobalTFunction(std::string_view name, F function, ArgNames&&... argNames)
       : RTTITFunction<F, RTTIGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}

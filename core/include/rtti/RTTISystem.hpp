@@ -144,7 +144,7 @@ struct TypeResolver {
     static RTTIType* type = nullptr;
 
     if (!initialized) {
-      type = RTTISystem::get().registry().getType(GetTypeName<T>());
+      type = RTTISystem::get().registry().getType(GetRTTIName<T>());
       initialized = true;
     }
 

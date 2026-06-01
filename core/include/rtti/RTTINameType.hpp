@@ -2,9 +2,9 @@
 
 #include "Name.hpp"
 #include "NamePool.hpp"
+#include "rtti/RTTIName.hpp"
 #include "rtti/RTTITType.hpp"
 #include "rtti/RTTIType.hpp"
-#include "rtti/RTTITypeName.hpp"
 
 namespace core::rtti {
 /**
@@ -18,7 +18,7 @@ class RTTINameType : public RTTITType<Name, RTTIType> {
   /**
    * @brief Constructs an @code RTTNameType@endcode descriptor with the canonical @code Name@endcode type name.
    */
-  explicit RTTINameType() noexcept : RTTITType(NamePool::get().addName(GetTypeName<Name>()), RTTITypeKind::NAME) {}
+  explicit RTTINameType() noexcept : RTTITType(NamePool::get().addName(GetRTTIName<Name>()), RTTITypeKind::NAME) {}
 
   /**
    * @brief Destroys the @code RTTNameType@endcode descriptor.

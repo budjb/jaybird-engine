@@ -8,8 +8,8 @@
 #include "Export.hpp"
 #include "Name.hpp"
 #include "RTTIArrayType.hpp"
+#include "RTTIName.hpp"
 #include "RTTIType.hpp"
-#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 /**
@@ -150,7 +150,7 @@ bool RTTIRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
   auto* instance = type.get();
 
   if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
-    if constexpr (NamedType<typename D::Type>) {
+    if constexpr (NamedRTTIType<typename D::Type>) {
       registerTypeImpl(std::make_unique<RTTIArrayTType<typename D::Type>>(instance));
     }
     return true;

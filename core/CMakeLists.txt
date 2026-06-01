@@ -17,7 +17,7 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIFundamentalType.hpp
         src/rtti/RTTIFundamentalType.cpp
         include/rtti/RTTIIterator.hpp
-        include/rtti/RTTITypeName.hpp
+        include/rtti/RTTIName.hpp
         include/Vector.hpp
         include/CString.hpp
         src/rtti/RTTISystem.cpp
@@ -35,7 +35,6 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIStackFrame.hpp
         include/rtti/RTTIFunction.hpp
         include/rtti/RTTIGlobalFunction.hpp
-        include/rtti/RTTIStaticFunction.hpp
         include/rtti/RTTITType.hpp
 )
 
@@ -72,10 +71,9 @@ if (BUILD_TESTING)
           tests/rtti/RTTINameTypeTests.cpp
           tests/rtti/RTTISystemTests.cpp
           tests/rtti/RTTIRegistryTests.cpp
-          tests/rtti/RTTITypeNameTests.cpp
+          tests/rtti/RTTINameTests.cpp
           tests/rtti/RTTIClassFunctionTests.cpp
           tests/rtti/RTTIGlobalFunctionTests.cpp
-          tests/rtti/RTTIStaticFunctionTests.cpp
           tests/rtti/RTTIStackFrameTests.cpp
   )
 

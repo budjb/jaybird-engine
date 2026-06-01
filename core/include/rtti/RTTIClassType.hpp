@@ -1,10 +1,14 @@
 #pragma once
 
+#include <span>
+
 #include "Export.hpp"
 #include "NamePool.hpp"
+#include "RTTIClassFunction.hpp"
+#include "RTTIName.hpp"
+#include "RTTIProperty.hpp"
 #include "RTTITType.hpp"
 #include "RTTIType.hpp"
-#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 /**
@@ -18,7 +22,7 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
   /**
    * @brief Constructs an @c RTTIClassType with the given metadata.
    *
-   * @param name The name of the class type, represented as an Name.
+   * @param name The name of the class type, represented as a @code Name@endcode.
    * @param size The size of the class type in bytes.
    * @param alignment The alignment requirement of the class type in bytes.
    */
@@ -28,6 +32,93 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @brief Virtual destructor for the @c RTTIClassType interface.
    */
   ~RTTIClassType() override = default;
+
+  /**
+   * @brief Adds a property to the class type descriptor.
+   *
+   * @param property A shared pointer to an @c RTTIProperty object representing the property to be added.
+   */
+  void property(std::shared_ptr<RTTIProperty>&& property) noexcept {
+    std::unique_lock lock(m_propertiesMutex);
+    m_properties[property->name()] = std::move(property);
+  }
+
+  /**
+   * @brief Adds a property to the class type descriptor.
+   *
+   * @param property A shared pointer to an @c RTTIProperty object representing the property to be added.
+   */
+  void property(const std::shared_ptr<RTTIProperty>& property) noexcept {
+    std::unique_lock lock(m_propertiesMutex);
+    m_properties[property->name()] = property;
+  }
+
+  /**
+   * @brief Retrieves a property from the class type descriptor by its name.
+   *
+   * @param name The name of the property to retrieve, represented as a @code Name@endcode.
+   * @return A shared pointer to the @c RTTIProperty object if found, or @c nullptr if no property with the given name
+   * exists.
+   */
+  std::shared_ptr<RTTIProperty> property(const Name& name) noexcept {
+    std::shared_lock lock(m_propertiesMutex);
+    const auto it = m_properties.find(name);
+    return it != m_properties.end() ? it->second : nullptr;
+  }
+
+  /**
+   * @brief Adds a member function to the class type descriptor.
+   *
+   * @param function A shared pointer to an @c RTTIClassFunction object representing the member function to be added.
+   */
+  void function(std::shared_ptr<RTTIClassFunction>&& function) noexcept {
+    std::unique_lock lock(m_functionsMutex);
+    m_functions[function->name()] = std::move(function);
+  }
+
+  /**
+   * @brief Adds a member function to the class type descriptor.
+   *
+   * @param function A shared pointer to an @c RTTIClassFunction object representing the member function to be added.
+   */
+  void function(const std::shared_ptr<RTTIClassFunction>& function) noexcept {
+    std::unique_lock lock(m_functionsMutex);
+    m_functions[function->name()] = function;
+  }
+
+  /**
+   * @brief Retrieves a member function from the class type descriptor by its name.
+   *
+   * @param name The name of the member function to retrieve, represented as a @code Name@endcode.
+   * @return A shared pointer to the @c RTTIClassFunction object if found, or @c nullptr if no member function with the
+   * given name exists.
+   */
+  std::shared_ptr<RTTIClassFunction> function(const Name& name) noexcept {
+    std::shared_lock lock(m_functionsMutex);
+    const auto it = m_functions.find(name);
+    return it != m_functions.end() ? it->second : nullptr;
+  }
+
+ private:
+  /**
+   * @brief Mutex to protect concurrent access to the properties of the class type.
+   */
+  mutable std::shared_mutex m_propertiesMutex;
+
+  /**
+   * @brief Mutex to protect concurrent access to the member functions of the class type.
+   */
+  mutable std::shared_mutex m_functionsMutex;
+
+  /**
+   * @brief A vector of @c RTTIProperty objects representing the properties of the class.
+   */
+  std::unordered_map<Name, std::shared_ptr<RTTIProperty>> m_properties;
+
+  /**
+   * @brief A vector of @c RTTIClassFunction objects representing the member functions of the class.
+   */
+  std::unordered_map<Name, std::shared_ptr<RTTIClassFunction>> m_functions;
 };
 
 /**
@@ -47,6 +138,6 @@ class RTTIClassTType : public RTTITType<T, RTTIClassType> {
   /**
    * @brief Constructs a @c TClassType for the specified type @code T@endcode.
    */
-  explicit RTTIClassTType() : RTTITType<T, RTTIClassType>(NamePool::get().addName(GetTypeName<T>())) {}
+  explicit RTTIClassTType() : RTTITType<T, RTTIClassType>(NamePool::get().addName(GetRTTIName<T>())) {}
 };
 }  // namespace core::rtti

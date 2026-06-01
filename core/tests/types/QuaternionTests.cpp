@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 #include "types/Quaternion.hpp"
 
 TEST_CASE("Given a default Quaternion, when constructed, then it is initialized to identity values",
@@ -46,8 +46,8 @@ TEST_CASE("Given two different Quaternion values, when operator!= is used, then 
   REQUIRE(a != c);
 }
 
-TEST_CASE("Given Quaternion type metadata, when GetTypeName is queried, then the registered name is returned",
+TEST_CASE("Given Quaternion type metadata, when GetRTTIName is queried, then the registered name is returned",
           "[types][quaternion][type_name]") {
-  constexpr auto typeName = core::rtti::GetTypeName<core::Quaternion>();
+  constexpr auto typeName = core::rtti::GetRTTIName<core::Quaternion>();
   REQUIRE(static_cast<std::string_view>(typeName) == "Quaternion");
 }

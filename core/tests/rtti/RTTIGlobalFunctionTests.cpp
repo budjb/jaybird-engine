@@ -4,7 +4,7 @@
 #include <string>
 
 #include "rtti/RTTIGlobalFunction.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 
 namespace test {
 std::int32_t globalAnswer() {
@@ -91,7 +91,7 @@ TEST_CASE(
 
   auto function = core::rtti::RTTIGlobalTFunction("globalSum_metadata", &test::globalSum, "lhs", "rhs");
   auto args = function.arguments();
-  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetRTTIName<std::int32_t>());
 
   REQUIRE(args.size() == 2);
   REQUIRE(std::string(args[0]->name()) == "lhs");
@@ -159,7 +159,7 @@ TEST_CASE("Given a global function, when return type is queried, then it corresp
   core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_returntype", &test::globalAnswer);
-  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetTypeName<std::int32_t>());
+  auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetRTTIName<std::int32_t>());
 
   REQUIRE(function.returnType() == intType);
 }
@@ -169,8 +169,8 @@ TEST_CASE("Given a global function, when flags are queried, then isMember is fal
   core::rtti::RTTISystem::get().initialize();
 
   const auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_flags", &test::globalAnswer);
-  auto [isNative, isMember] = function.flags();
+  auto [isNative, isStatic] = function.flags();
 
-  REQUIRE(!isMember);
+  REQUIRE(isStatic);
   REQUIRE(isNative);
 }

@@ -5,7 +5,7 @@
 
 #include "CString.hpp"
 #include "rtti/RTTIClassType.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 
 /**
  * @brief A trivially copyable struct with a single int field.
@@ -44,17 +44,17 @@ struct NonTrivialStruct {
 };
 
 template <>
-struct core::rtti::TypeName<TrivialStruct> {
+struct core::rtti::RTTIName<TrivialStruct> {
   static constexpr CString value{"trivial_struct"};
 };
 
 template <>
-struct core::rtti::TypeName<AlignedStruct> {
+struct core::rtti::RTTIName<AlignedStruct> {
   static constexpr CString value{"aligned_struct"};
 };
 
 template <>
-struct core::rtti::TypeName<NonTrivialStruct> {
+struct core::rtti::RTTIName<NonTrivialStruct> {
   static constexpr CString value{"non_trivial_struct"};
 };
 

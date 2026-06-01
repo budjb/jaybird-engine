@@ -25,10 +25,10 @@ class RTTIStackFrame {
    *
    * @param numArgs The number of arguments in the function's signature.
    * @param hasReturn Whether the function has a non-void return value.
-   * @param isMember Whether the function is a non-static member function that requires a "this" pointer.
+   * @param isStatic Whether the function is a static function that does not require a "this" pointer.
    */
-  explicit RTTIStackFrame(const std::size_t numArgs, const bool hasReturn, const bool isMember) noexcept
-      : m_numArgs(numArgs), m_hasReturn(hasReturn), m_isMember(isMember) {
+  explicit RTTIStackFrame(const std::size_t numArgs, const bool hasReturn, const bool isStatic) noexcept
+      : m_numArgs(numArgs), m_return(hasReturn), m_static(isStatic) {
     m_buffer = operator new(pointerCount() * POINTER_SIZE, ALIGNMENT);
     memset(m_buffer, 0, pointerCount() * POINTER_SIZE);
   }
@@ -55,7 +55,7 @@ class RTTIStackFrame {
    */
   template <typename T = void>
   [[nodiscard]] T* thisPtr() const noexcept {
-    if (!m_isMember) {
+    if (m_static) {
       return nullptr;
     }
     return *static_cast<T**>(m_buffer);
@@ -74,7 +74,7 @@ class RTTIStackFrame {
    */
   template <typename T = void>
   void thisPtr(T* value) noexcept {
-    if (m_isMember) {
+    if (!m_static) {
       *static_cast<void**>(m_buffer) = value;
     }
   }
@@ -99,7 +99,7 @@ class RTTIStackFrame {
 
     auto ptr = reinterpret_cast<uintptr_t>(m_buffer);
 
-    if (m_isMember) {
+    if (!m_static) {
       ptr += POINTER_SIZE;
     }
 
@@ -122,7 +122,7 @@ class RTTIStackFrame {
     if (index < m_numArgs && value != nullptr) {
       auto ptr = reinterpret_cast<uintptr_t>(m_buffer);
 
-      if (m_isMember) {
+      if (!m_static) {
         ptr += POINTER_SIZE;
       }
 
@@ -144,13 +144,13 @@ class RTTIStackFrame {
    */
   template <typename T = void>
   T* returnPtr() const noexcept {
-    if (!m_hasReturn) {
+    if (!m_return) {
       return nullptr;
     }
 
     auto ptr = reinterpret_cast<uintptr_t>(m_buffer);
 
-    if (m_isMember) {
+    if (!m_static) {
       ptr += POINTER_SIZE;
     }
 
@@ -172,10 +172,10 @@ class RTTIStackFrame {
    */
   template <typename T = void>
   void returnPtr(T* value) noexcept {
-    if (m_hasReturn && value != nullptr) {
+    if (m_return && value != nullptr) {
       auto ptr = reinterpret_cast<uintptr_t>(m_buffer);
 
-      if (m_isMember) {
+      if (!m_static) {
         ptr += POINTER_SIZE;
       }
 
@@ -207,7 +207,7 @@ class RTTIStackFrame {
    * @return This function returns the total pointer-slot count required for this frame.
    */
   [[nodiscard]] std::size_t pointerCount() const noexcept {
-    return m_numArgs + (m_hasReturn ? 1 : 0) + (m_isMember ? 1 : 0);
+    return m_numArgs + (m_return ? 1 : 0) + (!m_static ? 1 : 0);
   }
 
   /**
@@ -219,13 +219,13 @@ class RTTIStackFrame {
    * @brief Whether the stack frame includes a slot for a return value pointer, which is true if the function has a
    * non-void return type. This flag determines whether space is allocated in the buffer for a return value pointer.
    */
-  bool m_hasReturn;
+  bool m_return;
 
   /**
    * @brief Whether the stack frame includes a slot for a "this" pointer, which is true if the function is a non-static
    * member function. This flag determines whether space is allocated in the buffer for a "this" pointer.
    */
-  bool m_isMember;
+  bool m_static;
 
   /**
    * @brief A pointer to a contiguous block of memory that serves as the storage for the "this" pointer (if applicable),

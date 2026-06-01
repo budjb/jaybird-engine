@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "Export.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 
 namespace core {
 /**

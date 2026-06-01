@@ -4,7 +4,7 @@
 
 #include "Name.hpp"
 #include "NamePool.hpp"
-#include "RTTIProperty.hpp"
+#include "RTTIArgument.hpp"
 #include "RTTIStackFrame.hpp"
 #include "RTTISystem.hpp"
 
@@ -46,7 +46,7 @@ struct FunctionTraits<Ret (*)(Args...)> {
   /**
    * @brief Whether the function is a non-static member of a class.
    */
-  static constexpr bool isMember = false;
+  static constexpr bool isStatic = true;
 
   /**
    * @brief The number of arguments the function takes.
@@ -96,9 +96,9 @@ struct FunctionTraits<Ret (ClassType::*)(Args...)> {
   using argumentType = std::tuple_element_t<Index, argumentTuple>;
 
   /**
-   * @brief Whether the function is a non-static member of a class.
+   * @brief Whether the function is a static member of a class.
    */
-  static constexpr bool isMember = true;
+  static constexpr bool isStatic = false;
 
   /**
    * @brief The number of arguments the member function takes.
@@ -142,7 +142,7 @@ struct FunctionTraits<Ret (ClassType::*)(Args...) const> {
   /**
    * @brief Whether the function is a non-static member of a class.
    */
-  static constexpr bool isMember = true;
+  static constexpr bool isStatic = false;
 
   /**
    * @brief The number of arguments the const member function takes.
@@ -157,7 +157,7 @@ struct FunctionTraits<Ret (ClassType::*)(Args...) const> {
  * @tparam T The function pointer type to check.
  */
 template <typename T>
-concept MemberFunction = FunctionTraits<T>::isMember;
+concept MemberFunction = !FunctionTraits<T>::isStatic;
 
 /**
  * @brief Concept that accepts non-member function pointer types.
@@ -165,7 +165,7 @@ concept MemberFunction = FunctionTraits<T>::isMember;
  * @tparam T This type is checked against @c FunctionTraits.
  */
 template <typename T>
-concept FreeFunction = !FunctionTraits<T>::isMember;
+concept StaticFunction = FunctionTraits<T>::isStatic;
 
 /**
  * @brief Flags to indicate properties of a function.
@@ -181,7 +181,7 @@ struct FunctionFlags {
    * @brief Whether the function is a non-static member of a class, which requires an object instance to invoke and has
    * special handling for the "this" pointer in the stack frame.
    */
-  bool isMember : 1;
+  bool isStatic : 1;
 };
 
 /**
@@ -201,9 +201,7 @@ class RTTIFunction {
    * @param flags The flags indicating properties of the function, such as whether it is native or a member function.
    */
   explicit RTTIFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : m_name(NamePool::get().addName(name)), m_flags(flags) {
-    m_flags.isMember = false;
-  }
+      : m_name(NamePool::get().addName(name)), m_flags(flags) {}
 
   /**
    * @brief Destroys the reflected function descriptor.
@@ -229,12 +227,12 @@ class RTTIFunction {
   }
 
   /**
-   * @brief Returns the reflected argument properties in declaration order.
+   * @brief Returns the reflected arguments in declaration order.
    *
-   * @return This function returns raw pointers to argument properties in declaration order.
+   * @return This function returns raw pointers to arguments in declaration order.
    */
-  [[nodiscard]] std::vector<const RTTIProperty*> arguments() const noexcept {
-    std::vector<const RTTIProperty*> arguments;
+  [[nodiscard]] std::vector<const RTTIArgument*> arguments() const noexcept {
+    std::vector<const RTTIArgument*> arguments;
     arguments.reserve(m_arguments.size());
 
     for (const auto& arg : m_arguments) {
@@ -253,7 +251,7 @@ class RTTIFunction {
    * @param type The reflected type descriptor for the argument.
    */
   void argument(const std::string_view name, RTTIType* type) noexcept {
-    m_arguments.push_back(std::make_unique<RTTIProperty>(NamePool::get().addName(name), type));
+    m_arguments.push_back(std::make_unique<RTTIArgument>(NamePool::get().addName(name), type));
   }
 
   /**
@@ -282,7 +280,7 @@ class RTTIFunction {
    * @return A new @c StackFrame initialized for invoking this function.
    */
   [[nodiscard]] RTTIStackFrame createStackFrame() const noexcept {
-    return RTTIStackFrame(m_arguments.size(), m_return != nullptr, m_flags.isMember);
+    return RTTIStackFrame(m_arguments.size(), m_return != nullptr, m_flags.isStatic);
   }
 
   /**
@@ -306,10 +304,10 @@ class RTTIFunction {
   FunctionFlags m_flags;
 
   /**
-   * @brief A vector of unique pointers to @c Property objects representing the arguments of the function, including
+   * @brief A vector of unique pointers to @c RTTIArgument objects representing the arguments of the function, including
    * their names and types.
    */
-  std::vector<std::unique_ptr<RTTIProperty>> m_arguments;
+  std::vector<std::unique_ptr<RTTIArgument>> m_arguments;
 
   /**
    * @brief A pointer to the return type of the function, or @c nullptr if the function has no return type.
@@ -363,6 +361,7 @@ class RTTITFunction : public TBase {
   explicit RTTITFunction(const std::string_view name, F function, ArgNames&&... argNames)
       : TBase(name), m_function(function) {
     this->m_flags.isNative = true;
+    this->m_flags.isStatic = traits::isStatic;
 
     if constexpr (!std::is_void_v<typename traits::returnType>) {
       if (this->m_return = TypeResolver<typename traits::returnType>::get(); !this->m_return) {
@@ -411,7 +410,7 @@ class RTTITFunction : public TBase {
    * @brief Registers one reflected argument type for this native member function.
    *
    * This helper resolves the argument name and type descriptor, then stores a
-   * matching @c Property in @c m_arguments.
+   * matching @c RTTIArgument in @code m_arguments@endcode.
    *
    * @tparam Index The compile-time index of the argument to register.
    * @param functionName The name of the function.
@@ -447,7 +446,20 @@ class RTTITFunction : public TBase {
    */
   template <std::size_t... Indices>
   void invoke(RTTIStackFrame& frame, std::index_sequence<Indices...>) {
-    if constexpr (traits::isMember) {
+    if constexpr (traits::isStatic) {
+      if constexpr (std::is_void_v<typename traits::returnType>) {
+        std::invoke(m_function, *getArg<typename traits::template argumentType<Indices>>(frame, Indices)...);
+      } else {
+        auto* returnPtr = frame.returnPtr<typename traits::returnType>();
+
+        if (!returnPtr) {
+          throw std::runtime_error("Invalid return pointer for function invocation.");
+        }
+
+        *returnPtr =
+            std::invoke(m_function, *getArg<typename traits::template argumentType<Indices>>(frame, Indices)...);
+      }
+    } else {
       typename traits::classType* obj = frame.thisPtr<typename traits::classType>();
 
       if (!obj) {
@@ -465,19 +477,6 @@ class RTTITFunction : public TBase {
 
         *returnPtr =
             std::invoke(m_function, obj, *getArg<typename traits::template argumentType<Indices>>(frame, Indices)...);
-      }
-    } else {
-      if constexpr (std::is_void_v<typename traits::returnType>) {
-        std::invoke(m_function, *getArg<typename traits::template argumentType<Indices>>(frame, Indices)...);
-      } else {
-        auto* returnPtr = frame.returnPtr<typename traits::returnType>();
-
-        if (!returnPtr) {
-          throw std::runtime_error("Invalid return pointer for function invocation.");
-        }
-
-        *returnPtr =
-            std::invoke(m_function, *getArg<typename traits::template argumentType<Indices>>(frame, Indices)...);
       }
     }
   }

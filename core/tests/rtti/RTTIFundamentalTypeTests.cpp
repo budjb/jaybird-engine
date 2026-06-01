@@ -5,7 +5,7 @@
 
 #include "CString.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 
 namespace {
 using core::Name;
@@ -75,7 +75,7 @@ TEMPLATE_TEST_CASE(
   REQUIRE(asType.kind() == RTTITypeKind::FUNDAMENTAL);
   REQUIRE(asType.size() == sizeof(TestType));
   REQUIRE(asType.alignment() == alignof(TestType));
-  REQUIRE(asType.name() == core::rtti::GetTypeName<TestType>());
+  REQUIRE(asType.name() == core::rtti::GetRTTIName<TestType>());
 }
 
 TEMPLATE_TEST_CASE(

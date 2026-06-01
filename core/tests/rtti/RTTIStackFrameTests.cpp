@@ -14,7 +14,7 @@ TEST_CASE(
     "Given a stack frame for a member function with arguments and return, when all pointers are stored and "
     "retrieved, then each slot preserves the exact pointer value",
     "[rtti][stack_frame]") {
-  core::rtti::RTTIStackFrame frame(2, true, true);
+  core::rtti::RTTIStackFrame frame(2, true, false);
 
   test::Sample instance{42};
   std::int32_t lhs = 3;
@@ -119,7 +119,7 @@ TEST_CASE(
     "the expected offsets",
     "[rtti][stack_frame]") {
   // Frame: [this][arg0][arg1][return]
-  core::rtti::RTTIStackFrame frame(2, true, true);
+  core::rtti::RTTIStackFrame frame(2, true, false);
 
   test::Sample obj{123};
   std::int32_t arg0 = 1;

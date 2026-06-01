@@ -4,8 +4,8 @@
 #include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
 #include "RTTIIterator.hpp"
+#include "RTTIName.hpp"
 #include "RTTITType.hpp"
-#include "RTTITypeName.hpp"
 #include "Vector.hpp"
 
 namespace core::rtti {
@@ -372,7 +372,7 @@ class RTTIArrayTType : public RTTITType<Vector<T>, RTTIArrayType> {
   template <typename InnerType>
     requires is_same_element_v<InnerType, T>
   explicit RTTIArrayTType(const InnerType* inner)
-      : RTTITType<Vector<T>, RTTIArrayType>(NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::ARRAY, T>()),
+      : RTTITType<Vector<T>, RTTIArrayType>(NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::ARRAY, T>()),
                                             static_cast<const RTTIType*>(inner)) {}
 
   /**

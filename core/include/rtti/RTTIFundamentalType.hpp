@@ -2,9 +2,9 @@
 
 #include "Export.hpp"
 #include "NamePool.hpp"
+#include "RTTIName.hpp"
 #include "RTTITType.hpp"
 #include "RTTIType.hpp"
-#include "RTTITypeName.hpp"
 
 namespace core::rtti {
 
@@ -56,6 +56,6 @@ class RTTIFundamentalTType : public RTTITType<T, RTTIFundamentalType> {
    * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
    * for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
    */
-  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(NamePool::get().addName(GetTypeName<T>())) {}
+  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(NamePool::get().addName(GetRTTIName<T>())) {}
 };
 }  // namespace core::rtti

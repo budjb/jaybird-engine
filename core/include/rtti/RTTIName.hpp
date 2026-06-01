@@ -154,7 +154,7 @@ using CanonicalType = detail::CanonicalTypeNameType<T>::type;
  * @return The prefix @c CString for the given @c RTTITypeKind, or an empty @c CString if none is defined.
  */
 template <RTTITypeKind>
-constexpr auto GetTypePrefix() {
+constexpr auto GetRTTIPrefix() {
   return CString("");
 }
 
@@ -164,7 +164,7 @@ constexpr auto GetTypePrefix() {
  * @return The string @c "array:" used as a prefix for array type names.
  */
 template <>
-constexpr auto GetTypePrefix<RTTITypeKind::ARRAY>() {
+constexpr auto GetRTTIPrefix<RTTITypeKind::ARRAY>() {
   return CString("array:");
 }
 
@@ -174,7 +174,7 @@ constexpr auto GetTypePrefix<RTTITypeKind::ARRAY>() {
  * @return The string @c "ref:" used as a prefix for reference type names.
  */
 template <>
-constexpr auto GetTypePrefix<RTTITypeKind::REF>() {
+constexpr auto GetRTTIPrefix<RTTITypeKind::REF>() {
   return CString("ref:");
 }
 
@@ -184,7 +184,7 @@ constexpr auto GetTypePrefix<RTTITypeKind::REF>() {
  * @return The string @c "wref:" used as a prefix for weak reference type names.
  */
 template <>
-constexpr auto GetTypePrefix<RTTITypeKind::WEAK_REF>() {
+constexpr auto GetRTTIPrefix<RTTITypeKind::WEAK_REF>() {
   return CString("wref:");
 }
 
@@ -197,7 +197,7 @@ constexpr auto GetTypePrefix<RTTITypeKind::WEAK_REF>() {
  * @tparam T The type for which to declare a name mapping.
  */
 template <typename T>
-struct TypeName;
+struct RTTIName;
 
 /**
  * @brief Variable template that is @c true when @c T exposes a static @c NAME member convertible to a @c CString or
@@ -220,7 +220,7 @@ constexpr bool has_type_name_member_v = requires {
  */
 template <typename T>
 constexpr bool has_type_name_mapping_v = requires {
-  { TypeName<CanonicalType<T>>::value } -> CStringConvertible;
+  { RTTIName<CanonicalType<T>>::value } -> CStringConvertible;
 };
 
 /**
@@ -230,7 +230,7 @@ constexpr bool has_type_name_mapping_v = requires {
  * @tparam T The type to check for an available type name.
  */
 template <typename T>
-concept NamedType = has_type_name_member_v<T> || has_type_name_mapping_v<T>;
+concept NamedRTTIType = has_type_name_member_v<T> || has_type_name_mapping_v<T>;
 
 /**
  * @brief Retrieves the type name for @c T as a compile-time @code CString@endcode.
@@ -242,14 +242,14 @@ concept NamedType = has_type_name_member_v<T> || has_type_name_mapping_v<T>;
  * @tparam T The type whose name is to be retrieved. It must satisfy @code NamedType@endcode.
  * @return The type name as a @code CString@endcode.
  */
-template <NamedType T>
-constexpr auto GetTypeName() noexcept {
+template <NamedRTTIType T>
+constexpr auto GetRTTIName() noexcept {
   using Type = CanonicalType<T>;
 
   if constexpr (has_type_name_member_v<Type>) {
     return CString(Type::NAME);
   } else if constexpr (has_type_name_mapping_v<Type>) {
-    return CString(TypeName<Type>::value);
+    return CString(RTTIName<Type>::value);
   }
 }
 
@@ -265,9 +265,9 @@ constexpr auto GetTypeName() noexcept {
  * @tparam T The element type for which to produce the prefixed name. It must satisfy @code NamedType@endcode.
  * @return A @c CString containing the prefixed type name.
  */
-template <RTTITypeKind K, NamedType T>
-[[nodiscard]] constexpr auto GetPrefixedTypeName() {
-  return GetTypePrefix<K>() + GetTypeName<T>();
+template <RTTITypeKind K, NamedRTTIType T>
+[[nodiscard]] constexpr auto GetPrefixedRTTIName() {
+  return GetRTTIPrefix<K>() + GetRTTIName<T>();
 }
 
 /**
@@ -278,8 +278,8 @@ template <RTTITypeKind K, NamedType T>
  * @return A @c std::string containing the concatenated prefix and base name.
  */
 template <RTTITypeKind K>
-[[nodiscard]] std::string GetPrefixedTypeName(const std::string_view name) {
-  return GetTypePrefix<K>().append(name);
+[[nodiscard]] std::string GetPrefixedRTTIName(const std::string_view name) {
+  return GetRTTIPrefix<K>().append(name);
 }
 
 /**
@@ -301,7 +301,7 @@ concept VectorType = requires { typename std::remove_cvref_t<C>::value_type; } &
  * @tparam C The type to check.
  */
 template <typename C>
-concept NamedVectorType = VectorType<C> && NamedType<typename std::remove_cvref_t<C>::value_type>;
+concept NamedVectorType = VectorType<C> && NamedRTTIType<typename std::remove_cvref_t<C>::value_type>;
 
 /**
  * @brief Returns the canonical type name for a @c Vector whose element type satisfies @code NamedType@endcode.
@@ -313,8 +313,8 @@ concept NamedVectorType = VectorType<C> && NamedType<typename std::remove_cvref_
  * @return A @c CString containing the prefixed array type name.
  */
 template <NamedVectorType C>
-constexpr auto GetTypeName() {
-  return GetPrefixedTypeName<RTTITypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
+constexpr auto GetRTTIName() {
+  return GetPrefixedRTTIName<RTTITypeKind::ARRAY, typename std::remove_cvref_t<C>::value_type>();
 }
 
 }  // namespace core::rtti
@@ -327,7 +327,7 @@ constexpr auto GetTypeName() {
  */
 #define REGISTER_TYPE_PREFIX(_kind, _prefix)          \
   template <>                                         \
-  constexpr auto core::rtti::GetTypePrefix<_kind>() { \
+  constexpr auto core::rtti::GetRTTIPrefix<_kind>() { \
     return core::CString(_prefix);                    \
   }
 
@@ -339,7 +339,7 @@ constexpr auto GetTypeName() {
  */
 #define REGISTER_TYPE_NAME(_type, _name)         \
   template <>                                    \
-  struct core::rtti::TypeName<_type> {           \
+  struct core::rtti::RTTIName<_type> {           \
     static constexpr core::CString value{_name}; \
   }
 

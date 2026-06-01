@@ -3,7 +3,7 @@
 
 #include "CString.hpp"
 #include "rtti/RTTIClassType.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 #include "rtti/RTTIWeakRefType.hpp"
 
 /**
@@ -17,7 +17,7 @@ struct WeakTarget {
 };
 
 template <>
-struct core::rtti::TypeName<WeakTarget> {
+struct core::rtti::RTTIName<WeakTarget> {
   static constexpr CString value{"weak_target"};
 };  // namespace core::rtti
 

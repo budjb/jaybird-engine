@@ -25,9 +25,7 @@ class RTTIClassFunction : public RTTIFunction {
    * @param flags The flags indicating properties of the function.
    */
   explicit RTTIClassFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : RTTIFunction(name, flags) {
-    m_flags.isMember = true;
-  }
+      : RTTIFunction(name, flags) {}
 
   /**
    * @brief Virtual destructor for @c RTTIClassFunction, allowing for proper cleanup of derived classes.
@@ -41,7 +39,7 @@ class RTTIClassFunction : public RTTIFunction {
  *
  * @tparam F The type of the member function pointer to wrap.
  */
-template <MemberFunction F>
+template <typename F>
 class RTTIClassTFunction : public RTTITFunction<F, RTTIClassFunction> {
  public:
   /**

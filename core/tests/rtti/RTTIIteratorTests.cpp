@@ -4,7 +4,7 @@
 #include "rtti/RTTIArrayType.hpp"
 #include "rtti/RTTIFundamentalType.hpp"
 #include "rtti/RTTIIterator.hpp"
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 
 using core::Vector;
 

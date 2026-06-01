@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 #include "types/Color.hpp"
 
 TEST_CASE("Given a default Color, when constructed, then all channels are initialized to zero",
@@ -45,8 +45,8 @@ TEST_CASE("Given two different Color values, when operator!= is used, then it re
   REQUIRE(a != c);
 }
 
-TEST_CASE("Given Color type metadata, when GetTypeName is queried, then the registered name is returned",
+TEST_CASE("Given Color type metadata, when GetRTTIName is queried, then the registered name is returned",
           "[types][color][type_name]") {
-  constexpr auto typeName = core::rtti::GetTypeName<core::Color>();
+  constexpr auto typeName = core::rtti::GetRTTIName<core::Color>();
   REQUIRE(static_cast<std::string_view>(typeName) == "Color");
 }

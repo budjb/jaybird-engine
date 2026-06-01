@@ -4,7 +4,7 @@
 
 #include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
-#include "RTTITypeName.hpp"
+#include "RTTIName.hpp"
 
 namespace core::rtti {
 
@@ -97,7 +97,7 @@ class RTTIRefType : public RTTIContainerType {
 /**
  * @brief Concrete RTTI descriptor for @c std::shared_ptr<T> reference types.
  *
- * It implements @c IRefType over @c std::shared_ptr<T> and derives its type name from @c GetPrefixedTypeName,
+ * It implements @c IRefType over @c std::shared_ptr<T> and derives its type name from @c GetPrefixedRTTIName,
  * producing a name such as @c "ref:MyType". The inner type descriptor must satisfy
  * @c TypedInnerDescriptorFor<InnerType, T>.
  *
@@ -114,7 +114,7 @@ class RTTIRefTType : public RTTITType<std::shared_ptr<T>, RTTIRefType> {
   /**
    * @brief Constructs a @c TRefType with the given inner type descriptor.
    *
-   * The type name is automatically derived from @c GetPrefixedTypeName with @c RTTITypeKind::REF,
+   * The type name is automatically derived from @c GetPrefixedRTTIName with @c RTTITypeKind::REF,
    * producing a name such as @c "ref:MyType".
    *
    * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
@@ -186,6 +186,6 @@ template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
 RTTIRefTType<T>::RTTIRefTType(const InnerType* inner)
-    : RTTITType<std::shared_ptr<T>, RTTIRefType>(NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::REF, T>()),
+    : RTTITType<std::shared_ptr<T>, RTTIRefType>(NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::REF, T>()),
                                                  static_cast<const RTTIType*>(inner)) {}
 }  // namespace core::rtti

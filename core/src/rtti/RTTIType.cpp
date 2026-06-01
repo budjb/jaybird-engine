@@ -1,9 +1,9 @@
 #include "rtti/RTTIType.hpp"
 
 #include "rtti/RTTIArrayType.hpp"
+#include "rtti/RTTIName.hpp"
 #include "rtti/RTTIRegistry.hpp"
 #include "rtti/RTTISystem.hpp"
-#include "rtti/RTTITypeName.hpp"
 
 namespace core::rtti {
 RTTIType::RTTIType(const Name& name, const std::size_t size, const RTTITypeKind kind) noexcept
@@ -38,7 +38,7 @@ void RTTIType::parent(RTTIType* parent) noexcept {
 }
 
 RTTIArrayType* RTTIType::asArray() const noexcept {
-  if (auto* type = RTTISystem::get().registry().getType(GetPrefixedTypeName<RTTITypeKind::ARRAY>(m_name));
+  if (auto* type = RTTISystem::get().registry().getType(GetPrefixedRTTIName<RTTITypeKind::ARRAY>(m_name));
       type && type->kind() == RTTITypeKind::ARRAY) {
     return reinterpret_cast<RTTIArrayType*>(type);
   }

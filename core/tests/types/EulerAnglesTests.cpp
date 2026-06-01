@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
 
-#include "rtti/RTTITypeName.hpp"
+#include "rtti/RTTIName.hpp"
 #include "types/EulerAngles.hpp"
 
 TEST_CASE("Given default EulerAngles, when constructed, then all angle components are zero",
@@ -45,8 +45,8 @@ TEST_CASE("Given two different EulerAngles values, when operator!= is used, then
   REQUIRE(a != c);
 }
 
-TEST_CASE("Given EulerAngles type metadata, when GetTypeName is queried, then the registered name is returned",
+TEST_CASE("Given EulerAngles type metadata, when GetRTTIName is queried, then the registered name is returned",
           "[types][euler_angles][type_name]") {
-  constexpr auto typeName = core::rtti::GetTypeName<core::EulerAngles>();
+  constexpr auto typeName = core::rtti::GetRTTIName<core::EulerAngles>();
   REQUIRE(static_cast<std::string_view>(typeName) == "EulerAngles");
 }

@@ -31,15 +31,15 @@ bool RTTIRegistry::unregisterType(const Name& name) {
   const auto* type = it->second.get();
 
   if (type->kind() != RTTITypeKind::ARRAY) {
-    unregisterType(GetPrefixedTypeName<RTTITypeKind::ARRAY>(name));
+    unregisterType(GetPrefixedRTTIName<RTTITypeKind::ARRAY>(name));
   }
 
   if (type->kind() != RTTITypeKind::REF) {
-    unregisterType(GetPrefixedTypeName<RTTITypeKind::REF>(name));
+    unregisterType(GetPrefixedRTTIName<RTTITypeKind::REF>(name));
   }
 
   if (type->kind() != RTTITypeKind::WEAK_REF) {
-    unregisterType(GetPrefixedTypeName<RTTITypeKind::WEAK_REF>(name));
+    unregisterType(GetPrefixedRTTIName<RTTITypeKind::WEAK_REF>(name));
   }
 
   m_types.erase(it);

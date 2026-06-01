@@ -3,7 +3,7 @@
 
 #include "NamePool.hpp"
 #include "RTTIContainerType.hpp"
-#include "RTTITypeName.hpp"
+#include "RTTIName.hpp"
 
 namespace core::rtti {
 
@@ -84,7 +84,7 @@ class RTTIWeakRefType : public RTTIContainerType {
  * @brief Concrete RTTI descriptor for @c std::weak_ptr<T> weak reference types.
  *
  * It implements @c IWeakRefType over @c std::weak_ptr<T> and derives its type name from
- * @c GetPrefixedTypeName with @c RTTITypeKind::WEAK_REF, producing a name such as @c "wref:MyType".
+ * @c GetPrefixedRTTIName with @c RTTITypeKind::WEAK_REF, producing a name such as @c "wref:MyType".
  * The inner type descriptor must satisfy @c TypedInnerDescriptorFor<InnerType, T>.
  *
  * Because @c std::weak_ptr<T> does not define @c operator==, this class provides its own
@@ -104,7 +104,7 @@ class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
   /**
    * @brief Constructs a @c TWeakRefType with the given inner type descriptor.
    *
-   * The type name is automatically derived from @c GetPrefixedTypeName with @c RTTITypeKind::WEAK_REF,
+   * The type name is automatically derived from @c GetPrefixedRTTIName with @c RTTITypeKind::WEAK_REF,
    * producing a name such as @c "wref:MyType".
    *
    * @tparam I The concrete inner type descriptor, which must satisfy  @code is_same_element_v<I, T>@endcode.
@@ -199,7 +199,7 @@ template <typename InnerType>
   requires is_same_element_v<InnerType, T>
 RTTIWeakRefTType<T>::RTTIWeakRefTType(const InnerType* inner) noexcept
     : RTTITType<std::weak_ptr<T>, RTTIWeakRefType>(
-          NamePool::get().addName(GetPrefixedTypeName<RTTITypeKind::WEAK_REF, T>()),
+          NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::WEAK_REF, T>()),
           static_cast<const RTTIType*>(inner)) {}
 
 template <typename T>
