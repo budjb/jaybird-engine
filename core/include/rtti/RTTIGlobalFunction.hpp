@@ -30,7 +30,7 @@ class RTTIGlobalFunction : public RTTIFunction {
  * @tparam F The free-function pointer type to wrap.
  */
 template <StaticFunction F>
-class RTTIGlobalTFunction : public RTTITFunction<F, RTTIGlobalFunction> {
+class TypedRTTIGlobalFunction : public TypedRTTIFunction<F, RTTIGlobalFunction> {
  public:
   using traits = FunctionTraits<F>;
 
@@ -45,7 +45,7 @@ class RTTIGlobalTFunction : public RTTITFunction<F, RTTIGlobalFunction> {
   template <typename... ArgNames>
     requires(StaticFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
              (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit RTTIGlobalTFunction(std::string_view name, F function, ArgNames&&... argNames)
-      : RTTITFunction<F, RTTIGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  explicit TypedRTTIGlobalFunction(std::string_view name, F function, ArgNames&&... argNames)
+      : TypedRTTIFunction<F, RTTIGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
 };
 }  // namespace core::rtti

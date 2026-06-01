@@ -23,12 +23,12 @@ struct core::rtti::RTTINameProvider<WeakTarget> {
 
 namespace {
 using core::Name;
-using core::rtti::RTTIClassTType;
 using core::rtti::RTTIContainerType;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
-using core::rtti::RTTIWeakRefTType;
 using core::rtti::RTTIWeakRefType;
+using core::rtti::TypedRTTIClassType;
+using core::rtti::TypedRTTIWeakRefType;
 }  // namespace
 
 // =============================================================================
@@ -36,48 +36,49 @@ using core::rtti::RTTIWeakRefType;
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when kind is queried through RTTIType, then it returns "
+    "Given a TypedRTTIWeakRefType descriptor, when kind is queried through RTTIType, then it returns "
     "RTTITypeKind::WEAK_REF",
     "[rtti][weak_ref_type][metadata]") {
-  const RTTIClassTType<WeakTarget> inner;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(static_cast<RTTIType&>(descriptor).kind() == RTTITypeKind::WEAK_REF);
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when size is queried through RTTIType, then it equals sizeof std::weak_ptr",
+    "Given a TypedRTTIWeakRefType descriptor, when size is queried through RTTIType, then it equals sizeof "
+    "std::weak_ptr",
     "[rtti][weak_ref_type][metadata]") {
-  const RTTIClassTType<WeakTarget> inner;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(static_cast<RTTIType&>(descriptor).size() == sizeof(std::weak_ptr<WeakTarget>));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when alignment is queried through RTTIType, then it equals alignof "
+    "Given a TypedRTTIWeakRefType descriptor, when alignment is queried through RTTIType, then it equals alignof "
     "std::weak_ptr",
     "[rtti][weak_ref_type][metadata]") {
-  const RTTIClassTType<WeakTarget> inner;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(static_cast<RTTIType&>(descriptor).alignment() == alignof(std::weak_ptr<WeakTarget>));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when name is queried, then it is the inner type name prefixed with wref:",
+    "Given a TypedRTTIWeakRefType descriptor, when name is queried, then it is the inner type name prefixed with wref:",
     "[rtti][weak_ref_type][metadata]") {
-  const RTTIClassTType<WeakTarget> inner;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(static_cast<RTTIType&>(descriptor).name() == Name("wref:weak_target"));
   REQUIRE(static_cast<RTTIType&>(descriptor).name().toString() == "wref:weak_target");
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when asArray is called through RTTIType, then it returns nullptr",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when asArray is called through RTTIType, then it returns nullptr",
           "[rtti][weak_ref_type][metadata]") {
-  const RTTIClassTType<WeakTarget> inner;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(static_cast<RTTIType&>(descriptor).asArray() == nullptr);
 }
@@ -87,11 +88,11 @@ TEST_CASE("Given a RTTIWeakRefTType descriptor, when asArray is called through R
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when cast to RTTIWeakRefType, RTTIContainerType, and RTTIType, then all "
+    "Given a TypedRTTIWeakRefType descriptor, when cast to RTTIWeakRefType, RTTIContainerType, and RTTIType, then all "
     "casts are non-null",
     "[rtti][weak_ref_type][hierarchy]") {
-  const RTTIClassTType<WeakTarget> inter;
-  RTTIWeakRefTType<WeakTarget> descriptor(&inter);
+  const TypedRTTIClassType<WeakTarget> inter;
+  TypedRTTIWeakRefType<WeakTarget> descriptor(&inter);
 
   REQUIRE(static_cast<RTTIWeakRefType*>(&descriptor) != nullptr);
   REQUIRE(static_cast<RTTIContainerType*>(&descriptor) != nullptr);
@@ -103,11 +104,11 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when inner is queried, then it returns a pointer equal to the inner "
+    "Given a TypedRTTIWeakRefType descriptor, when inner is queried, then it returns a pointer equal to the inner "
     "descriptor",
     "[rtti][weak_ref_type][inner]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(descriptor.inner() == static_cast<const RTTIType*>(&inner));
 }
@@ -117,11 +118,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and valid source and destination weak_ptrs, when assign is called, then the "
+    "Given a TypedRTTIWeakRefType descriptor and valid source and destination weak_ptrs, when assign is called, then "
+    "the "
     "destination refers to the same managed object as the source",
     "[rtti][weak_ref_type][operations][assign]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{42});
   const std::weak_ptr source{shared};
@@ -132,10 +134,10 @@ TEST_CASE(
   REQUIRE(destination.lock().get() == source.lock().get());
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor and a null destination, when assign is called, then it is a no-op",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor and a null destination, when assign is called, then it is a no-op",
           "[rtti][weak_ref_type][operations][assign][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{7});
   const std::weak_ptr source{shared};
@@ -146,11 +148,12 @@ TEST_CASE("Given a RTTIWeakRefTType descriptor and a null destination, when assi
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a valid source weak_ptr, when assign is called, then the strong use count "
+    "Given a TypedRTTIWeakRefType descriptor and a valid source weak_ptr, when assign is called, then the strong use "
+    "count "
     "of the managed object is unchanged",
     "[rtti][weak_ref_type][operations][assign]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{99});
   const std::weak_ptr source{shared};
@@ -166,11 +169,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and two weak_ptrs from the same shared_ptr, when equals is called, then it "
+    "Given a TypedRTTIWeakRefType descriptor and two weak_ptrs from the same shared_ptr, when equals is called, then "
+    "it "
     "returns true",
     "[rtti][weak_ref_type][operations][equals]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{1});
   const std::weak_ptr a{shared};
@@ -180,11 +184,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and two weak_ptrs from distinct shared_ptrs, when equals is called, then it "
+    "Given a TypedRTTIWeakRefType descriptor and two weak_ptrs from distinct shared_ptrs, when equals is called, then "
+    "it "
     "returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto sa = std::make_shared<WeakTarget>(WeakTarget{1});
   const auto sb = std::make_shared<WeakTarget>(WeakTarget{1});
@@ -195,11 +200,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and two default-constructed (expired) weak_ptrs, when equals is called, then "
+    "Given a TypedRTTIWeakRefType descriptor and two default-constructed (expired) weak_ptrs, when equals is called, "
+    "then "
     "it returns true",
     "[rtti][weak_ref_type][operations][equals]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const std::weak_ptr<WeakTarget> a;
   const std::weak_ptr<WeakTarget> b;
@@ -208,21 +214,23 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when equals is called with both void pointer arguments null, then it returns "
+    "Given a TypedRTTIWeakRefType descriptor, when equals is called with both void pointer arguments null, then it "
+    "returns "
     "true",
     "[rtti][weak_ref_type][operations][equals]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(descriptor.equals(nullptr, nullptr));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a valid weak_ptr, when equals is called with a null left void pointer, "
+    "Given a TypedRTTIWeakRefType descriptor and a valid weak_ptr, when equals is called with a null left void "
+    "pointer, "
     "then it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>();
   const std::weak_ptr a{shared};
@@ -231,11 +239,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a valid weak_ptr, when equals is called with a null right void pointer, "
+    "Given a TypedRTTIWeakRefType descriptor and a valid weak_ptr, when equals is called with a null right void "
+    "pointer, "
     "then it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>();
   const std::weak_ptr a{shared};
@@ -244,11 +253,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, an expired weak_ptr, and a non-expired weak_ptr, when equals is called, then "
+    "Given a TypedRTTIWeakRefType descriptor, an expired weak_ptr, and a non-expired weak_ptr, when equals is called, "
+    "then "
     "it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{5});
   const std::weak_ptr live{shared};
@@ -262,11 +272,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when allocate is called, then the returned pointer is non-null and correctly "
+    "Given a TypedRTTIWeakRefType descriptor, when allocate is called, then the returned pointer is non-null and "
+    "correctly "
     "aligned for std::weak_ptr",
     "[rtti][weak_ref_type][operations][allocate]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
   REQUIRE(mem != nullptr);
@@ -276,11 +287,11 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and memory obtained from allocate, when deallocate is called, then it "
+    "Given a TypedRTTIWeakRefType descriptor and memory obtained from allocate, when deallocate is called, then it "
     "completes without error",
     "[rtti][weak_ref_type][operations][allocate]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
   REQUIRE_NOTHROW(descriptor.deallocate(mem));
@@ -291,11 +302,11 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and pre-allocated storage, when construct is called, then the resulting "
+    "Given a TypedRTTIWeakRefType descriptor and pre-allocated storage, when construct is called, then the resulting "
     "weak_ptr is expired",
     "[rtti][weak_ref_type][operations][construct]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
   descriptor.construct(mem);
@@ -306,20 +317,20 @@ TEST_CASE(
   descriptor.deallocate(mem);
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when construct is called with nullptr, then it is a safe no-op",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when construct is called with nullptr, then it is a safe no-op",
           "[rtti][weak_ref_type][operations][construct][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.construct(nullptr));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and allocated and constructed storage, when destruct is called, then it "
+    "Given a TypedRTTIWeakRefType descriptor and allocated and constructed storage, when destruct is called, then it "
     "completes without error",
     "[rtti][weak_ref_type][operations][destruct]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* mem = descriptor.allocate();
   descriptor.construct(mem);
@@ -332,11 +343,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when create is called, then the returned pointer is non-null and points to "
+    "Given a TypedRTTIWeakRefType descriptor, when create is called, then the returned pointer is non-null and points "
+    "to "
     "an expired weak_ptr",
     "[rtti][weak_ref_type][operations][create]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
   REQUIRE(instance != nullptr);
@@ -346,20 +358,20 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and an instance obtained from create, when destroy is called, then it "
+    "Given a TypedRTTIWeakRefType descriptor and an instance obtained from create, when destroy is called, then it "
     "completes without error",
     "[rtti][weak_ref_type][operations][destroy]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
   REQUIRE_NOTHROW(descriptor.destroy(instance));
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when destroy is called with nullptr, then it is a safe no-op",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when destroy is called with nullptr, then it is a safe no-op",
           "[rtti][weak_ref_type][operations][destroy][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.destroy(nullptr));
 }
@@ -369,11 +381,12 @@ TEST_CASE("Given a RTTIWeakRefTType descriptor, when destroy is called with null
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a weak_ptr assigned from a shared_ptr, when the shared_ptr is destroyed, "
+    "Given a TypedRTTIWeakRefType descriptor and a weak_ptr assigned from a shared_ptr, when the shared_ptr is "
+    "destroyed, "
     "then the weak_ptr becomes expired",
     "[rtti][weak_ref_type][weak_semantics]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   void* instance = descriptor.create();
   const auto* slot = static_cast<std::weak_ptr<WeakTarget>*>(instance);
@@ -392,11 +405,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a weak_ptr copied via assign, when the original shared_ptr still exists, "
+    "Given a TypedRTTIWeakRefType descriptor and a weak_ptr copied via assign, when the original shared_ptr still "
+    "exists, "
     "then both weak_ptrs lock to the same object and the strong use count remains one",
     "[rtti][weak_ref_type][weak_semantics]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{77});
   const std::weak_ptr source{shared};
@@ -418,11 +432,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a non-expired weak_ptr, when reset is called, then the weak_ptr becomes "
+    "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when reset is called, then the weak_ptr "
+    "becomes "
     "expired",
     "[rtti][weak_ref_type][operations][reset]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{5});
   std::weak_ptr weak{shared};
@@ -433,20 +448,20 @@ TEST_CASE(
   REQUIRE(weak.expired());
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when reset is called with a null instance, then it is a safe no-op",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when reset is called with a null instance, then it is a safe no-op",
           "[rtti][weak_ref_type][operations][reset][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.reset(nullptr));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and an already-expired weak_ptr, when reset is called, then it remains "
+    "Given a TypedRTTIWeakRefType descriptor and an already-expired weak_ptr, when reset is called, then it remains "
     "expired",
     "[rtti][weak_ref_type][operations][reset]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   std::weak_ptr<WeakTarget> expired;
   descriptor.reset(&expired);
@@ -455,11 +470,11 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a non-expired weak_ptr, when reset is called, then the original "
+    "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when reset is called, then the original "
     "shared_ptr use count is unchanged",
     "[rtti][weak_ref_type][operations][reset]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>(WeakTarget{7});
   std::weak_ptr weak{shared};
@@ -475,11 +490,11 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and two non-expired weak_ptrs from different shared_ptrs, when swap is "
+    "Given a TypedRTTIWeakRefType descriptor and two non-expired weak_ptrs from different shared_ptrs, when swap is "
     "called, then their managed object references are exchanged",
     "[rtti][weak_ref_type][operations][swap]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto a_shared = std::make_shared<WeakTarget>(WeakTarget{1});
   const auto b_shared = std::make_shared<WeakTarget>(WeakTarget{2});
@@ -493,10 +508,10 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and two expired weak_ptrs, when swap is called, then both remain expired",
+    "Given a TypedRTTIWeakRefType descriptor and two expired weak_ptrs, when swap is called, then both remain expired",
     "[rtti][weak_ref_type][operations][swap]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   std::weak_ptr<WeakTarget> a;
   std::weak_ptr<WeakTarget> b;
@@ -506,10 +521,10 @@ TEST_CASE(
   REQUIRE(b.expired());
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when swap is called with a null lhs, then rhs is unchanged",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when swap is called with a null lhs, then rhs is unchanged",
           "[rtti][weak_ref_type][operations][swap][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto b_shared = std::make_shared<WeakTarget>(WeakTarget{7});
   std::weak_ptr b{b_shared};
@@ -520,10 +535,10 @@ TEST_CASE("Given a RTTIWeakRefTType descriptor, when swap is called with a null 
   REQUIRE(b.lock().get() == rawB);
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when swap is called with a null rhs, then lhs is unchanged",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when swap is called with a null rhs, then lhs is unchanged",
           "[rtti][weak_ref_type][operations][swap][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto a_shared = std::make_shared<WeakTarget>(WeakTarget{8});
   std::weak_ptr a{a_shared};
@@ -535,11 +550,12 @@ TEST_CASE("Given a RTTIWeakRefTType descriptor, when swap is called with a null 
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when swap is called with both lhs and rhs null, then it completes without "
+    "Given a TypedRTTIWeakRefType descriptor, when swap is called with both lhs and rhs null, then it completes "
+    "without "
     "error",
     "[rtti][weak_ref_type][operations][swap][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE_NOTHROW(descriptor.swap(nullptr, nullptr));
 }
@@ -549,10 +565,10 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a non-expired weak_ptr, when expired is called, then it returns false",
+    "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when expired is called, then it returns false",
     "[rtti][weak_ref_type][operations][expired]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>();
   const std::weak_ptr weak{shared};
@@ -561,11 +577,11 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and its shared_ptr owner exiting scope, when expired is called on the "
+    "Given a TypedRTTIWeakRefType descriptor and its shared_ptr owner exiting scope, when expired is called on the "
     "weak_ptr, then it returns true",
     "[rtti][weak_ref_type][operations][expired]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   std::weak_ptr<WeakTarget> weak;
   {
@@ -576,20 +592,21 @@ TEST_CASE(
   REQUIRE(descriptor.expired(&weak));
 }
 
-TEST_CASE("Given a RTTIWeakRefTType descriptor, when expired is called with a null instance, then it returns true",
+TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when expired is called with a null instance, then it returns true",
           "[rtti][weak_ref_type][operations][expired][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   REQUIRE(descriptor.expired(nullptr));
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a default-constructed (never-assigned) weak_ptr, when expired is called, "
+    "Given a TypedRTTIWeakRefType descriptor and a default-constructed (never-assigned) weak_ptr, when expired is "
+    "called, "
     "then it returns true",
     "[rtti][weak_ref_type][operations][expired]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const std::weak_ptr<WeakTarget> unassigned;
   REQUIRE(descriptor.expired(&unassigned));
@@ -600,11 +617,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a non-expired weak_ptr, when lock is called, then the output shared_ptr "
+    "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when lock is called, then the output "
+    "shared_ptr "
     "manages the same object",
     "[rtti][weak_ref_type][operations][lock]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto original = std::make_shared<WeakTarget>(WeakTarget{42});
   const std::weak_ptr weak{original};
@@ -616,11 +634,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and an expired weak_ptr, when lock is called, then the output shared_ptr is "
+    "Given a TypedRTTIWeakRefType descriptor and an expired weak_ptr, when lock is called, then the output shared_ptr "
+    "is "
     "empty",
     "[rtti][weak_ref_type][operations][lock]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const std::weak_ptr<WeakTarget> expired;
   std::shared_ptr<WeakTarget> locked;
@@ -631,11 +650,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when lock is called with a null weak_ptr, then the output shared_ptr remains "
+    "Given a TypedRTTIWeakRefType descriptor, when lock is called with a null weak_ptr, then the output shared_ptr "
+    "remains "
     "unchanged",
     "[rtti][weak_ref_type][operations][lock][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   auto original = std::make_shared<WeakTarget>(WeakTarget{7});
   std::shared_ptr<WeakTarget> locked = original;
@@ -646,11 +666,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor, when lock is called with a null output shared_ptr, then it completes without "
+    "Given a TypedRTTIWeakRefType descriptor, when lock is called with a null output shared_ptr, then it completes "
+    "without "
     "error",
     "[rtti][weak_ref_type][operations][lock][negative]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto shared = std::make_shared<WeakTarget>();
   const std::weak_ptr weak{shared};
@@ -659,11 +680,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIWeakRefTType descriptor and a non-expired weak_ptr, when lock is called, then the output shared_ptr "
+    "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when lock is called, then the output "
+    "shared_ptr "
     "increments the use count",
     "[rtti][weak_ref_type][operations][lock]") {
-  const RTTIClassTType<WeakTarget> inner;
-  const RTTIWeakRefTType<WeakTarget> descriptor(&inner);
+  const TypedRTTIClassType<WeakTarget> inner;
+  const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
 
   const auto original = std::make_shared<WeakTarget>(WeakTarget{99});
   REQUIRE(original.use_count() == 1);

@@ -35,7 +35,6 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIStackFrame.hpp
         include/rtti/RTTIFunction.hpp
         include/rtti/RTTIGlobalFunction.hpp
-        include/rtti/RTTITType.hpp
         include/rtti/RTTIStringType.hpp
 )
 

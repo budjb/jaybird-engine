@@ -2,7 +2,6 @@
 
 #include "NamePool.hpp"
 #include "rtti/RTTIName.hpp"
-#include "rtti/RTTITType.hpp"
 #include "rtti/RTTIType.hpp"
 #include "types/Name.hpp"
 
@@ -13,12 +12,12 @@ namespace core::rtti {
  * This descriptor models @code Name@endcode as a named value-type descriptor with kind
  * @code RTTITypeKind::NAME@endcode.
  */
-class RTTINameType : public RTTITType<Name, RTTIType> {
+class RTTINameType : public TypedRTTIType<Name, RTTIType> {
  public:
   /**
    * @brief Constructs an @code RTTNameType@endcode descriptor with the canonical @code Name@endcode type name.
    */
-  explicit RTTINameType() noexcept : RTTITType(NamePool::get().addName(GetRTTIName<Name>()), RTTITypeKind::NAME) {}
+  explicit RTTINameType() noexcept : TypedRTTIType(NamePool::get().addName(GetRTTIName<Name>()), RTTITypeKind::NAME) {}
 
   /**
    * @brief Destroys the @code RTTNameType@endcode descriptor.

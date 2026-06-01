@@ -94,7 +94,7 @@ class RTTIWeakRefType : public RTTIContainerType {
  * @tparam T The element type referenced by the @c std::weak_ptr this descriptor represents.
  */
 template <typename T>
-class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
+class TypedRTTIWeakRefType : public TypedRTTIType<std::weak_ptr<T>, RTTIWeakRefType> {
  public:
   /**
    * @brief Type alias for the underlying @c std::weak_ptr type described by this descriptor.
@@ -112,7 +112,7 @@ class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
    */
   template <typename I>
     requires is_same_element_v<I, T>
-  explicit RTTIWeakRefTType(const I* inner) noexcept;
+  explicit TypedRTTIWeakRefType(const I* inner) noexcept;
 
   /**
    * @brief Compares two @c std::weak_ptr instances for equality by locking both and comparing
@@ -121,7 +121,7 @@ class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
    * Two expired weak pointers are considered equal (both lock to @c nullptr). Two non-expired
    * weak pointers are equal only if they refer to the same managed object. A null @c void* argument
    * is distinct from an expired weak pointer: if either argument is @c nullptr, the comparison
-   * follows the same null-pointer semantics as @code RTTITType@endcode.
+   * follows the same null-pointer semantics as @code TypedRTTIType@endcode.
    *
    * @param lhs A pointer to the left-hand @c std::weak_ptr instance, or @c nullptr.
    * @param rhs A pointer to the right-hand @c std::weak_ptr instance, or @c nullptr.
@@ -197,13 +197,13 @@ class RTTIWeakRefTType : public RTTITType<std::weak_ptr<T>, RTTIWeakRefType> {
 template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
-RTTIWeakRefTType<T>::RTTIWeakRefTType(const InnerType* inner) noexcept
-    : RTTITType<std::weak_ptr<T>, RTTIWeakRefType>(
+TypedRTTIWeakRefType<T>::TypedRTTIWeakRefType(const InnerType* inner) noexcept
+    : TypedRTTIType<std::weak_ptr<T>, RTTIWeakRefType>(
           NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::WEAK_REF, T>()),
           static_cast<const RTTIType*>(inner)) {}
 
 template <typename T>
-bool RTTIWeakRefTType<T>::equals(const void* lhs, const void* rhs) const noexcept {
+bool TypedRTTIWeakRefType<T>::equals(const void* lhs, const void* rhs) const noexcept {
   if (lhs == nullptr || rhs == nullptr) {
     return lhs == rhs;
   }

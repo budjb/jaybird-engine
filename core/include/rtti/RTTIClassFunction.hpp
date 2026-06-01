@@ -40,7 +40,7 @@ class RTTIClassFunction : public RTTIFunction {
  * @tparam F The type of the member function pointer to wrap.
  */
 template <typename F>
-class RTTIClassTFunction : public RTTITFunction<F, RTTIClassFunction> {
+class TypedRTTIClassFunction : public TypedRTTIFunction<F, RTTIClassFunction> {
  public:
   /**
    * @brief Traits extracted from the member function pointer type @c F, including the class type, return type, argument
@@ -49,7 +49,7 @@ class RTTIClassTFunction : public RTTITFunction<F, RTTIClassFunction> {
   using traits = FunctionTraits<F>;
 
   /**
-   * @brief Constructs a @c RTTIClassTFunction by wrapping the given member function pointer and registering its
+   * @brief Constructs a @c TypedRTTIClassFunction by wrapping the given member function pointer and registering its
    * argument types and return type.
    *
    * @tparam ArgNames The types of the argument names, which must be convertible to @c std::string_view and match the
@@ -65,7 +65,7 @@ class RTTIClassTFunction : public RTTITFunction<F, RTTIClassFunction> {
    */
   template <typename... ArgNames>
     requires(sizeof...(ArgNames) == traits::numArgs && (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit RTTIClassTFunction(const std::string_view name, F function, ArgNames&&... argNames)
-      : RTTITFunction<F, RTTIClassFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  explicit TypedRTTIClassFunction(const std::string_view name, F function, ArgNames&&... argNames)
+      : TypedRTTIFunction<F, RTTIClassFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
 };
 }  // namespace core::rtti

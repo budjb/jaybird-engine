@@ -51,20 +51,20 @@ RTTISystem::RTTISystem() noexcept {
 }
 
 void RTTISystem::registerBuiltInTypes() noexcept {
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<int8_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<int32_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<int64_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<uint8_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<uint32_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<uint64_t>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<float>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<double>>());
-  m_registry.registerType(std::make_unique<RTTIFundamentalTType<bool>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<int8_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<int32_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<int64_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<uint8_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<uint32_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<uint64_t>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<float>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<double>>());
+  m_registry.registerType(std::make_unique<TypedRTTIFundamentalType<bool>>());
 
   m_registry.registerType(std::make_unique<RTTINameType>());
   m_registry.registerType(std::make_unique<RTTIStringType>());
-  m_registry.registerType(std::make_unique<RTTIClassTType<Quaternion>>());
-  m_registry.registerType(std::make_unique<RTTIClassTType<EulerAngles>>());
-  m_registry.registerType(std::make_unique<RTTIClassTType<Color>>());
+  m_registry.registerType(std::make_unique<TypedRTTIClassType<Quaternion>>());
+  m_registry.registerType(std::make_unique<TypedRTTIClassType<EulerAngles>>());
+  m_registry.registerType(std::make_unique<TypedRTTIClassType<Color>>());
 }
 }  // namespace core::rtti

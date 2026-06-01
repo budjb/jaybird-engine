@@ -81,12 +81,12 @@ class JAYBIRD_API RTTIRegistry {
 
   /**
    * @brief Registers a type descriptor and, when applicable, automatically registers its corresponding
-   * @c RTTIArrayTType<D::Type> as well.
+   * @c TypedRTTIArrayType<D::Type> as well.
    *
    * On success, the registry takes ownership of the descriptor. If a type with the same name is already registered,
    * the descriptor is discarded and @c false is returned — existing entries are never overwritten. When the element
-   * type @c D::Type satisfies the @c HasTypeName concept, an @c RTTIArrayTType<D::Type> is also registered under the
-   * canonical @c "array:<typename>" name. The entire operation (including the companion array registration) is
+   * type @c D::Type satisfies the @c HasTypeName concept, an @c TypedRTTIArrayType<D::Type> is also registered under
+   * the canonical @c "array:<typename>" name. The entire operation (including the companion array registration) is
    * performed under a single exclusive lock, so it is atomic with respect to other registry operations.
    *
    * @tparam D The concrete descriptor type, which must satisfy the @c TypeDescriptor concept.
@@ -122,8 +122,8 @@ class JAYBIRD_API RTTIRegistry {
    * @brief Inserts a type descriptor into the map without acquiring the mutex.
    *
    * This is the lock-free core of registration, called from @c registerType while the exclusive lock is already held.
-   * It also handles compile-time-conditional auto-registration of the companion @c RTTIArrayTType<D::Type>: the
-   * companion is only created when @c D::Type satisfies @c HasTypeName (so that @c RTTIArrayTType can derive its
+   * It also handles compile-time-conditional auto-registration of the companion @c TypedRTTIArrayType<D::Type>: the
+   * companion is only created when @c D::Type satisfies @c HasTypeName (so that @c TypedRTTIArrayType can derive its
    * canonical name at compile time). When that condition is false, no companion is created and no runtime recursion
    * occurs. This design avoids both deadlock on the non-recursive @c std::shared_mutex and spurious compiler
    * instantiation errors.
@@ -173,14 +173,14 @@ bool RTTIRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
 
       if constexpr (!is_container_type_v<D> && NamedRTTIType<NativeType>) {
         if (instance->kind() == RTTITypeKind::CLASS) {
-          auto refType = std::make_unique<RTTIRefTType<NativeType>>(instance);
+          auto refType = std::make_unique<TypedRTTIRefType<NativeType>>(instance);
           auto* refDescriptor = refType.get();
 
           registerTypeImpl(std::move(refType));
-          registerTypeImpl(std::make_unique<RTTIWeakRefTType<NativeType>>(instance));
-          registerTypeImpl(std::make_unique<RTTIArrayTType<std::shared_ptr<NativeType>>>(refDescriptor));
+          registerTypeImpl(std::make_unique<TypedRTTIWeakRefType<NativeType>>(instance));
+          registerTypeImpl(std::make_unique<TypedRTTIArrayType<std::shared_ptr<NativeType>>>(refDescriptor));
         } else {
-          registerTypeImpl(std::make_unique<RTTIArrayTType<NativeType>>(instance));
+          registerTypeImpl(std::make_unique<TypedRTTIArrayType<NativeType>>(instance));
         }
       }
     } else {

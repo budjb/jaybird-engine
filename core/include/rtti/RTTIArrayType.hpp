@@ -5,7 +5,7 @@
 #include "RTTIContainerType.hpp"
 #include "RTTIIterator.hpp"
 #include "RTTIName.hpp"
-#include "RTTITType.hpp"
+#include "RTTIType.hpp"
 #include "Vector.hpp"
 
 namespace core::rtti {
@@ -343,23 +343,24 @@ class JAYBIRD_API RTTIArrayType : public RTTIContainerType {
 /**
  * @brief A template class representing an array type descriptor in the RTTI system. This class provides methods for
  * accessing and manipulating array elements, as well as querying array properties such as length and capacity. The
- * RTTIArrayTType class is designed to work with @c Vector as the underlying container for the array elements, and it
- * requires that the inner type descriptor provided to its constructor is compatible with the element type of the array.
+ * TypedRTTIArrayType class is designed to work with @c Vector as the underlying container for the array elements, and
+ * it requires that the inner type descriptor provided to its constructor is compatible with the element type of the
+ * array.
  *
  * @tparam T The type of the elements in the array. This type must be compatible with the inner type descriptor provided
  * to the constructor, as enforced by the TypedInnerDescriptorFor concept.
  */
 template <typename T>
-class RTTIArrayTType : public RTTITType<Vector<T>, RTTIArrayType> {
+class TypedRTTIArrayType : public TypedRTTIType<Vector<T>, RTTIArrayType> {
  public:
   /**
    * @brief Defines a type alias for the underlying array type, which is @c Vector<T>. This allows users of
-   * @c RTTIArrayTType to refer to the underlying array type using @code RTTIArrayTType<T>::Type@endcode.
+   * @c TypedRTTIArrayType to refer to the underlying array type using @code TypedRTTIArrayType<T>::Type@endcode.
    */
   using Type = Vector<T>;
 
   /**
-   * @brief Constructs an RTTIArrayTType with the given name and inner type descriptor. The size and alignment are
+   * @brief Constructs an TypedRTTIArrayType with the given name and inner type descriptor. The size and alignment are
    * automatically determined based on the underlying array type, and the kind is set to @code
    * RTTITypeKind::ARRAY@endcode. The inner type descriptor must be compatible with the element type T, as enforced by
    * the TypedInnerDescriptorFor concept.
@@ -371,9 +372,9 @@ class RTTIArrayTType : public RTTITType<Vector<T>, RTTIArrayType> {
    */
   template <typename InnerType>
     requires is_same_element_v<InnerType, T>
-  explicit RTTIArrayTType(const InnerType* inner)
-      : RTTITType<Vector<T>, RTTIArrayType>(NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::ARRAY, T>()),
-                                            static_cast<const RTTIType*>(inner)) {}
+  explicit TypedRTTIArrayType(const InnerType* inner)
+      : TypedRTTIType<Vector<T>, RTTIArrayType>(NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::ARRAY, T>()),
+                                                static_cast<const RTTIType*>(inner)) {}
 
   /**
    * @brief Returns the number of elements currently stored in the array pointed to by the parameter. The behavior is

@@ -6,7 +6,7 @@
 namespace core::rtti {
 /**
  * @brief Concept that constrains inner type descriptors used with container types such as
- * @code RTTIArrayTType@endcode.
+ * @code TypedRTTIArrayType@endcode.
  *
  * It is satisfied when @c T1 derives from @c RTTIType and defines a nested @c Type alias that matches
  * @c T2 exactly. This ensures at compile time that the inner descriptor is compatible with the

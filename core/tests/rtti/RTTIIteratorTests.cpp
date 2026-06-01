@@ -11,22 +11,22 @@ using core::Vector;
 namespace {
 using core::Name;
 using core::rtti::ReverseIterator;
-using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;
-using core::rtti::RTTIFundamentalTType;
 using core::rtti::RTTIIterator;
+using core::rtti::TypedRTTIArrayType;
+using core::rtti::TypedRTTIFundamentalType;
 
 /**
  * @brief Returns a cached int array type descriptor for testing.
  *
- * The returned @code RTTIArrayTType<int>@endcode instance uses @code RTTIFundamentalTType<int>@endcode
+ * The returned @code TypedRTTIArrayType<int>@endcode instance uses @code TypedRTTIFundamentalType<int>@endcode
  * as its element type. The same instance is reused across all test calls; it should not be deleted.
  *
  * @return A pointer to the cached @code RTTIArrayType@endcode for int arrays.
  */
 RTTIArrayType* createIntArrayType() {
-  static RTTIFundamentalTType<int> intType;
-  static RTTIArrayTType<int> arrayType(&intType);
+  static TypedRTTIFundamentalType<int> intType;
+  static TypedRTTIArrayType<int> arrayType(&intType);
   return &arrayType;
 }
 

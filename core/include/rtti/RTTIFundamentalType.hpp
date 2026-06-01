@@ -3,7 +3,6 @@
 #include "Export.hpp"
 #include "NamePool.hpp"
 #include "RTTIName.hpp"
-#include "RTTITType.hpp"
 #include "RTTIType.hpp"
 
 namespace core::rtti {
@@ -12,7 +11,7 @@ namespace core::rtti {
  * @brief Polymorphic interface for fundamental type descriptors in the RTTI system.
  *
  * Concrete fundamental-type descriptors derive from this interface, while shared implementation lives in @code
- * RTTITType@endcode.
+ * TypedRTTIType@endcode.
  */
 class JAYBIRD_API RTTIFundamentalType : public RTTIType {
  public:
@@ -43,7 +42,7 @@ class JAYBIRD_API RTTIFundamentalType : public RTTIType {
  */
 template <typename T>
   requires(std::is_fundamental_v<T> && !std::is_void_v<T> && !std::is_pointer_v<T>)
-class RTTIFundamentalTType : public RTTITType<T, RTTIFundamentalType> {
+class TypedRTTIFundamentalType : public TypedRTTIType<T, RTTIFundamentalType> {
  public:
   /**
    * @brief Defines a type alias for the underlying type @code T@endcode.
@@ -56,6 +55,7 @@ class RTTIFundamentalTType : public RTTITType<T, RTTIFundamentalType> {
    * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
    * for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
    */
-  RTTIFundamentalTType() noexcept : RTTITType<T, RTTIFundamentalType>(NamePool::get().addName(GetRTTIName<T>())) {}
+  TypedRTTIFundamentalType() noexcept
+      : TypedRTTIType<T, RTTIFundamentalType>(NamePool::get().addName(GetRTTIName<T>())) {}
 };
 }  // namespace core::rtti

@@ -12,7 +12,7 @@
 /**
  * @brief A trivially copyable struct with a single int field.
  *
- * This struct exercises the fast @c memcpy path inside @code RTTITType::assign@endcode and
+ * This struct exercises the fast @c memcpy path inside @code TypedRTTIType::assign@endcode and
  * serves as the simplest possible class type for RTTI descriptor tests.
  */
 struct TrivialStruct {
@@ -26,7 +26,7 @@ struct TrivialStruct {
 /**
  * @brief A struct with an over-alignment requirement of 16 bytes.
  *
- * This struct verifies that @code RTTITType::allocate@endcode and @code RTTITType::deallocate@endcode
+ * This struct verifies that @code TypedRTTIType::allocate@endcode and @code TypedRTTIType::deallocate@endcode
  * use the alignment-aware operator @c new / @c delete when the type requires non-default alignment.
  */
 struct AlignedStruct {
@@ -40,7 +40,7 @@ struct AlignedStruct {
 /**
  * @brief A non-trivially copyable struct that wraps a @code std::string@endcode.
  *
- * This struct exercises the copy-assignment path inside @code RTTITType::assign@endcode (bypassing
+ * This struct exercises the copy-assignment path inside @code TypedRTTIType::assign@endcode (bypassing
  * @c memcpy) and validates that @code construct@endcode and @code destruct@endcode correctly
  * initialize and tear down the contained string.
  */
@@ -78,14 +78,14 @@ struct core::rtti::RTTINameProvider<NonTrivialStruct> {
 
 namespace {
 using core::Name;
-using core::rtti::RTTIClassTType;
 using core::rtti::RTTIClassType;
-using core::rtti::RTTITType;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
+using core::rtti::TypedRTTIClassType;
+using core::rtti::TypedRTTIType;
 
 /**
- * @brief A concrete helper subtype that wires @code RTTITType<T, RTTIClassType>@endcode to a caller-supplied name.
+ * @brief A concrete helper subtype that wires @code TypedRTTIType<T, RTTIClassType>@endcode to a caller-supplied name.
  *
  * This mirrors the @c NamedFundamentalType helper used in @code FundamentalTypeTests@endcode and
  * lets each test choose an isolated name to avoid cross-test collisions.
@@ -93,14 +93,14 @@ using core::rtti::RTTITypeKind;
  * @tparam T The underlying class type described by this helper.
  */
 template <typename T>
-class NamedClassType final : public RTTITType<T, RTTIClassType> {
+class NamedClassType final : public TypedRTTIType<T, RTTIClassType> {
  public:
   /**
    * @brief Constructs a @code NamedClassType@endcode with the given name.
    *
    * @param name The name to assign to this type descriptor.
    */
-  explicit NamedClassType(const Name& name) : RTTITType<T, RTTIClassType>(name) {}
+  explicit NamedClassType(const Name& name) : TypedRTTIType<T, RTTIClassType>(name) {}
 };
 
 /**
@@ -180,14 +180,15 @@ TEMPLATE_TEST_CASE(
 }
 
 // ============================================================================
-// RTTIClassTType metadata tests
+// TypedRTTIClassType metadata tests
 // ============================================================================
 
 TEMPLATE_TEST_CASE(
-    "Given a RTTIClassTType descriptor, when observed through RTTIClassType and RTTIType, then metadata reflects the "
+    "Given a TypedRTTIClassType descriptor, when observed through RTTIClassType and RTTIType, then metadata reflects "
+    "the "
     "canonical mapped type name and trivial-kind classification",
     "[rtti][class_type][tclass_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  RTTIClassTType<TestType> descriptor;
+  TypedRTTIClassType<TestType> descriptor;
   RTTIClassType* asClass = &descriptor;
   const RTTIType& asType = *asClass;
 
@@ -402,10 +403,11 @@ TEMPLATE_TEST_CASE(
 // ============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType over a non-trivial type, when assign is called, then copy semantics apply and the source "
+    "Given a TypedRTTIClassType over a non-trivial type, when assign is called, then copy semantics apply and the "
+    "source "
     "is not mutated",
     "[rtti][class_type][operations][assign][non_trivial]") {
-  RTTIClassTType<NonTrivialStruct> descriptor;
+  TypedRTTIClassType<NonTrivialStruct> descriptor;
   const RTTIType& type = descriptor;
 
   auto source = NonTrivialStruct{"original"};
@@ -418,10 +420,10 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIClassTType over a non-trivial type, when create is called then destroy is called, then the object "
+    "Given a TypedRTTIClassType over a non-trivial type, when create is called then destroy is called, then the object "
     "lifetime is managed correctly without leaking resources",
     "[rtti][class_type][operations][create][destroy][non_trivial]") {
-  RTTIClassTType<NonTrivialStruct> descriptor;
+  TypedRTTIClassType<NonTrivialStruct> descriptor;
   const RTTIType& type = descriptor;
 
   void* created = type.create();
@@ -440,10 +442,11 @@ TEST_CASE(
 // ============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType over an over-aligned type, when allocate is called, then returned address satisfies the "
+    "Given a TypedRTTIClassType over an over-aligned type, when allocate is called, then returned address satisfies "
+    "the "
     "required alignment",
     "[rtti][class_type][operations][allocate][aligned]") {
-  RTTIClassTType<AlignedStruct> descriptor;
+  TypedRTTIClassType<AlignedStruct> descriptor;
   const RTTIType& type = descriptor;
 
   void* allocated = type.allocate();
@@ -455,14 +458,15 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given RTTIClassTType descriptors for std::string and core::Vector<int>, when metadata is queried, then both are "
+    "Given TypedRTTIClassType descriptors for std::string and core::Vector<int>, when metadata is queried, then both "
+    "are "
     "classified as non-trivial class kinds",
     "[rtti][class_type][tclass_type][metadata][built_in_like]") {
   REQUIRE_FALSE(std::is_trivially_copyable_v<std::string>);
   REQUIRE_FALSE(std::is_trivially_copyable_v<core::Vector<int>>);
 
-  const RTTIClassTType<std::string> stringDescriptor;
-  const RTTIClassTType<core::Vector<int>> vectorDescriptor;
+  const TypedRTTIClassType<std::string> stringDescriptor;
+  const TypedRTTIClassType<core::Vector<int>> vectorDescriptor;
 
   REQUIRE(stringDescriptor.kind() == RTTITypeKind::CLASS);
   REQUIRE(vectorDescriptor.kind() == RTTITypeKind::CLASS);
@@ -544,14 +548,14 @@ TEST_CASE(
 
   NamedClassType<NonTrivialStruct> descriptor(Name("function_registry_type"));
 
-  using TouchFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::touch)>;
+  using TouchFunction = core::rtti::TypedRTTIClassFunction<decltype(&FunctionHost::touch)>;
   auto touch = std::make_shared<TouchFunction>("touch", &FunctionHost::touch);
   const auto touchRaw = touch.get();
   descriptor.function(std::move(touch));
 
   REQUIRE(touch == nullptr);
 
-  using AnswerFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::answer)>;
+  using AnswerFunction = core::rtti::TypedRTTIClassFunction<decltype(&FunctionHost::answer)>;
   auto answer = std::make_shared<AnswerFunction>("answer", &FunctionHost::answer);
   descriptor.function(answer);
 
@@ -588,8 +592,8 @@ TEST_CASE(
 
   NamedClassType<NonTrivialStruct> descriptor(Name("function_registry_replace_type"));
 
-  using FirstFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::touch)>;
-  using ReplacementFunction = core::rtti::RTTIClassTFunction<decltype(&FunctionHost::answer)>;
+  using FirstFunction = core::rtti::TypedRTTIClassFunction<decltype(&FunctionHost::touch)>;
+  using ReplacementFunction = core::rtti::TypedRTTIClassFunction<decltype(&FunctionHost::answer)>;
 
   auto first = std::make_shared<FirstFunction>("duplicate_name", &FunctionHost::touch);
   auto replacement = std::make_shared<ReplacementFunction>("duplicate_name", &FunctionHost::answer);

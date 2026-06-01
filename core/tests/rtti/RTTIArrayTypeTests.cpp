@@ -35,11 +35,11 @@ REGISTER_TYPE_NAME(NonTrivialElement, "non_trivial_element");
 
 namespace {
 using core::Name;
-using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;
-using core::rtti::RTTIClassTType;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
+using core::rtti::TypedRTTIArrayType;
+using core::rtti::TypedRTTIClassType;
 
 /**
  * @brief Returns a first sample value for the test element type.
@@ -103,12 +103,12 @@ const char* arrayTypeName() {
 }  // namespace
 
 TEMPLATE_TEST_CASE(
-    "Given an RTTIArrayTType descriptor, when observed through RTTIArrayType and RTTIType, then metadata and inner "
+    "Given an TypedRTTIArrayType descriptor, when observed through RTTIArrayType and RTTIType, then metadata and inner "
     "type are "
     "correct",
     "[rtti][array_type][metadata]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   RTTIArrayType* asArray = &descriptor;
   RTTIType* asType = &descriptor;
@@ -127,8 +127,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor, when length capacity and maxLength are queried, then values are returned for null and "
     "live vectors",
     "[rtti][array_type][queries]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
 
@@ -145,8 +145,8 @@ TEMPLATE_TEST_CASE(
     "Given a non-empty array descriptor, when at front and back are queried, then mutable and const access return "
     "expected elements",
     "[rtti][array_type][element_access]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
   const auto& constValues = values;
@@ -170,8 +170,8 @@ TEMPLATE_TEST_CASE(
 TEMPLATE_TEST_CASE(
     "Given an array descriptor, when null pointers are passed to element accessors, then nullptr is returned",
     "[rtti][array_type][element_access][negative]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   REQUIRE(descriptor.at(nullptr, 0) == nullptr);
   REQUIRE(descriptor.front(nullptr) == nullptr);
@@ -180,8 +180,8 @@ TEMPLATE_TEST_CASE(
 
 TEMPLATE_TEST_CASE("Given an array descriptor, when at is called with an out-of-range index, then nullptr is returned",
                    "[rtti][array_type][element_access][negative][bounds]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values{valueA<TestType>()};
 
@@ -193,8 +193,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor and a populated vector, when begin and end are used, then the full element range is "
     "traversable",
     "[rtti][array_type][iterators]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values{valueA<TestType>(), valueB<TestType>(), valueC<TestType>()};
 
@@ -218,8 +218,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor, when begin and end are requested with a null array pointer, then both iterators are "
     "equal",
     "[rtti][array_type][iterators][negative]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   REQUIRE(descriptor.begin(nullptr) == descriptor.end(nullptr));
   REQUIRE(descriptor.rbegin(nullptr) == descriptor.rend(nullptr));
@@ -229,8 +229,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor, when pushBack insert erase remove replace and popBack are called, then the vector "
     "contents update correctly",
     "[rtti][array_type][modifiers]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values;
 
@@ -267,8 +267,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor, when null arrays or null values are passed to mutating operations, then the operations "
     "are safe no-ops",
     "[rtti][array_type][modifiers][negative]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values{valueA<TestType>(), valueB<TestType>()};
   const auto before = values;
@@ -297,8 +297,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor, when reserve resize shrinkToFit and clear are used, then capacity and length evolve "
     "consistently",
     "[rtti][array_type][capacity]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   Vector<TestType> values;
 
@@ -326,8 +326,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor viewed through RTTIType, when assign and equals are called, then array values compare "
     "and copy correctly including null combinations",
     "[rtti][array_type][rttitype][assign_equals]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   RTTIType& asType = descriptor;
   const RTTIType& constType = descriptor;
@@ -353,8 +353,8 @@ TEMPLATE_TEST_CASE(
     "Given an array descriptor viewed through RTTIType, when allocate construct destruct create and destroy are "
     "called, then full lifetime operations succeed",
     "[rtti][array_type][rttitype][lifecycle]", TrivialElement, NonTrivialElement) {
-  RTTIClassTType<TestType> inner;
-  RTTIArrayTType<TestType> descriptor(&inner);
+  TypedRTTIClassType<TestType> inner;
+  TypedRTTIArrayType<TestType> descriptor(&inner);
 
   RTTIType& asType = descriptor;
 

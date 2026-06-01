@@ -31,9 +31,9 @@ void globalTakesUnregisteredArg(const UnregisteredArg) {}
 
 REGISTER_TYPE_NAME(test::UnregisteredArg, "GlobalFunctionTests.UnregisteredArg");
 
-static_assert(requires { core::rtti::RTTIGlobalTFunction("ok", &test::globalSum, "lhs", "rhs"); });
-static_assert(!std::is_constructible_v<core::rtti::RTTIGlobalTFunction<decltype(&test::globalSum)>, const core::Name&,
-                                       decltype(&test::globalSum), const char*>);
+static_assert(requires { core::rtti::TypedRTTIGlobalFunction("ok", &test::globalSum, "lhs", "rhs"); });
+static_assert(!std::is_constructible_v<core::rtti::TypedRTTIGlobalFunction<decltype(&test::globalSum)>,
+                                       const core::Name&, decltype(&test::globalSum), const char*>);
 
 TEST_CASE(
     "Given a global function with no return and no arguments, when invoked with a valid stack frame, then the "
@@ -41,7 +41,7 @@ TEST_CASE(
     "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalVoid", &test::globalVoid);
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalVoid", &test::globalVoid);
   auto frame = function.createStackFrame();
 
   REQUIRE_NOTHROW(function.invoke(frame));
@@ -53,7 +53,7 @@ TEST_CASE(
     "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalAnswer", &test::globalAnswer);
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalAnswer", &test::globalAnswer);
   auto frame = function.createStackFrame();
   std::int32_t result = 0;
   frame.returnPtr(&result);
@@ -68,7 +68,7 @@ TEST_CASE(
     "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalSum", &test::globalSum, "lhs", "rhs");
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalSum", &test::globalSum, "lhs", "rhs");
   auto frame = function.createStackFrame();
 
   std::int32_t lhs = 10;
@@ -89,7 +89,7 @@ TEST_CASE(
     "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalSum_metadata", &test::globalSum, "lhs", "rhs");
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalSum_metadata", &test::globalSum, "lhs", "rhs");
   auto args = function.arguments();
   auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetRTTIName<std::int32_t>());
 
@@ -106,7 +106,7 @@ TEST_CASE(
     "[rtti][global_function][negative]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_missing_return", &test::globalAnswer);
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalAnswer_missing_return", &test::globalAnswer);
   auto frame = function.createStackFrame();
 
   REQUIRE_THROWS_AS(function.invoke(frame), std::runtime_error);
@@ -116,7 +116,7 @@ TEST_CASE("Given a global function with arguments, when one argument pointer is 
           "[rtti][global_function][negative]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalSum_missing_arg", &test::globalSum, "lhs", "rhs");
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalSum_missing_arg", &test::globalSum, "lhs", "rhs");
   auto frame = function.createStackFrame();
 
   std::int32_t lhs = 10;
@@ -132,7 +132,7 @@ TEST_CASE("Given a global function with an unregistered return type, when reflec
           "[rtti][global_function][negative]") {
   core::rtti::RTTISystem::get().initialize();
 
-  REQUIRE_THROWS_AS(core::rtti::RTTIGlobalTFunction("globalReturnsUnregistered", &test::globalReturnsUnregistered),
+  REQUIRE_THROWS_AS(core::rtti::TypedRTTIGlobalFunction("globalReturnsUnregistered", &test::globalReturnsUnregistered),
                     std::runtime_error);
 }
 
@@ -141,7 +141,7 @@ TEST_CASE("Given a global function with an unregistered argument type, when refl
   core::rtti::RTTISystem::get().initialize();
 
   REQUIRE_THROWS_AS(
-      core::rtti::RTTIGlobalTFunction("globalTakesUnregistered", &test::globalTakesUnregisteredArg, "arg"),
+      core::rtti::TypedRTTIGlobalFunction("globalTakesUnregistered", &test::globalTakesUnregisteredArg, "arg"),
       std::runtime_error);
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("Given a global function, when the function name is queried, then it r
           "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  const auto function = core::rtti::RTTIGlobalTFunction("test_name", &test::globalAnswer);
+  const auto function = core::rtti::TypedRTTIGlobalFunction("test_name", &test::globalAnswer);
 
   REQUIRE(std::string(function.name()) == "test_name");
 }
@@ -158,7 +158,7 @@ TEST_CASE("Given a global function, when return type is queried, then it corresp
           "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  const auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_returntype", &test::globalAnswer);
+  const auto function = core::rtti::TypedRTTIGlobalFunction("globalAnswer_returntype", &test::globalAnswer);
   auto* intType = core::rtti::RTTISystem::get().registry().getType(core::rtti::GetRTTIName<std::int32_t>());
 
   REQUIRE(function.returnType() == intType);
@@ -168,7 +168,7 @@ TEST_CASE("Given a global function, when flags are queried, then isMember is fal
           "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  const auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_flags", &test::globalAnswer);
+  const auto function = core::rtti::TypedRTTIGlobalFunction("globalAnswer_flags", &test::globalAnswer);
   auto [isNative, isStatic] = function.flags();
 
   REQUIRE(isStatic);
@@ -181,7 +181,7 @@ TEST_CASE(
     "[rtti][global_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalSum_callop", &test::globalSum, "lhs", "rhs");
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalSum_callop", &test::globalSum, "lhs", "rhs");
   auto frame = function.createStackFrame();
 
   std::int32_t lhs = 12;
@@ -202,7 +202,7 @@ TEST_CASE(
     "[rtti][global_function][negative]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_callop_missing_return", &test::globalAnswer);
+  auto function = core::rtti::TypedRTTIGlobalFunction("globalAnswer_callop_missing_return", &test::globalAnswer);
   auto frame = function.createStackFrame();
 
   REQUIRE_THROWS_AS(function(frame), std::runtime_error);

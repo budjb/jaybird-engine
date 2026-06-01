@@ -184,6 +184,10 @@ struct FunctionFlags {
   bool isStatic : 1;
 };
 
+class RTTIFunction;
+
+using RTTIFunctionPtr = void (*)(RTTIStackFrame&, RTTIFunction&);
+
 /**
  * @brief Base interface for reflected callable entities in the RTTI system.
  *
@@ -340,7 +344,7 @@ class RTTIFunction {
  * @tparam TBase The reflected function base descriptor type.
  */
 template <typename F, typename TBase>
-class RTTITFunction : public TBase {
+class TypedRTTIFunction : public TBase {
  public:
   /**
    * @brief Brings the base call-operator shortcut into this concrete wrapper's public interface.
@@ -373,7 +377,7 @@ class RTTITFunction : public TBase {
    */
   template <typename... ArgNames>
     requires(sizeof...(ArgNames) == traits::numArgs && (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit RTTITFunction(const std::string_view name, F function, ArgNames&&... argNames)
+  explicit TypedRTTIFunction(const std::string_view name, F function, ArgNames&&... argNames)
       : TBase(name), m_function(function) {
     this->m_flags.isNative = true;
     this->m_flags.isStatic = traits::isStatic;

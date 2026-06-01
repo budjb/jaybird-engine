@@ -104,7 +104,7 @@ class RTTIRefType : public RTTIContainerType {
  * @tparam T The element type held by the @c std::shared_ptr this descriptor represents.
  */
 template <typename T>
-class RTTIRefTType : public RTTITType<std::shared_ptr<T>, RTTIRefType> {
+class TypedRTTIRefType : public TypedRTTIType<std::shared_ptr<T>, RTTIRefType> {
  public:
   /**
    * @brief Type alias for the underlying @c std::shared_ptr type described by this descriptor.
@@ -122,7 +122,7 @@ class RTTIRefTType : public RTTITType<std::shared_ptr<T>, RTTIRefType> {
    */
   template <typename I>
     requires is_same_element_v<I, T>
-  explicit RTTIRefTType(const I* inner);
+  explicit TypedRTTIRefType(const I* inner);
 
   /**
    * @brief Retrieves the raw pointer from the @c std::shared_ptr<T> at @c instance.
@@ -185,7 +185,7 @@ class RTTIRefTType : public RTTITType<std::shared_ptr<T>, RTTIRefType> {
 template <typename T>
 template <typename InnerType>
   requires is_same_element_v<InnerType, T>
-RTTIRefTType<T>::RTTIRefTType(const InnerType* inner)
-    : RTTITType<std::shared_ptr<T>, RTTIRefType>(NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::REF, T>()),
-                                                 static_cast<const RTTIType*>(inner)) {}
+TypedRTTIRefType<T>::TypedRTTIRefType(const InnerType* inner)
+    : TypedRTTIType<std::shared_ptr<T>, RTTIRefType>(
+          NamePool::get().addName(GetPrefixedRTTIName<RTTITypeKind::REF, T>()), static_cast<const RTTIType*>(inner)) {}
 }  // namespace core::rtti

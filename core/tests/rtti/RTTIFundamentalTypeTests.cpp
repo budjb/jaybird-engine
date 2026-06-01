@@ -9,16 +9,16 @@
 
 namespace {
 using core::Name;
-using core::rtti::RTTIFundamentalTType;
 using core::rtti::RTTIFundamentalType;
-using core::rtti::RTTITType;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
+using core::rtti::TypedRTTIFundamentalType;
+using core::rtti::TypedRTTIType;
 
 template <typename T>
-class NamedFundamentalType final : public RTTITType<T, RTTIFundamentalType> {
+class NamedFundamentalType final : public TypedRTTIType<T, RTTIFundamentalType> {
  public:
-  explicit NamedFundamentalType(const Name& name) : RTTITType<T, RTTIFundamentalType>(name) {}
+  explicit NamedFundamentalType(const Name& name) : TypedRTTIType<T, RTTIFundamentalType>(name) {}
 };
 
 template <typename T>
@@ -63,11 +63,12 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-    "Given a RTTIFundamentalTType descriptor, when observed through RTTIFundamentalType and RTTIType, then metadata "
+    "Given a TypedRTTIFundamentalType descriptor, when observed through RTTIFundamentalType and RTTIType, then "
+    "metadata "
     "reflects the mapped built-in name and C++ type traits",
     "[rtti][fundamental_type][tfundamental_type][metadata]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t,
     float, double, bool) {
-  RTTIFundamentalTType<TestType> descriptor;
+  TypedRTTIFundamentalType<TestType> descriptor;
   RTTIFundamentalType* asFundamental = &descriptor;
   const RTTIType& asType = *asFundamental;
 

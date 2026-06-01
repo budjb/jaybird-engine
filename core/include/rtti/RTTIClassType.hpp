@@ -7,7 +7,6 @@
 #include "RTTIClassFunction.hpp"
 #include "RTTIName.hpp"
 #include "RTTIProperty.hpp"
-#include "RTTITType.hpp"
 #include "RTTIType.hpp"
 
 namespace core::rtti {
@@ -15,7 +14,7 @@ namespace core::rtti {
  * @brief Polymorphic interface for class type descriptors in the RTTI system.
  *
  * Concrete class-type descriptors derive from this interface, while shared implementation lives in @code
- * RTTITType@endcode.
+ * TypedRTTIType@endcode.
  */
 class JAYBIRD_API RTTIClassType : public RTTIType {
  public:
@@ -138,7 +137,7 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
  */
 template <typename T>
   requires std::is_class_v<T>
-class RTTIClassTType : public RTTITType<T, RTTIClassType> {
+class TypedRTTIClassType : public TypedRTTIType<T, RTTIClassType> {
  public:
   /**
    * @brief Defines a type alias for the underlying type @code T@endcode.
@@ -148,6 +147,6 @@ class RTTIClassTType : public RTTITType<T, RTTIClassType> {
   /**
    * @brief Constructs a @c TClassType for the specified type @code T@endcode.
    */
-  explicit RTTIClassTType() : RTTITType<T, RTTIClassType>(NamePool::get().addName(GetRTTIName<T>())) {}
+  explicit TypedRTTIClassType() : TypedRTTIType<T, RTTIClassType>(NamePool::get().addName(GetRTTIName<T>())) {}
 };
 }  // namespace core::rtti

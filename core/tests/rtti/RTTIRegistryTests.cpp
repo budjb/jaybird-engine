@@ -118,14 +118,14 @@ REGISTER_TYPE_NAME(RegTargetB_Solo, "reg_target_b_solo");
 
 namespace {
 using core::Name;
-using core::rtti::RTTIArrayTType;
 using core::rtti::RTTIArrayType;
-using core::rtti::RTTIClassTType;
 using core::rtti::RTTIClassType;
 using core::rtti::RTTIRegistry;
 using core::rtti::RTTISystem;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
+using core::rtti::TypedRTTIArrayType;
+using core::rtti::TypedRTTIClassType;
 
 template <typename T>
 constexpr RTTITypeKind expectedClassRegistrationKind() {
@@ -168,34 +168,34 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType descriptor, when registered in RTTIRegistry, then registerType returns true and the "
+    "Given a TypedRTTIClassType descriptor, when registered in RTTIRegistry, then registerType returns true and the "
     "type is retrievable",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<RTTIClassTType<RegTargetA_Solo>>()));
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetA_Solo>>()));
   REQUIRE(registry.hasType("reg_target_a_solo"));
   REQUIRE(registry.getType("reg_target_a_solo") != nullptr);
 }
 
 TEST_CASE(
-    "Given a registered RTTIClassTType, when getType is called, then the returned descriptor kind matches trivial "
+    "Given a registered TypedRTTIClassType, when getType is called, then the returned descriptor kind matches trivial "
     "copyability",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetA>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetA>>());
 
   REQUIRE(registry.getType("reg_target_a")->kind() == expectedClassRegistrationKind<RegTargetA>());
 }
 
 TEST_CASE(
-    "Given a registered non-trivial RTTIClassTType, when getClass is called, then it returns the same descriptor "
+    "Given a registered non-trivial TypedRTTIClassType, when getClass is called, then it returns the same descriptor "
     "as getType",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetE>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetE>>());
 
   RTTIType* asType = registry.getType("reg_target_e");
   RTTIClassType* asClass = registry.getClass("reg_target_e");
@@ -206,12 +206,13 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a registered non-trivial RTTIClassTType, when companion container descriptors are queried, then ref, weak "
+    "Given a registered non-trivial TypedRTTIClassType, when companion container descriptors are queried, then ref, "
+    "weak "
     "ref, and array-of-ref descriptors are registered",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetE>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetE>>());
 
   RTTIType* baseType = registry.getType("reg_target_e");
   RTTIType* refType = registry.getType("ref:reg_target_e");
@@ -240,12 +241,12 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTIRegistry, when the companion array name is queried, then it is also "
+    "Given a TypedRTTIClassType registered in RTTIRegistry, when the companion array name is queried, then it is also "
     "registered automatically",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<RTTIClassTType<RegTargetB_Solo>>()));
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB_Solo>>()));
 
   const Name arrayName("array:reg_target_b_solo");
   REQUIRE(registry.hasType(arrayName));
@@ -253,12 +254,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTIRegistry, when the companion array type is retrieved, then it has "
+    "Given a TypedRTTIClassType registered in RTTIRegistry, when the companion array type is retrieved, then it has "
     "kind ARRAY and its inner descriptor matches the original type",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetB>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB>>());
   RTTIType* baseType = registry.getType("reg_target_b");
   RTTIType* arrayType = registry.getType("array:reg_target_b");
 
@@ -271,29 +272,29 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Given a RTTIClassTType registered in RTTIRegistry, when getClass is called for the companion array name, then "
+    "Given a TypedRTTIClassType registered in RTTIRegistry, when getClass is called for the companion array name, then "
     "it returns nullptr since an array type is not a class type",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetB>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB>>());
 
   REQUIRE(registry.getClass(Name("array:reg_target_b")) == nullptr);
 }
 
 TEST_CASE(
-    "Given an RTTIArrayTType registered directly in RTTIRegistry, when the registry is queried, then no "
+    "Given an TypedRTTIArrayType registered directly in RTTIRegistry, when the registry is queried, then no "
     "second-order array is automatically created",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetI>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetI>>());
   RTTIType* inner = registry.getType("reg_target_i");
   REQUIRE(inner != nullptr);
 
   // The auto-array is already registered; re-registering it returns false (duplicate) but does not crash.
   const bool reregistered = registry.registerType(
-      std::make_unique<RTTIArrayTType<RegTargetI>>(reinterpret_cast<RTTIClassTType<RegTargetI>*>(inner)));
+      std::make_unique<TypedRTTIArrayType<RegTargetI>>(reinterpret_cast<TypedRTTIClassType<RegTargetI>*>(inner)));
   REQUIRE_FALSE(reregistered);
 
   // No second-order array should ever exist.
@@ -308,9 +309,9 @@ TEST_CASE("Given a type already registered, when the same name is registered aga
           "[rtti][type_registry][negative]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>());
 
-  REQUIRE_FALSE(registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>()));
+  REQUIRE_FALSE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>()));
 }
 
 TEST_CASE(
@@ -319,11 +320,11 @@ TEST_CASE(
     "[rtti][type_registry][negative]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>());
   RTTIType* original = registry.getType("reg_target_c");
   REQUIRE(original != nullptr);
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetC>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>());
 
   REQUIRE(registry.getType("reg_target_c") == original);
 }
@@ -338,7 +339,7 @@ TEST_CASE(
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetD>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetD>>());
 
   const Name byHash(Name("reg_target_d").hash());
 
@@ -356,7 +357,7 @@ TEST_CASE(
     "[rtti][type_registry][negative]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetF>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetF>>());
 
   const Name unrelated("totally_unrelated_name_xyz_9999");
   REQUIRE_FALSE(registry.hasType(unrelated));
@@ -381,7 +382,7 @@ TEST_CASE(
 
   for (int i = 0; i < writerCount; ++i) {
     threads.emplaceBack([&registry, &successes, i]() {
-      const bool ok = registry.registerType(std::make_unique<RTTIClassTType<RegTargetH>>());
+      const bool ok = registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetH>>());
       successes[static_cast<std::size_t>(i)] = ok ? 1 : 0;
     });
   }
@@ -410,7 +411,7 @@ TEST_CASE(
     "[rtti][type_registry][thread_safety]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetG>>());
+  registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetG>>());
   RTTIType* expected = registry.getType("reg_target_g");
   RTTIClassType* expectedClass = registry.getClass(Name("reg_target_g"));
   REQUIRE(expected != nullptr);
