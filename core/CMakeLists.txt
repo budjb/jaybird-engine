@@ -36,6 +36,7 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIFunction.hpp
         include/rtti/RTTIGlobalFunction.hpp
         include/rtti/RTTITType.hpp
+        include/rtti/RTTIStringType.hpp
 )
 
 include(GenerateExportHeader)
@@ -75,6 +76,7 @@ if (BUILD_TESTING)
           tests/rtti/RTTIClassFunctionTests.cpp
           tests/rtti/RTTIGlobalFunctionTests.cpp
           tests/rtti/RTTIStackFrameTests.cpp
+          tests/rtti/RTTIStringTypeTests.cpp
   )
 
   target_link_libraries(core-tests PRIVATE jaybird-engine-core Catch2::Catch2WithMain)

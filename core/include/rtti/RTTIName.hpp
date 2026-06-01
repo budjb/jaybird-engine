@@ -354,3 +354,4 @@ REGISTER_TYPE_NAME(std::uint64_t, "uint64");
 REGISTER_TYPE_NAME(float, "float");
 REGISTER_TYPE_NAME(double, "double");
 REGISTER_TYPE_NAME(bool, "bool");
+REGISTER_TYPE_NAME(std::string, "string");
