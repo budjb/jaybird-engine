@@ -174,3 +174,36 @@ TEST_CASE("Given a global function, when flags are queried, then isMember is fal
   REQUIRE(isStatic);
   REQUIRE(isNative);
 }
+
+TEST_CASE(
+    "Given a global function with arguments and return value, when operator() is used, then invocation succeeds and "
+    "writes the return value",
+    "[rtti][global_function]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIGlobalTFunction("globalSum_callop", &test::globalSum, "lhs", "rhs");
+  auto frame = function.createStackFrame();
+
+  std::int32_t lhs = 12;
+  std::int32_t rhs = 8;
+  std::int32_t result = 0;
+
+  frame.argPtr(0, &lhs);
+  frame.argPtr(1, &rhs);
+  frame.returnPtr(&result);
+
+  REQUIRE_NOTHROW(function(frame));
+  REQUIRE(result == 20);
+}
+
+TEST_CASE(
+    "Given a global function with a return type, when operator() is used without a return pointer, then an exception "
+    "is thrown",
+    "[rtti][global_function][negative]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIGlobalTFunction("globalAnswer_callop_missing_return", &test::globalAnswer);
+  auto frame = function.createStackFrame();
+
+  REQUIRE_THROWS_AS(function(frame), std::runtime_error);
+}

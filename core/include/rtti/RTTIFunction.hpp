@@ -284,6 +284,16 @@ class RTTIFunction {
   }
 
   /**
+   * @brief Invokes the function using function-call syntax as a shorthand for @code invoke(frame)@endcode.
+   *
+   * @param frame The stack frame containing invocation context such as arguments, return storage, and optional
+   * object pointer.
+   */
+  void operator()(RTTIStackFrame& frame) {
+    invoke(frame);
+  }
+
+  /**
    * @brief Invokes the function with the given stack frame, which contains the "this" pointer (for member functions),
    * argument values, and return value storage.
    *
@@ -332,6 +342,11 @@ class RTTIFunction {
 template <typename F, typename TBase>
 class RTTITFunction : public TBase {
  public:
+  /**
+   * @brief Brings the base call-operator shortcut into this concrete wrapper's public interface.
+   */
+  using TBase::operator();
+
   /**
    * @brief Traits extracted from the member function pointer type @c F, including the class type, return type, argument
    * types, and other properties.

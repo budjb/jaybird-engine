@@ -429,3 +429,75 @@ TEST_CASE("Given a static class function with a void return, when a stack frame 
 
   REQUIRE(frame.returnPtr<void>() == nullptr);
 }
+
+TEST_CASE(
+    "Given a member function with arguments and return value, when operator() is used, then invocation succeeds and "
+    "writes the return value",
+    "[rtti][class_function]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIClassTFunction("sum_callop", &test::Sample::sum, "lhs", "rhs");
+  auto frame = function.createStackFrame();
+
+  test::Sample instance;
+  frame.thisPtr(&instance);
+
+  std::int32_t lhs = 21;
+  std::int32_t rhs = 4;
+  std::int32_t result = 0;
+
+  frame.argPtr(0, &lhs);
+  frame.argPtr(1, &rhs);
+  frame.returnPtr(&result);
+
+  REQUIRE_NOTHROW(function(frame));
+  REQUIRE(result == 25);
+}
+
+TEST_CASE(
+    "Given a member function with a return type, when operator() is used without a this pointer, then an exception is "
+    "thrown",
+    "[rtti][class_function][negative]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIClassTFunction("answer_callop_missing_this", &test::Sample::answer);
+  auto frame = function.createStackFrame();
+
+  std::int32_t result = 0;
+  frame.returnPtr(&result);
+
+  REQUIRE_THROWS_AS(function(frame), std::runtime_error);
+}
+
+TEST_CASE(
+    "Given a static class function with arguments and return value, when operator() is used, then invocation succeeds "
+    "and writes the return value",
+    "[rtti][class_function]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIClassTFunction("static_sum_callop", &test::Sample::staticSum, "lhs", "rhs");
+  auto frame = function.createStackFrame();
+
+  std::int32_t lhs = 30;
+  std::int32_t rhs = 5;
+  std::int32_t result = 0;
+
+  frame.argPtr(0, &lhs);
+  frame.argPtr(1, &rhs);
+  frame.returnPtr(&result);
+
+  REQUIRE_NOTHROW(function(frame));
+  REQUIRE(result == 35);
+}
+
+TEST_CASE(
+    "Given a static class function with a return type, when operator() is used without a return pointer, then an "
+    "exception is thrown",
+    "[rtti][class_function][negative]") {
+  core::rtti::RTTISystem::get().initialize();
+
+  auto function = core::rtti::RTTIClassTFunction("static_answer_callop_missing_return", &test::Sample::staticAnswer);
+  auto frame = function.createStackFrame();
+
+  REQUIRE_THROWS_AS(function(frame), std::runtime_error);
+}
