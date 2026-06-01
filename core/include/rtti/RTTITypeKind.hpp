@@ -11,39 +11,42 @@ namespace core::rtti {
  */
 enum class RTTITypeKind : std::size_t {
   /**
-   * @brief This value identifies the interned string @code Name@endcode descriptor category.
+   * @brief Identifies the @c Name class.
    */
   NAME,
 
   /**
-   * @brief This value identifies class or struct descriptors.
+   * @brief Identifies trivial classes.
+   */
+  SIMPLE,
+
+  /**
+   * @brief Identifies non-trivial classes.
    */
   CLASS,
 
   /**
-   * @brief This value identifies dynamic array descriptors such as @code core::Vector<T>@endcode.
+   * @brief Identifies the @c core::Vector<T> class.
    */
   ARRAY,
 
   /**
-   * @brief This value identifies string descriptors.
+   * @brief Identifies the @c std::string class.
    */
   STRING,
 
   /**
-   * @brief This value identifies primitive descriptors such as @code int@endcode, @code float@endcode, and @code
-   * bool@endcode.
+   * @brief Identifies primitive types (e.g, @c int32_t, @c float, @c bool, etc.).
    */
   FUNDAMENTAL,
 
   /**
-   * @brief This value identifies reference-counted smart pointer descriptors such as
-   * @code std::shared_ptr<T>@endcode.
+   * @brief Identifies reference-counted smart pointers (i.e. @c std::shared_ptr<T>).
    */
   REF,
 
   /**
-   * @brief This value identifies non-owning weak-reference descriptors such as @code std::weak_ptr<T>@endcode.
+   * @brief Identifies non-owning, weak-reference smart pointers (i.e. @c std::weak_ptr<T>).
    */
   WEAK_REF,
 };

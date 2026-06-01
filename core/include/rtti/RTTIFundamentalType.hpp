@@ -12,7 +12,7 @@ namespace core::rtti {
  * @brief Polymorphic interface for fundamental type descriptors in the RTTI system.
  *
  * Concrete fundamental-type descriptors derive from this interface, while shared implementation lives in @code
- * TTypeImpl@endcode.
+ * RTTITType@endcode.
  */
 class JAYBIRD_API RTTIFundamentalType : public RTTIType {
  public:

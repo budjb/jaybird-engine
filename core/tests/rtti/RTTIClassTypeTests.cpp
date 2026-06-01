@@ -3,6 +3,7 @@
 #include <string>
 #include <type_traits>
 
+#include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIName.hpp"
 #include "types/CString.hpp"
@@ -14,6 +15,8 @@
  * serves as the simplest possible class type for RTTI descriptor tests.
  */
 struct TrivialStruct {
+  static constexpr auto ExpectedKind = core::rtti::RTTITypeKind::SIMPLE;
+
   // ReSharper disable once CppDeclaratorNeverUsed
   int x{0};
   bool operator==(const TrivialStruct&) const = default;
@@ -26,6 +29,8 @@ struct TrivialStruct {
  * use the alignment-aware operator @c new / @c delete when the type requires non-default alignment.
  */
 struct AlignedStruct {
+  static constexpr auto ExpectedKind = core::rtti::RTTITypeKind::SIMPLE;
+
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   alignas(16) float data[4]{};
   bool operator==(const AlignedStruct&) const = default;
@@ -39,6 +44,8 @@ struct AlignedStruct {
  * initialize and tear down the contained string.
  */
 struct NonTrivialStruct {
+  static constexpr auto ExpectedKind = core::rtti::RTTITypeKind::CLASS;
+
   std::string value{};
   bool operator==(const NonTrivialStruct&) const = default;
 };
@@ -147,15 +154,15 @@ const char* classTypeName() {
 
 TEMPLATE_TEST_CASE(
     "Given a concrete RTTIClassType descriptor, when observed through RTTIType, then metadata matches the underlying "
-    "class type",
+    "class type and reflects trivial-kind classification",
     "[rtti][class_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
-  NamedClassType<TestType> descriptor(Name("test_named_class"));
+  NamedClassType<TestType> descriptor("test_named_class");
   RTTIType* asType = &descriptor;
   RTTIClassType* asClass = &descriptor;
 
   REQUIRE(asType != nullptr);
   REQUIRE(asClass != nullptr);
-  REQUIRE(asType->kind() == RTTITypeKind::CLASS);
+  REQUIRE(asType->kind() == TestType::ExpectedKind);
   REQUIRE(asType->size() == sizeof(TestType));
   REQUIRE(asType->alignment() == alignof(TestType));
   REQUIRE(asType->name() == Name("test_named_class"));
@@ -167,14 +174,14 @@ TEMPLATE_TEST_CASE(
 
 TEMPLATE_TEST_CASE(
     "Given a RTTIClassTType descriptor, when observed through RTTIClassType and RTTIType, then metadata reflects the "
-    "canonical mapped type name",
+    "canonical mapped type name and trivial-kind classification",
     "[rtti][class_type][tclass_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
   RTTIClassTType<TestType> descriptor;
   RTTIClassType* asClass = &descriptor;
   const RTTIType& asType = *asClass;
 
   REQUIRE(asClass != nullptr);
-  REQUIRE(asType.kind() == RTTITypeKind::CLASS);
+  REQUIRE(asType.kind() == TestType::ExpectedKind);
   REQUIRE(asType.size() == sizeof(TestType));
   REQUIRE(asType.alignment() == alignof(TestType));
   REQUIRE(asType.name() == Name(classTypeName<TestType>()));
@@ -434,4 +441,18 @@ TEST_CASE(
   REQUIRE(reinterpret_cast<std::uintptr_t>(allocated) % 16 == 0);
 
   type.deallocate(allocated);
+}
+
+TEST_CASE(
+    "Given RTTIClassTType descriptors for std::string and core::Vector<int>, when metadata is queried, then both are "
+    "classified as non-trivial class kinds",
+    "[rtti][class_type][tclass_type][metadata][built_in_like]") {
+  REQUIRE_FALSE(std::is_trivially_copyable_v<std::string>);
+  REQUIRE_FALSE(std::is_trivially_copyable_v<core::Vector<int>>);
+
+  const RTTIClassTType<std::string> stringDescriptor;
+  const RTTIClassTType<core::Vector<int>> vectorDescriptor;
+
+  REQUIRE(stringDescriptor.kind() == RTTITypeKind::CLASS);
+  REQUIRE(vectorDescriptor.kind() == RTTITypeKind::CLASS);
 }

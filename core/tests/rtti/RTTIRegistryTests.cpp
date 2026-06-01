@@ -1,11 +1,11 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
+#include <string>
 #include <thread>
 
 #include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
-#include "rtti/RTTIFundamentalType.hpp"
 #include "rtti/RTTIRegistry.hpp"
 #include "rtti/RTTISystem.hpp"
 #include "types/CString.hpp"
@@ -43,6 +43,13 @@ struct RegTargetD {
   // ReSharper disable once CppDeclaratorNeverUsed
   int v{0};
   bool operator==(const RegTargetD&) const = default;
+};
+
+/** @brief Test struct E — used for getClass positive lookup on non-trivial class types. */
+struct RegTargetE {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  std::string v{};
+  bool operator==(const RegTargetE&) const = default;
 };
 
 /** @brief Test struct F — used for unrelated-name negative lookup. */
@@ -101,6 +108,7 @@ REGISTER_TYPE_NAME(RegTargetA, "reg_target_a");
 REGISTER_TYPE_NAME(RegTargetB, "reg_target_b");
 REGISTER_TYPE_NAME(RegTargetC, "reg_target_c");
 REGISTER_TYPE_NAME(RegTargetD, "reg_target_d");
+REGISTER_TYPE_NAME(RegTargetE, "reg_target_e");
 REGISTER_TYPE_NAME(RegTargetF, "reg_target_f");
 REGISTER_TYPE_NAME(RegTargetG, "reg_target_g");
 REGISTER_TYPE_NAME(RegTargetH, "reg_target_h");
@@ -118,6 +126,11 @@ using core::rtti::RTTIRegistry;
 using core::rtti::RTTISystem;
 using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
+
+template <typename T>
+constexpr RTTITypeKind expectedClassRegistrationKind() {
+  return std::is_trivially_copyable_v<T> ? RTTITypeKind::SIMPLE : RTTITypeKind::CLASS;
+}
 }  // namespace
 
 // =============================================================================
@@ -165,25 +178,30 @@ TEST_CASE(
   REQUIRE(registry.getType("reg_target_a_solo") != nullptr);
 }
 
-TEST_CASE("Given a registered RTTIClassTType, when getType is called, then the returned descriptor has kind CLASS",
-          "[rtti][type_registry]") {
+TEST_CASE(
+    "Given a registered RTTIClassTType, when getType is called, then the returned descriptor kind matches trivial "
+    "copyability",
+    "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetA>>());
 
-  REQUIRE(registry.getType("reg_target_a")->kind() == RTTITypeKind::CLASS);
+  REQUIRE(registry.getType("reg_target_a")->kind() == expectedClassRegistrationKind<RegTargetA>());
 }
 
-TEST_CASE("Given a registered RTTIClassTType, when getClass is called, then it returns the same descriptor as getType",
-          "[rtti][type_registry]") {
+TEST_CASE(
+    "Given a registered non-trivial RTTIClassTType, when getClass is called, then it returns the same descriptor "
+    "as getType",
+    "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  registry.registerType(std::make_unique<RTTIClassTType<RegTargetA>>());
+  registry.registerType(std::make_unique<RTTIClassTType<RegTargetE>>());
 
-  RTTIType* asType = registry.getType("reg_target_a");
-  RTTIClassType* asClass = registry.getClass(Name("reg_target_a"));
+  RTTIType* asType = registry.getType("reg_target_e");
+  RTTIClassType* asClass = registry.getClass("reg_target_e");
 
   REQUIRE(asClass != nullptr);
+  REQUIRE(asType->kind() == RTTITypeKind::CLASS);
   REQUIRE(static_cast<RTTIType*>(asClass) == asType);
 }
 
@@ -364,6 +382,7 @@ TEST_CASE(
 
   registry.registerType(std::make_unique<RTTIClassTType<RegTargetG>>());
   RTTIType* expected = registry.getType("reg_target_g");
+  RTTIClassType* expectedClass = registry.getClass(Name("reg_target_g"));
   REQUIRE(expected != nullptr);
 
   constexpr int readerCount = 8;
@@ -374,7 +393,7 @@ TEST_CASE(
   readers.reserve(readerCount);
 
   for (int i = 0; i < readerCount; ++i) {
-    readers.emplaceBack([&registry, expected, &inconsistentRead]() {
+    readers.emplaceBack([&registry, expected, expectedClass, &inconsistentRead]() {
       for (int j = 0; j < iterationsPerReader; ++j) {
         if (!registry.hasType("reg_target_g")) {
           inconsistentRead.store(true, std::memory_order_relaxed);
@@ -384,7 +403,7 @@ TEST_CASE(
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }
-        if (registry.getClass(Name("reg_target_g")) == nullptr) {
+        if (registry.getClass(Name("reg_target_g")) != expectedClass) {
           inconsistentRead.store(true, std::memory_order_relaxed);
           break;
         }

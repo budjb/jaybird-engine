@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
+#include <type_traits>
 
 #include "rtti/RTTIName.hpp"
 #include "types/Quaternion.hpp"
@@ -50,4 +51,9 @@ TEST_CASE("Given Quaternion type metadata, when GetRTTIName is queried, then the
           "[types][quaternion][type_name]") {
   constexpr auto typeName = core::rtti::GetRTTIName<core::Quaternion>();
   REQUIRE(static_cast<std::string_view>(typeName) == "Quaternion");
+}
+
+TEST_CASE("Given Quaternion RTTI expectations, when trivial-copyability is checked, then it is trivially copyable",
+          "[types][quaternion][traits]") {
+  REQUIRE(std::is_trivially_copyable_v<core::Quaternion>);
 }

@@ -2,8 +2,19 @@
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
+#include "rtti/RTTIName.hpp"
 #include "rtti/RTTISystem.hpp"
 #include "rtti/RTTITypeKind.hpp"
+
+#define VALIDATE_RTTI_TYPE(registry, typeName, expectedKind)                                                      \
+  REQUIRE(registry.hasType(typeName));                                                                            \
+  REQUIRE(registry.getType(typeName)->kind() == expectedKind);                                                    \
+  REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName)));          \
+  REQUIRE(registry.getType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName))->kind() == \
+          core::rtti::RTTITypeKind::ARRAY);                                                                       \
+  if (expectedKind == core::rtti::RTTITypeKind::CLASS) {                                                          \
+    /* TODO: check refs */                                                                                        \
+  }
 
 TEST_CASE(
     "Given RTTISystem initialization callbacks, when initialize is called, then declare callbacks run before "
@@ -34,26 +45,22 @@ TEST_CASE(
 
   core::rtti::RTTIRegistry& registry = typeSystem.registry();
 
-  REQUIRE(registry.hasType("int8"));
-  REQUIRE(registry.hasType("int32"));
-  REQUIRE(registry.hasType("int64"));
-  REQUIRE(registry.hasType("uint8"));
-  REQUIRE(registry.hasType("uint32"));
-  REQUIRE(registry.hasType("uint64"));
-  REQUIRE(registry.hasType("float"));
-  REQUIRE(registry.hasType("double"));
-  REQUIRE(registry.hasType("bool"));
+  VALIDATE_RTTI_TYPE(registry, "int8", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "int32", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "int64", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "uint8", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "uint32", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "uint64", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "float", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "double", core::rtti::RTTITypeKind::FUNDAMENTAL);
+  VALIDATE_RTTI_TYPE(registry, "bool", core::rtti::RTTITypeKind::FUNDAMENTAL);
 
-  REQUIRE(registry.hasType("Name"));
-  REQUIRE(registry.getType("Name")->kind() == core::rtti::RTTITypeKind::NAME);
+  VALIDATE_RTTI_TYPE(registry, "Name", core::rtti::RTTITypeKind::NAME);
+  VALIDATE_RTTI_TYPE(registry, "string", core::rtti::RTTITypeKind::STRING);
 
-  REQUIRE(registry.hasType("Quaternion"));
-  REQUIRE(registry.hasType("EulerAngles"));
-  REQUIRE(registry.hasType("Color"));
-
-  REQUIRE(registry.hasType("array:Quaternion"));
-  REQUIRE(registry.hasType("array:EulerAngles"));
-  REQUIRE(registry.hasType("array:Color"));
+  VALIDATE_RTTI_TYPE(registry, "Quaternion", core::rtti::RTTITypeKind::SIMPLE);
+  VALIDATE_RTTI_TYPE(registry, "EulerAngles", core::rtti::RTTITypeKind::SIMPLE);
+  VALIDATE_RTTI_TYPE(registry, "Color", core::rtti::RTTITypeKind::SIMPLE);
 
   REQUIRE_FALSE(typeSystem.initialize());
 }

@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
+#include <type_traits>
 
 #include "rtti/RTTIName.hpp"
 #include "types/EulerAngles.hpp"
@@ -49,4 +50,9 @@ TEST_CASE("Given EulerAngles type metadata, when GetRTTIName is queried, then th
           "[types][euler_angles][type_name]") {
   constexpr auto typeName = core::rtti::GetRTTIName<core::EulerAngles>();
   REQUIRE(static_cast<std::string_view>(typeName) == "EulerAngles");
+}
+
+TEST_CASE("Given EulerAngles RTTI expectations, when trivial-copyability is checked, then it is trivially copyable",
+          "[types][euler_angles][traits]") {
+  REQUIRE(std::is_trivially_copyable_v<core::EulerAngles>);
 }

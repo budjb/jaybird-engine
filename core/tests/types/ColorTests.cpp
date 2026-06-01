@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
+#include <type_traits>
 
 #include "rtti/RTTIName.hpp"
 #include "types/Color.hpp"
@@ -49,4 +50,9 @@ TEST_CASE("Given Color type metadata, when GetRTTIName is queried, then the regi
           "[types][color][type_name]") {
   constexpr auto typeName = core::rtti::GetRTTIName<core::Color>();
   REQUIRE(static_cast<std::string_view>(typeName) == "Color");
+}
+
+TEST_CASE("Given Color RTTI expectations, when trivial-copyability is checked, then it is trivially copyable",
+          "[types][color][traits]") {
+  REQUIRE(std::is_trivially_copyable_v<core::Color>);
 }

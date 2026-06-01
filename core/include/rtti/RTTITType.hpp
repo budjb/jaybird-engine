@@ -47,7 +47,7 @@ class RTTITType : public TBase {
    */
   explicit RTTITType(const Name& name)
     requires std::same_as<TBase, RTTIClassType>
-      : TBase(name, sizeof(Type), alignof(Type)) {}
+      : TBase(name, sizeof(Type), alignof(Type), std::is_trivially_copyable_v<Type>) {}
 
   /**
    * @brief Constructs a descriptor that implements @code RTTIContainerType@endcode.

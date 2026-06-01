@@ -15,7 +15,7 @@ namespace core::rtti {
  * @brief Polymorphic interface for class type descriptors in the RTTI system.
  *
  * Concrete class-type descriptors derive from this interface, while shared implementation lives in @code
- * TTypeImpl@endcode.
+ * RTTITType@endcode.
  */
 class JAYBIRD_API RTTIClassType : public RTTIType {
  public:
@@ -25,8 +25,9 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @param name The name of the class type, represented as a @code Name@endcode.
    * @param size The size of the class type in bytes.
    * @param alignment The alignment requirement of the class type in bytes.
+   * @param isTrivial A boolean indicating whether the class type is trivially copyable.
    */
-  explicit RTTIClassType(const Name& name, std::size_t size, std::size_t alignment) noexcept;
+  explicit RTTIClassType(const Name& name, std::size_t size, std::size_t alignment, bool isTrivial) noexcept;
 
   /**
    * @brief Virtual destructor for the @c RTTIClassType interface.
@@ -34,24 +35,25 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
   ~RTTIClassType() override = default;
 
   /**
-   * @brief Adds a property to the class type descriptor.
+   * @brief Returns whether the class type is trivially copyable.
    *
-   * @param property A shared pointer to an @c RTTIProperty object representing the property to be added.
+   * @return @c true if the class type is trivially copyable, @c false otherwise.
    */
-  void property(std::shared_ptr<RTTIProperty>&& property) noexcept {
-    std::unique_lock lock(m_propertiesMutex);
-    m_properties[property->name()] = std::move(property);
-  }
+  [[nodiscard]] bool isTrivial() const noexcept;
 
   /**
    * @brief Adds a property to the class type descriptor.
    *
    * @param property A shared pointer to an @c RTTIProperty object representing the property to be added.
    */
-  void property(const std::shared_ptr<RTTIProperty>& property) noexcept {
-    std::unique_lock lock(m_propertiesMutex);
-    m_properties[property->name()] = property;
-  }
+  void property(std::shared_ptr<RTTIProperty>&& property) noexcept;
+
+  /**
+   * @brief Adds a property to the class type descriptor.
+   *
+   * @param property A shared pointer to an @c RTTIProperty object representing the property to be added.
+   */
+  void property(const std::shared_ptr<RTTIProperty>& property) noexcept;
 
   /**
    * @brief Retrieves a property from the class type descriptor by its name.
@@ -60,31 +62,21 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @return A shared pointer to the @c RTTIProperty object if found, or @c nullptr if no property with the given name
    * exists.
    */
-  std::shared_ptr<RTTIProperty> property(const Name& name) noexcept {
-    std::shared_lock lock(m_propertiesMutex);
-    const auto it = m_properties.find(name);
-    return it != m_properties.end() ? it->second : nullptr;
-  }
+  std::shared_ptr<RTTIProperty> property(const Name& name) noexcept;
 
   /**
    * @brief Adds a member function to the class type descriptor.
    *
    * @param function A shared pointer to an @c RTTIClassFunction object representing the member function to be added.
    */
-  void function(std::shared_ptr<RTTIClassFunction>&& function) noexcept {
-    std::unique_lock lock(m_functionsMutex);
-    m_functions[function->name()] = std::move(function);
-  }
+  void function(std::shared_ptr<RTTIClassFunction>&& function) noexcept;
 
   /**
    * @brief Adds a member function to the class type descriptor.
    *
    * @param function A shared pointer to an @c RTTIClassFunction object representing the member function to be added.
    */
-  void function(const std::shared_ptr<RTTIClassFunction>& function) noexcept {
-    std::unique_lock lock(m_functionsMutex);
-    m_functions[function->name()] = function;
-  }
+  void function(const std::shared_ptr<RTTIClassFunction>& function) noexcept;
 
   /**
    * @brief Retrieves a member function from the class type descriptor by its name.
@@ -93,13 +85,14 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
    * @return A shared pointer to the @c RTTIClassFunction object if found, or @c nullptr if no member function with the
    * given name exists.
    */
-  std::shared_ptr<RTTIClassFunction> function(const Name& name) noexcept {
-    std::shared_lock lock(m_functionsMutex);
-    const auto it = m_functions.find(name);
-    return it != m_functions.end() ? it->second : nullptr;
-  }
+  std::shared_ptr<RTTIClassFunction> function(const Name& name) noexcept;
 
  private:
+  /**
+   * @brief A boolean indicating whether the class type is trivially copyable.
+   */
+  bool m_trivial;
+
   /**
    * @brief Mutex to protect concurrent access to the properties of the class type.
    */
