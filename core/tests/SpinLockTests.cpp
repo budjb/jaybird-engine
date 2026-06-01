@@ -22,8 +22,7 @@ TEST_CASE("Given an unlocked SpinLock, when lock and try_lock are used, then exc
 
 TEST_CASE(
     "Given a SpinLock held in shared mode, when try_lock is called for exclusive access, then exclusive acquisition "
-    "fails "
-    "until readers release",
+    "fails until readers release",
     "[spinlock]") {
   core::SpinLock lock;
 
@@ -51,8 +50,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given multiple threads taking shared locks, when they synchronize at the same point, then the lock allows "
-    "concurrent "
-    "readers",
+    "concurrent readers",
     "[spinlock][thread_safety]") {
   core::SpinLock lock;
   constexpr int readerCount = 6;
@@ -97,8 +95,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given multiple writer threads using a SpinLock, when each thread increments a shared counter, then all increments "
-    "are "
-    "preserved",
+    "are preserved",
     "[spinlock][thread_safety]") {
   core::SpinLock lock;
   constexpr int writerCount = 8;

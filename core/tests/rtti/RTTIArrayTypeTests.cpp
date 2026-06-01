@@ -104,8 +104,7 @@ const char* arrayTypeName() {
 
 TEMPLATE_TEST_CASE(
     "Given an TypedRTTIArrayType descriptor, when observed through RTTIArrayType and RTTIType, then metadata and inner "
-    "type are "
-    "correct",
+    "type are correct",
     "[rtti][array_type][metadata]", TrivialElement, NonTrivialElement) {
   TypedRTTIClassType<TestType> inner;
   TypedRTTIArrayType<TestType> descriptor(&inner);

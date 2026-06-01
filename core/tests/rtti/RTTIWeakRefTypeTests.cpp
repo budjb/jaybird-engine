@@ -119,8 +119,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and valid source and destination weak_ptrs, when assign is called, then "
-    "the "
-    "destination refers to the same managed object as the source",
+    "the destination refers to the same managed object as the source",
     "[rtti][weak_ref_type][operations][assign]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -149,8 +148,7 @@ TEST_CASE("Given a TypedRTTIWeakRefType descriptor and a null destination, when 
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a valid source weak_ptr, when assign is called, then the strong use "
-    "count "
-    "of the managed object is unchanged",
+    "count of the managed object is unchanged",
     "[rtti][weak_ref_type][operations][assign]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -170,8 +168,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and two weak_ptrs from the same shared_ptr, when equals is called, then "
-    "it "
-    "returns true",
+    "it returns true",
     "[rtti][weak_ref_type][operations][equals]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -185,8 +182,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and two weak_ptrs from distinct shared_ptrs, when equals is called, then "
-    "it "
-    "returns false",
+    "it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -201,8 +197,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and two default-constructed (expired) weak_ptrs, when equals is called, "
-    "then "
-    "it returns true",
+    "then it returns true",
     "[rtti][weak_ref_type][operations][equals]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -215,8 +210,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when equals is called with both void pointer arguments null, then it "
-    "returns "
-    "true",
+    "returns true",
     "[rtti][weak_ref_type][operations][equals]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -226,8 +220,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a valid weak_ptr, when equals is called with a null left void "
-    "pointer, "
-    "then it returns false",
+    "pointer, then it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -240,8 +233,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a valid weak_ptr, when equals is called with a null right void "
-    "pointer, "
-    "then it returns false",
+    "pointer, then it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -254,8 +246,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, an expired weak_ptr, and a non-expired weak_ptr, when equals is called, "
-    "then "
-    "it returns false",
+    "then it returns false",
     "[rtti][weak_ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -273,8 +264,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when allocate is called, then the returned pointer is non-null and "
-    "correctly "
-    "aligned for std::weak_ptr",
+    "correctly aligned for std::weak_ptr",
     "[rtti][weak_ref_type][operations][allocate]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -344,8 +334,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when create is called, then the returned pointer is non-null and points "
-    "to "
-    "an expired weak_ptr",
+    "to an expired weak_ptr",
     "[rtti][weak_ref_type][operations][create]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -382,8 +371,7 @@ TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when destroy is called with 
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a weak_ptr assigned from a shared_ptr, when the shared_ptr is "
-    "destroyed, "
-    "then the weak_ptr becomes expired",
+    "destroyed, then the weak_ptr becomes expired",
     "[rtti][weak_ref_type][weak_semantics]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -406,8 +394,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a weak_ptr copied via assign, when the original shared_ptr still "
-    "exists, "
-    "then both weak_ptrs lock to the same object and the strong use count remains one",
+    "exists, then both weak_ptrs lock to the same object and the strong use count remains one",
     "[rtti][weak_ref_type][weak_semantics]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -433,8 +420,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when reset is called, then the weak_ptr "
-    "becomes "
-    "expired",
+    "becomes expired",
     "[rtti][weak_ref_type][operations][reset]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -551,8 +537,7 @@ TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when swap is called with a n
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when swap is called with both lhs and rhs null, then it completes "
-    "without "
-    "error",
+    "without error",
     "[rtti][weak_ref_type][operations][swap][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -602,8 +587,7 @@ TEST_CASE("Given a TypedRTTIWeakRefType descriptor, when expired is called with 
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a default-constructed (never-assigned) weak_ptr, when expired is "
-    "called, "
-    "then it returns true",
+    "called, then it returns true",
     "[rtti][weak_ref_type][operations][expired]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -618,8 +602,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when lock is called, then the output "
-    "shared_ptr "
-    "manages the same object",
+    "shared_ptr manages the same object",
     "[rtti][weak_ref_type][operations][lock]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -635,8 +618,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and an expired weak_ptr, when lock is called, then the output shared_ptr "
-    "is "
-    "empty",
+    "is empty",
     "[rtti][weak_ref_type][operations][lock]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -651,8 +633,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when lock is called with a null weak_ptr, then the output shared_ptr "
-    "remains "
-    "unchanged",
+    "remains unchanged",
     "[rtti][weak_ref_type][operations][lock][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -667,8 +648,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor, when lock is called with a null output shared_ptr, then it completes "
-    "without "
-    "error",
+    "without error",
     "[rtti][weak_ref_type][operations][lock][negative]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);
@@ -681,8 +661,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIWeakRefType descriptor and a non-expired weak_ptr, when lock is called, then the output "
-    "shared_ptr "
-    "increments the use count",
+    "shared_ptr increments the use count",
     "[rtti][weak_ref_type][operations][lock]") {
   const TypedRTTIClassType<WeakTarget> inner;
   const TypedRTTIWeakRefType<WeakTarget> descriptor(&inner);

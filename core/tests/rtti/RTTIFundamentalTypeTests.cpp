@@ -64,8 +64,7 @@ TEMPLATE_TEST_CASE(
 
 TEMPLATE_TEST_CASE(
     "Given a TypedRTTIFundamentalType descriptor, when observed through RTTIFundamentalType and RTTIType, then "
-    "metadata "
-    "reflects the mapped built-in name and C++ type traits",
+    "metadata reflects the mapped built-in name and C++ type traits",
     "[rtti][fundamental_type][tfundamental_type][metadata]", std::int32_t, std::uint32_t, std::int64_t, std::uint64_t,
     float, double, bool) {
   TypedRTTIFundamentalType<TestType> descriptor;

@@ -52,7 +52,7 @@ TEST_CASE(
 
 TEST_CASE("Given a stack frame, when invalid argument indices are addressed, then reads return nullptr",
           "[rtti][stack_frame][negative]") {
-  core::rtti::RTTIStackFrame frame(1, false, false);
+  const core::rtti::RTTIStackFrame frame(1, false, false);
 
   REQUIRE(frame.argPtr<std::int32_t>(1) == nullptr);
 }
@@ -86,7 +86,7 @@ TEST_CASE(
 
 TEST_CASE("Given a stack frame without a return slot, when returnPtr is queried, then nullptr is returned",
           "[rtti][stack_frame]") {
-  core::rtti::RTTIStackFrame frame(2, false, false);
+  const core::rtti::RTTIStackFrame frame(2, false, false);
 
   REQUIRE(frame.returnPtr<std::int32_t>() == nullptr);
 }

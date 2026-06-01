@@ -207,8 +207,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a registered non-trivial TypedRTTIClassType, when companion container descriptors are queried, then ref, "
-    "weak "
-    "ref, and array-of-ref descriptors are registered",
+    "weak ref, and array-of-ref descriptors are registered",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 

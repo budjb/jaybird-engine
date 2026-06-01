@@ -70,8 +70,7 @@ static_assert(!std::is_constructible_v<core::rtti::TypedRTTIClassFunction<declty
 
 TEST_CASE(
     "Given a member function with no return and no arguments, when invoked with a valid \"this\" pointer, then the "
-    "call "
-    "succeeds",
+    "call succeeds",
     "[rtti][class_function]") {
   core::rtti::RTTISystem::get().initialize();
 
@@ -276,8 +275,8 @@ TEST_CASE("Given a member function with a void return, when a stack frame is cre
           "[rtti][class_function]") {
   core::rtti::RTTISystem::get().initialize();
 
-  auto function = core::rtti::TypedRTTIClassFunction("touch_noreturn", &test::Sample::touch);
-  auto frame = function.createStackFrame();
+  const auto function = core::rtti::TypedRTTIClassFunction("touch_noreturn", &test::Sample::touch);
+  const auto frame = function.createStackFrame();
 
   // Should have no return slot
   REQUIRE(frame.returnPtr<void>() == nullptr);

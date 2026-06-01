@@ -185,8 +185,7 @@ TEMPLATE_TEST_CASE(
 
 TEMPLATE_TEST_CASE(
     "Given a TypedRTTIClassType descriptor, when observed through RTTIClassType and RTTIType, then metadata reflects "
-    "the "
-    "canonical mapped type name and trivial-kind classification",
+    "the canonical mapped type name and trivial-kind classification",
     "[rtti][class_type][tclass_type][metadata]", TrivialStruct, AlignedStruct, NonTrivialStruct) {
   TypedRTTIClassType<TestType> descriptor;
   RTTIClassType* asClass = &descriptor;
@@ -404,8 +403,7 @@ TEMPLATE_TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIClassType over a non-trivial type, when assign is called, then copy semantics apply and the "
-    "source "
-    "is not mutated",
+    "source is not mutated",
     "[rtti][class_type][operations][assign][non_trivial]") {
   TypedRTTIClassType<NonTrivialStruct> descriptor;
   const RTTIType& type = descriptor;
@@ -443,8 +441,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIClassType over an over-aligned type, when allocate is called, then returned address satisfies "
-    "the "
-    "required alignment",
+    "the required alignment",
     "[rtti][class_type][operations][allocate][aligned]") {
   TypedRTTIClassType<AlignedStruct> descriptor;
   const RTTIType& type = descriptor;
@@ -459,8 +456,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given TypedRTTIClassType descriptors for std::string and core::Vector<int>, when metadata is queried, then both "
-    "are "
-    "classified as non-trivial class kinds",
+    "are classified as non-trivial class kinds",
     "[rtti][class_type][tclass_type][metadata][built_in_like]") {
   REQUIRE_FALSE(std::is_trivially_copyable_v<std::string>);
   REQUIRE_FALSE(std::is_trivially_copyable_v<core::Vector<int>>);

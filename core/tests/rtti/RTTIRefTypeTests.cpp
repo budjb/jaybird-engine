@@ -86,8 +86,7 @@ TEST_CASE("Given a TypedRTTIRefType descriptor, when asArray is called through R
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor, when cast to RTTIRefType, RTTIContainerType, and RTTIType, then all casts "
-    "are "
-    "non-null",
+    "are non-null",
     "[rtti][ref_type][hierarchy]") {
   const TypedRTTIClassType<RefTarget> inner;
   TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -133,8 +132,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and a null destination, when assign is called, then it is a no-op and the "
-    "source "
-    "use count remains one",
+    "source use count remains one",
     "[rtti][ref_type][operations][assign][negative]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -165,8 +163,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and two shared_ptrs managing distinct objects with the same value, when "
-    "equals is "
-    "called, then it returns false",
+    "equals is called, then it returns false",
     "[rtti][ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -202,8 +199,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and a valid shared_ptr, when equals is called with a null left void pointer, "
-    "then "
-    "it returns false",
+    "then it returns false",
     "[rtti][ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -227,8 +223,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor, a non-empty shared_ptr, and an empty shared_ptr, when equals is called, then "
-    "it "
-    "returns false",
+    "it returns false",
     "[rtti][ref_type][operations][equals][negative]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -259,8 +254,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and memory obtained from allocate, when deallocate is called, then it "
-    "completes "
-    "without error",
+    "completes without error",
     "[rtti][ref_type][operations][allocate]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -299,8 +293,7 @@ TEST_CASE("Given a TypedRTTIRefType descriptor, when construct is called with nu
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and allocated and constructed storage, when destruct is called, then it "
-    "completes "
-    "without error",
+    "completes without error",
     "[rtti][ref_type][operations][destruct]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -317,8 +310,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor, when create is called, then the returned pointer is non-null and points to "
-    "an "
-    "empty shared_ptr",
+    "an empty shared_ptr",
     "[rtti][ref_type][operations][create]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -332,8 +324,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and an instance obtained from create, when destroy is called, then it "
-    "completes "
-    "without error",
+    "completes without error",
     "[rtti][ref_type][operations][destroy]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -406,8 +397,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and a non-empty shared_ptr, when get is called, then the returned void "
-    "pointer "
-    "equals the raw pointer managed by the shared_ptr",
+    "pointer equals the raw pointer managed by the shared_ptr",
     "[rtti][ref_type][operations][get]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);
@@ -551,8 +541,7 @@ TEST_CASE("Given a TypedRTTIRefType descriptor, when useCount is called with a n
 
 TEST_CASE(
     "Given a TypedRTTIRefType descriptor and two non-empty shared_ptrs, when swap is called, then their managed "
-    "objects "
-    "are exchanged",
+    "objects are exchanged",
     "[rtti][ref_type][operations][swap]") {
   const TypedRTTIClassType<RefTarget> inner;
   const TypedRTTIRefType<RefTarget> descriptor(&inner);

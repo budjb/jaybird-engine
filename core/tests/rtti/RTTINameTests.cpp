@@ -68,7 +68,7 @@ static_assert(!core::rtti::NamedVectorType<int>);
 
 TEST_CASE("Given a RTTITypeKind, when GetRTTIPrefix is requested, then each supported kind returns the expected prefix",
           "[rtti][type_name]") {
-  REQUIRE(static_cast<std::string_view>(core::rtti::GetRTTIPrefix<core::rtti::RTTITypeKind::NAME>()) == "");
+  REQUIRE(static_cast<std::string_view>(core::rtti::GetRTTIPrefix<core::rtti::RTTITypeKind::NAME>()).empty());
   REQUIRE(static_cast<std::string_view>(core::rtti::GetRTTIPrefix<core::rtti::RTTITypeKind::ARRAY>()) == "array:");
   REQUIRE(static_cast<std::string_view>(core::rtti::GetRTTIPrefix<core::rtti::RTTITypeKind::REF>()) == "ref:");
   REQUIRE(static_cast<std::string_view>(core::rtti::GetRTTIPrefix<core::rtti::RTTITypeKind::WEAK_REF>()) == "wref:");
