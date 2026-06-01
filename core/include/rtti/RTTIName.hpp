@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -281,6 +282,22 @@ template <RTTITypeKind K>
 [[nodiscard]] std::string GetPrefixedRTTIName(const std::string_view name) {
   return GetRTTIPrefix<K>().append(name);
 }
+
+/**
+ * @brief Name-provider specialization for @code std::shared_ptr<T>@endcode.
+ *
+ * This provider maps @code std::shared_ptr<T>@endcode to the canonical prefixed RTTI name
+ * for reference descriptors, such as @c "ref:MyType".
+ *
+ * @tparam T The referenced element type, which must satisfy @code NamedRTTIType@endcode.
+ */
+template <NamedRTTIType T>
+struct RTTINameProvider<std::shared_ptr<T>> {
+  /**
+   * @brief The canonical RTTI name for @code std::shared_ptr<T>@endcode.
+   */
+  static constexpr auto value = GetPrefixedRTTIName<RTTITypeKind::REF, T>();
+};
 
 /**
  * @brief Concept that is satisfied when @c C is a @c Vector specialization.

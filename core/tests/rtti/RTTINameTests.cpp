@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -41,6 +42,7 @@ static_assert(!core::rtti::has_type_name_member_v<test_types::PlainStruct>);
 // --- has_type_name_provider_v ---
 static_assert(core::rtti::has_type_name_provider_v<test_types::MappedNamedType>);
 static_assert(core::rtti::has_type_name_provider_v<test_types::MemberAndMappedType>);
+static_assert(core::rtti::has_type_name_provider_v<std::shared_ptr<test_types::MappedNamedType>>);
 static_assert(!core::rtti::has_type_name_provider_v<test_types::MemberNamedType>);
 static_assert(!core::rtti::has_type_name_provider_v<test_types::PlainStruct>);
 
@@ -48,6 +50,7 @@ static_assert(!core::rtti::has_type_name_provider_v<test_types::PlainStruct>);
 static_assert(core::rtti::NamedRTTIType<test_types::MemberNamedType>);
 static_assert(core::rtti::NamedRTTIType<test_types::MappedNamedType>);
 static_assert(core::rtti::NamedRTTIType<test_types::MemberAndMappedType>);
+static_assert(core::rtti::NamedRTTIType<std::shared_ptr<test_types::MappedNamedType>>);
 static_assert(!core::rtti::NamedRTTIType<test_types::PlainStruct>);
 
 // --- VectorType concept ---
@@ -104,6 +107,14 @@ TEST_CASE(
 
   REQUIRE(static_cast<std::string_view>(arrayName) == "array:member_priority");
   REQUIRE(static_cast<std::string_view>(refName) == "ref:mapped_named");
+}
+
+TEST_CASE(
+    "Given a shared_ptr of a named type, when GetRTTIName is used, then the ref-prefixed canonical name is returned",
+    "[rtti][type_name]") {
+  constexpr auto sharedPtrName = core::rtti::GetRTTIName<std::shared_ptr<test_types::MappedNamedType>>();
+
+  REQUIRE(static_cast<std::string_view>(sharedPtrName) == "ref:mapped_named");
 }
 
 TEST_CASE(

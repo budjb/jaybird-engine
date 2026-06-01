@@ -3,12 +3,15 @@
 #include <concepts>
 #include <memory>
 #include <shared_mutex>
+#include <type_traits>
 #include <unordered_map>
 
 #include "Export.hpp"
 #include "RTTIArrayType.hpp"
 #include "RTTIName.hpp"
+#include "RTTIRefType.hpp"
 #include "RTTIType.hpp"
+#include "RTTIWeakRefType.hpp"
 #include "types/Name.hpp"
 
 namespace core::rtti {
@@ -19,15 +22,30 @@ namespace core::rtti {
 class RTTIClassType;
 
 /**
+ * @brief Concept that checks whether a type @c T exposes a nested @c Type member alias.
+ *
+ * @tparam T The type to check for the presence of a nested @c Type member.
+ */
+template <typename T>
+constexpr bool has_type_v = requires { typename T::Type; };
+
+/**
+ * @brief Concept that identifies RTTI type descriptors that represent container types.
+ *
+ * @tparam T The candidate descriptor type to check.
+ */
+template <typename T>
+constexpr bool is_container_type_v = std::derived_from<T, RTTIContainerType>;
+
+/**
  * @brief Concept that identifies a concrete RTTI type descriptor suitable for registration.
  *
- * A type @c D satisfies @c TypeDescriptor if it publicly derives from @c RTTIType and
- * exposes a @c Type member alias that names the underlying C++ type it describes.
+ * A type @c D satisfies @c TypeDescriptor if it publicly derives from @c RTTIType.
  *
  * @tparam D The candidate descriptor type to check.
  */
 template <typename D>
-concept TypeDescriptor = std::derived_from<D, RTTIType> && requires { typename D::Type; };
+concept TypeDescriptor = std::derived_from<D, RTTIType>;
 
 /**
  * @brief A singleton that manages registration and retrieval of type information.
@@ -106,9 +124,9 @@ class JAYBIRD_API RTTIRegistry {
    * This is the lock-free core of registration, called from @c registerType while the exclusive lock is already held.
    * It also handles compile-time-conditional auto-registration of the companion @c RTTIArrayTType<D::Type>: the
    * companion is only created when @c D::Type satisfies @c HasTypeName (so that @c RTTIArrayTType can derive its
-   * canonical name at
-   * compile time). When that condition is false, no companion is created and no runtime recursion occurs. This design
-   * avoids both deadlock on the non-recursive @c std::shared_mutex and spurious compiler instantiation errors.
+   * canonical name at compile time). When that condition is false, no companion is created and no runtime recursion
+   * occurs. This design avoids both deadlock on the non-recursive @c std::shared_mutex and spurious compiler
+   * instantiation errors.
    *
    * @tparam D The concrete descriptor type, which must satisfy the @c TypeDescriptor concept.
    * @param type An owning pointer to the descriptor to insert.
@@ -150,8 +168,23 @@ bool RTTIRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
   auto* instance = type.get();
 
   if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
-    if constexpr (NamedRTTIType<typename D::Type>) {
-      registerTypeImpl(std::make_unique<RTTIArrayTType<typename D::Type>>(instance));
+    if constexpr (has_type_v<D>) {
+      using NativeType = D::Type;
+
+      if constexpr (!is_container_type_v<D> && NamedRTTIType<NativeType>) {
+        if (instance->kind() == RTTITypeKind::CLASS) {
+          auto refType = std::make_unique<RTTIRefTType<NativeType>>(instance);
+          auto* refDescriptor = refType.get();
+
+          registerTypeImpl(std::move(refType));
+          registerTypeImpl(std::make_unique<RTTIWeakRefTType<NativeType>>(instance));
+          registerTypeImpl(std::make_unique<RTTIArrayTType<std::shared_ptr<NativeType>>>(refDescriptor));
+        } else {
+          registerTypeImpl(std::make_unique<RTTIArrayTType<NativeType>>(instance));
+        }
+      }
+    } else {
+      // TODO: handle runtime-only companion types
     }
     return true;
   }

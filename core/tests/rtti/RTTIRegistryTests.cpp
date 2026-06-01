@@ -205,6 +205,36 @@ TEST_CASE(
   REQUIRE(static_cast<RTTIType*>(asClass) == asType);
 }
 
+TEST_CASE(
+    "Given a registered non-trivial RTTIClassTType, when companion container descriptors are queried, then ref, weak "
+    "ref, and array-of-ref descriptors are registered",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  registry.registerType(std::make_unique<RTTIClassTType<RegTargetE>>());
+
+  RTTIType* baseType = registry.getType("reg_target_e");
+  RTTIType* refType = registry.getType("ref:reg_target_e");
+  RTTIType* weakRefType = registry.getType("wref:reg_target_e");
+  RTTIType* refArrayType = registry.getType("array:ref:reg_target_e");
+
+  REQUIRE(baseType != nullptr);
+  REQUIRE(baseType->kind() == RTTITypeKind::CLASS);
+
+  REQUIRE(refType != nullptr);
+  REQUIRE(refType->kind() == RTTITypeKind::REF);
+
+  REQUIRE(weakRefType != nullptr);
+  REQUIRE(weakRefType->kind() == RTTITypeKind::WEAK_REF);
+
+  REQUIRE(refArrayType != nullptr);
+  REQUIRE(refArrayType->kind() == RTTITypeKind::ARRAY);
+
+  auto* refArrayDescriptor = reinterpret_cast<RTTIArrayType*>(refArrayType);
+  REQUIRE(refArrayDescriptor != nullptr);
+  REQUIRE(refArrayDescriptor->inner() == refType);
+}
+
 // =============================================================================
 // Auto-array companion registration
 // =============================================================================

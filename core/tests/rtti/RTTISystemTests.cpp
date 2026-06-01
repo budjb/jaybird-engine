@@ -6,14 +6,18 @@
 #include "rtti/RTTISystem.hpp"
 #include "rtti/RTTITypeKind.hpp"
 
-#define VALIDATE_RTTI_TYPE(registry, typeName, expectedKind)                                                      \
-  REQUIRE(registry.hasType(typeName));                                                                            \
-  REQUIRE(registry.getType(typeName)->kind() == expectedKind);                                                    \
-  REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName)));          \
-  REQUIRE(registry.getType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName))->kind() == \
-          core::rtti::RTTITypeKind::ARRAY);                                                                       \
-  if (expectedKind == core::rtti::RTTITypeKind::CLASS) {                                                          \
-    /* TODO: check refs */                                                                                        \
+#define VALIDATE_RTTI_TYPE(registry, typeName, expectedKind)                                                        \
+  REQUIRE(registry.hasType(typeName));                                                                              \
+  REQUIRE(registry.getType(typeName)->kind() == expectedKind);                                                      \
+  if (expectedKind == core::rtti::RTTITypeKind::CLASS) {                                                            \
+    REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::REF>(typeName)));            \
+    REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::WEAK_REF>(typeName)));       \
+    REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(                      \
+        core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::REF>(typeName))));                                \
+  } else {                                                                                                          \
+    REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName)));          \
+    REQUIRE(registry.getType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::ARRAY>(typeName))->kind() == \
+            core::rtti::RTTITypeKind::ARRAY);                                                                       \
   }
 
 TEST_CASE(
