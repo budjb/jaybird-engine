@@ -64,6 +64,8 @@ TEST_CASE(
 
   VALIDATE_RTTI_TYPE(registry, "Quaternion", core::rtti::RTTITypeKind::SIMPLE);
   VALIDATE_RTTI_TYPE(registry, "EulerAngles", core::rtti::RTTITypeKind::SIMPLE);
+  VALIDATE_RTTI_TYPE(registry, "Vector2", core::rtti::RTTITypeKind::SIMPLE);
+  VALIDATE_RTTI_TYPE(registry, "Vector3", core::rtti::RTTITypeKind::SIMPLE);
   VALIDATE_RTTI_TYPE(registry, "Color", core::rtti::RTTITypeKind::SIMPLE);
 
   REQUIRE_FALSE(typeSystem.initialize());

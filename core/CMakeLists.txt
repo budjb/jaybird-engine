@@ -43,6 +43,10 @@ add_library(jaybird-engine-core SHARED
         src/rtti/RTTIGlobalFunction.cpp
         src/rtti/RTTIClassFunction.cpp
         include/rtti/RTTITypedFunction.hpp
+        src/types/Vector2.cpp
+        include/types/Vector2.hpp
+        src/types/Vector3.cpp
+        include/types/Vector3.hpp
 )
 
 include(GenerateExportHeader)
@@ -69,6 +73,8 @@ if (BUILD_TESTING)
           tests/SpinLockTests.cpp
           tests/types/QuaternionTests.cpp
           tests/types/EulerAnglesTests.cpp
+          tests/types/Vector2Tests.cpp
+          tests/types/Vector3Tests.cpp
           tests/types/ColorTests.cpp
           tests/rtti/RTTIFundamentalTypeTests.cpp
           tests/rtti/RTTIClassTypeTests.cpp

@@ -10,8 +10,11 @@
 #include "types/Color.hpp"
 #include "types/EulerAngles.hpp"
 #include "types/Quaternion.hpp"
+#include "types/Vector2.hpp"
+#include "types/Vector3.hpp"
 
 namespace core::rtti {
+class Vector3;
 RTTISystem& RTTISystem::get() noexcept {
   static RTTISystem typeSystem{};
   return typeSystem;
@@ -65,6 +68,8 @@ void RTTISystem::registerBuiltInTypes() noexcept {
   m_registry.registerType(std::make_unique<RTTIStringType>());
   m_registry.registerType(std::make_unique<TypedRTTIClassType<Quaternion>>());
   m_registry.registerType(std::make_unique<TypedRTTIClassType<EulerAngles>>());
+  m_registry.registerType(std::make_unique<TypedRTTIClassType<Vector2>>());
+  m_registry.registerType(std::make_unique<TypedRTTIClassType<Vector3>>());
   m_registry.registerType(std::make_unique<TypedRTTIClassType<Color>>());
 }
 }  // namespace core::rtti
