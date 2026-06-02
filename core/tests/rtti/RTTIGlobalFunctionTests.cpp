@@ -3,8 +3,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "rtti/RTTIGlobalFunction.hpp"
 #include "rtti/RTTIName.hpp"
+#include "rtti/RTTISystem.hpp"
+#include "rtti/RTTITypedFunction.hpp"
 
 namespace test {
 std::int32_t globalAnswer() {

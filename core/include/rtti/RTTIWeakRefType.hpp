@@ -1,9 +1,10 @@
 #pragma once
+
 #include <memory>
 
 #include "NamePool.hpp"
-#include "RTTIContainerType.hpp"
-#include "RTTIName.hpp"
+#include "rtti/RTTIContainerType.hpp"
+#include "rtti/RTTIName.hpp"
 
 namespace core::rtti {
 
@@ -16,7 +17,7 @@ namespace core::rtti {
 class RTTIWeakRefType : public RTTIContainerType {
  public:
   /**
-   * @brief Constructs an @c IWeakRefType with the given name, size, alignment, and inner type descriptor.
+   * @brief Constructs an @c RTTIWeakRefType with the given name, size, alignment, and inner type descriptor.
    *
    * @param name The interned string name of the weak reference type.
    * @param size The size of the weak pointer type in bytes.
@@ -28,7 +29,7 @@ class RTTIWeakRefType : public RTTIContainerType {
       : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::WEAK_REF) {}
 
   /**
-   * @brief Virtual destructor for @code IWeakRefType@endcode.
+   * @brief Virtual destructor for @code RTTIWeakRefType@endcode.
    */
   ~RTTIWeakRefType() override = default;
 

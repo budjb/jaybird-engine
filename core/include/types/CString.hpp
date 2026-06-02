@@ -207,7 +207,7 @@ class CString {
 
  private:
   /**
-   * @brief The character array that holds the string data.
+   * @brief This array holds the string data, including the null terminator.
    */
   char value[N]{};
 };

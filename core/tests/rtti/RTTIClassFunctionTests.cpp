@@ -5,7 +5,9 @@
 #include <type_traits>
 
 #include "rtti/RTTIClassFunction.hpp"
+#include "rtti/RTTITypedFunction.hpp"
 #include "rtti/RTTIName.hpp"
+#include "rtti/RTTISystem.hpp"
 
 namespace test {
 struct UnregisteredArg {

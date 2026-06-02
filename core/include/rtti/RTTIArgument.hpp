@@ -1,13 +1,13 @@
 #pragma once
 
-#include "RTTIType.hpp"
+#include "rtti/RTTIType.hpp"
 #include "types/Name.hpp"
 
 namespace core::rtti {
 /**
  * @brief Represents an argument to an RTTI function, consisting of a name and a type.
  */
-class RTTIArgument {
+class JAYBIRD_API RTTIArgument {
  public:
   /**
    * @brief Constructs a @c RTTIArgument with the given name and type.
@@ -15,7 +15,7 @@ class RTTIArgument {
    * @param name The interned name of the argument as a @code Name@endcode.
    * @param type The type of the argument as a pointer to an @code RTTIType@endcode.
    */
-  RTTIArgument(const Name& name, const RTTIType* type) noexcept : m_name(name), m_type(type) {}
+  RTTIArgument(const Name& name, RTTIType* type) noexcept : m_name(name), m_type(type) {}
 
   /**
    * @brief Returns the interned name of the argument.
@@ -37,13 +37,13 @@ class RTTIArgument {
 
  private:
   /**
-   * @brief The interned name of the argument.
+   * @brief This field stores the interned name of the argument.
    */
   Name m_name;
 
   /**
-   * @brief A pointer to the type of the argument.
+   * @brief This pointer refers to the type of the argument.
    */
-  const RTTIType* m_type;
+  RTTIType* m_type;
 };
 }  // namespace core::rtti

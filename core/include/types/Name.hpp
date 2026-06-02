@@ -135,7 +135,7 @@ class JAYBIRD_API Name {
 
  private:
   /**
-   * @brief The hash value of this @code Name@endcode.
+   * @brief This field stores the hash value of this @code Name@endcode.
    */
   hash_t m_hash = 0;
 };
@@ -147,6 +147,13 @@ class JAYBIRD_API Name {
  */
 template <>
 struct std::hash<core::Name> {
+  /**
+   * @brief Computes a hash code for the given @code core::Name@endcode.
+   *
+   * @param s This parameter provides the @code core::Name@endcode instance to hash.
+   * @return This function returns the @code std::size_t@endcode hash code derived from the stored
+   * @code core::hash_t@endcode value.
+   */
   std::size_t operator()(const core::Name& s) const noexcept {
     return std::hash<core::hash_t>{}(s.hash());
   }
@@ -157,5 +164,8 @@ struct std::hash<core::Name> {
  */
 template <>
 struct core::rtti::RTTINameProvider<core::Name> {
+  /**
+   * @brief This constant stores the canonical RTTI name string for @code core::Name@endcode.
+   */
   static constexpr char value[] = "Name";
 };

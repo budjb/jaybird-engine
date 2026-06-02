@@ -15,13 +15,14 @@ namespace core::rtti {
 class RTTIStringType : public TypedRTTIType<std::string, RTTIType> {
  public:
   /**
-   * @brief Constructs an @code RTTStringType@endcode descriptor with the canonical @code std::string@endcode type name.
+   * @brief Constructs an @code RTTIStringType@endcode descriptor with the canonical @code std::string@endcode type
+   * name.
    */
   explicit RTTIStringType() noexcept
       : TypedRTTIType(NamePool::get().addName(GetRTTIName<std::string>()), RTTITypeKind::STRING) {}
 
   /**
-   * @brief Destroys the @code RTTStringType@endcode descriptor.
+   * @brief Destroys the @code RTTIStringType@endcode descriptor.
    */
   ~RTTIStringType() override = default;
 };

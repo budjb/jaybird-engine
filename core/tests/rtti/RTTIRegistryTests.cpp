@@ -6,8 +6,10 @@
 
 #include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
+#include "rtti/RTTIGlobalFunction.hpp"
 #include "rtti/RTTIRegistry.hpp"
 #include "rtti/RTTISystem.hpp"
+#include "rtti/RTTITypedFunction.hpp"
 #include "types/CString.hpp"
 
 using core::Vector;
@@ -104,6 +106,27 @@ struct RegTargetB_Solo {
   bool operator==(const RegTargetB_Solo&) const = default;
 };
 
+/** @brief Test struct J is used exclusively for unregister-type tests. */
+struct RegTargetJ_Solo {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  int v{0};
+  bool operator==(const RegTargetJ_Solo&) const = default;
+};
+
+/** @brief Test struct K is used exclusively to validate class companion unregister behavior. */
+struct RegTargetK_Solo {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  std::string v{};
+  bool operator==(const RegTargetK_Solo&) const = default;
+};
+
+/** @brief Test struct L is used exclusively to validate unregistering only an auto-array companion. */
+struct RegTargetL_Solo {
+  // ReSharper disable once CppDeclaratorNeverUsed
+  int v{0};
+  bool operator==(const RegTargetL_Solo&) const = default;
+};
+
 REGISTER_TYPE_NAME(RegTargetA, "reg_target_a");
 REGISTER_TYPE_NAME(RegTargetB, "reg_target_b");
 REGISTER_TYPE_NAME(RegTargetC, "reg_target_c");
@@ -115,6 +138,9 @@ REGISTER_TYPE_NAME(RegTargetH, "reg_target_h");
 REGISTER_TYPE_NAME(RegTargetI, "reg_target_i");
 REGISTER_TYPE_NAME(RegTargetA_Solo, "reg_target_a_solo");
 REGISTER_TYPE_NAME(RegTargetB_Solo, "reg_target_b_solo");
+REGISTER_TYPE_NAME(RegTargetJ_Solo, "reg_target_j_solo");
+REGISTER_TYPE_NAME(RegTargetK_Solo, "reg_target_k_solo");
+REGISTER_TYPE_NAME(RegTargetL_Solo, "reg_target_l_solo");
 
 namespace {
 using core::Name;
@@ -126,6 +152,13 @@ using core::rtti::RTTIType;
 using core::rtti::RTTITypeKind;
 using core::rtti::TypedRTTIArrayType;
 using core::rtti::TypedRTTIClassType;
+
+void registryPingFunction() {}
+
+std::unique_ptr<core::rtti::RTTIGlobalFunction> makeFunctionDescriptor(const char* name) {
+  using FunctionDescriptor = core::rtti::TypedRTTIGlobalFunction<decltype(&registryPingFunction)>;
+  return std::make_unique<FunctionDescriptor>(name, &registryPingFunction);
+}
 
 template <typename T>
 constexpr RTTITypeKind expectedClassRegistrationKind() {
@@ -168,14 +201,16 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a TypedRTTIClassType descriptor, when registered in RTTIRegistry, then registerType returns true and the "
-    "type is retrievable",
+    "Given a TypedRTTIClassType descriptor, when registered in RTTIRegistry, then registerType returns a non-null "
+    "pointer and the type is retrievable",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetA_Solo>>()));
+  auto* registered = registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetA_Solo>>());
+
+  REQUIRE(registered != nullptr);
   REQUIRE(registry.hasType("reg_target_a_solo"));
-  REQUIRE(registry.getType("reg_target_a_solo") != nullptr);
+  REQUIRE(registry.getType("reg_target_a_solo") == registered);
 }
 
 TEST_CASE(
@@ -245,7 +280,7 @@ TEST_CASE(
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
-  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB_Solo>>()));
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB_Solo>>()) != nullptr);
 
   const Name arrayName("array:reg_target_b_solo");
   REQUIRE(registry.hasType(arrayName));
@@ -291,10 +326,10 @@ TEST_CASE(
   RTTIType* inner = registry.getType("reg_target_i");
   REQUIRE(inner != nullptr);
 
-  // The auto-array is already registered; re-registering it returns false (duplicate) but does not crash.
-  const bool reregistered = registry.registerType(
+  // The auto-array is already registered; re-registering it returns nullptr (duplicate) but does not crash.
+  auto* reregistered = registry.registerType(
       std::make_unique<TypedRTTIArrayType<RegTargetI>>(reinterpret_cast<TypedRTTIClassType<RegTargetI>*>(inner)));
-  REQUIRE_FALSE(reregistered);
+  REQUIRE(reregistered == nullptr);
 
   // No second-order array should ever exist.
   REQUIRE_FALSE(registry.hasType("array:array:reg_target_i"));
@@ -304,13 +339,13 @@ TEST_CASE(
 // Duplicate registration
 // =============================================================================
 
-TEST_CASE("Given a type already registered, when the same name is registered again, then registerType returns false",
+TEST_CASE("Given a type already registered, when the same name is registered again, then registerType returns nullptr",
           "[rtti][type_registry][negative]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>());
 
-  REQUIRE_FALSE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>()));
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetC>>()) == nullptr);
 }
 
 TEST_CASE(
@@ -381,8 +416,8 @@ TEST_CASE(
 
   for (int i = 0; i < writerCount; ++i) {
     threads.emplaceBack([&registry, &successes, i]() {
-      const bool ok = registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetH>>());
-      successes[static_cast<std::size_t>(i)] = ok ? 1 : 0;
+      auto* registered = registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetH>>());
+      successes[static_cast<std::size_t>(i)] = registered != nullptr ? 1 : 0;
     });
   }
 
@@ -447,3 +482,130 @@ TEST_CASE(
 
   REQUIRE_FALSE(inconsistentRead.load(std::memory_order_relaxed));
 }
+
+// =============================================================================
+// Global function registration and retrieval
+// =============================================================================
+
+TEST_CASE(
+    "Given an unregistered global function name, when queried in RTTIRegistry, then hasFunction returns false and "
+    "getFunction returns nullptr",
+    "[rtti][type_registry]") {
+  const RTTIRegistry& registry = RTTISystem::get().registry();
+  const Name missing("registry_test_missing_function_xyz_1234");
+
+  REQUIRE_FALSE(registry.hasFunction(missing));
+  REQUIRE(registry.getFunction(missing) == nullptr);
+}
+
+TEST_CASE(
+    "Given a reflected global function descriptor, when registered in RTTIRegistry, then it is retrievable by name",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  auto* registered = registry.registerFunction(makeFunctionDescriptor("registry_ping_function_a"));
+
+  REQUIRE(registered != nullptr);
+  REQUIRE(registry.hasFunction("registry_ping_function_a"));
+  REQUIRE(registry.getFunction("registry_ping_function_a") == registered);
+}
+
+TEST_CASE(
+    "Given a global function already registered, when a second descriptor with the same name is registered, then "
+    "registerFunction returns nullptr and the original remains retrievable",
+    "[rtti][type_registry][negative]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  auto* first = registry.registerFunction(makeFunctionDescriptor("registry_ping_function_b"));
+  auto* second = registry.registerFunction(makeFunctionDescriptor("registry_ping_function_b"));
+
+  REQUIRE(first != nullptr);
+  REQUIRE(second == nullptr);
+  REQUIRE(registry.getFunction("registry_ping_function_b") == first);
+}
+
+#ifdef TESTING_ENABLED
+// =============================================================================
+// Unregister APIs (testing-only)
+// =============================================================================
+
+TEST_CASE(
+    "Given a registered type, when unregisterType is called in tests, then the type and companion descriptors are "
+    "removed",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetJ_Solo>>()) != nullptr);
+  REQUIRE(registry.hasType("reg_target_j_solo"));
+  REQUIRE(registry.hasType("array:reg_target_j_solo"));
+
+  REQUIRE(registry.unregisterType("reg_target_j_solo"));
+  REQUIRE_FALSE(registry.hasType("reg_target_j_solo"));
+  REQUIRE_FALSE(registry.hasType("array:reg_target_j_solo"));
+}
+
+TEST_CASE(
+    "Given a registered non-trivial class type, when unregisterType is called in tests, then class companion "
+    "descriptors are removed",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetK_Solo>>()) != nullptr);
+  REQUIRE(registry.hasType("reg_target_k_solo"));
+  REQUIRE(registry.hasType("ref:reg_target_k_solo"));
+  REQUIRE(registry.hasType("wref:reg_target_k_solo"));
+  REQUIRE(registry.hasType("array:ref:reg_target_k_solo"));
+
+  REQUIRE(registry.unregisterType("reg_target_k_solo"));
+  REQUIRE_FALSE(registry.hasType("reg_target_k_solo"));
+  REQUIRE_FALSE(registry.hasType("ref:reg_target_k_solo"));
+  REQUIRE_FALSE(registry.hasType("wref:reg_target_k_solo"));
+  REQUIRE_FALSE(registry.hasType("array:ref:reg_target_k_solo"));
+}
+
+TEST_CASE(
+    "Given a registered type with an auto-array companion, when unregisterType is called for only the array name in "
+    "tests, then the base type remains registered",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetL_Solo>>()) != nullptr);
+  REQUIRE(registry.hasType("reg_target_l_solo"));
+  REQUIRE(registry.hasType("array:reg_target_l_solo"));
+
+  REQUIRE(registry.unregisterType("array:reg_target_l_solo"));
+  REQUIRE(registry.hasType("reg_target_l_solo"));
+  REQUIRE_FALSE(registry.hasType("array:reg_target_l_solo"));
+}
+
+TEST_CASE("Given a type name that is not registered, when unregisterType is called in tests, then it returns false",
+          "[rtti][type_registry][negative]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE_FALSE(registry.unregisterType("registry_test_missing_unreg_type_xyz_1234"));
+}
+
+TEST_CASE(
+    "Given a registered global function, when unregisterFunction is called in tests, then the function is removed",
+    "[rtti][type_registry]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE(registry.registerFunction(makeFunctionDescriptor("registry_ping_function_c")) != nullptr);
+  REQUIRE(registry.hasFunction("registry_ping_function_c"));
+
+  REQUIRE(registry.unregisterFunction("registry_ping_function_c"));
+  REQUIRE_FALSE(registry.hasFunction("registry_ping_function_c"));
+  REQUIRE(registry.getFunction("registry_ping_function_c") == nullptr);
+}
+
+TEST_CASE(
+    "Given a global function that was already removed, when unregisterFunction is called again in tests, then it "
+    "returns false",
+    "[rtti][type_registry][negative]") {
+  RTTIRegistry& registry = RTTISystem::get().registry();
+
+  REQUIRE(registry.registerFunction(makeFunctionDescriptor("registry_ping_function_d")) != nullptr);
+  REQUIRE(registry.unregisterFunction("registry_ping_function_d"));
+  REQUIRE_FALSE(registry.unregisterFunction("registry_ping_function_d"));
+}
+#endif

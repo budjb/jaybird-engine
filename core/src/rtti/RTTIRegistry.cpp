@@ -1,10 +1,46 @@
-#include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIRegistry.hpp"
+
+#include "rtti/RTTIClassType.hpp"
+#include "rtti/RTTIGlobalFunction.hpp"
 #include "rtti/RTTIType.hpp"
 
 namespace core::rtti {
+namespace {
+bool unregisterTypeRecursive(std::unordered_map<Name, std::unique_ptr<RTTIType>>& types, const Name& name) {
+  const auto it = types.find(name);
+
+  if (it == types.end()) {
+    return false;
+  }
+
+  const auto kind = it->second->kind();
+
+  if (kind != RTTITypeKind::ARRAY) {
+    unregisterTypeRecursive(types, GetPrefixedRTTIName<RTTITypeKind::ARRAY>(name));
+  }
+
+  if (kind != RTTITypeKind::REF) {
+    unregisterTypeRecursive(types, GetPrefixedRTTIName<RTTITypeKind::REF>(name));
+  }
+
+  if (kind != RTTITypeKind::WEAK_REF) {
+    unregisterTypeRecursive(types, GetPrefixedRTTIName<RTTITypeKind::WEAK_REF>(name));
+  }
+
+  types.erase(it);
+  return true;
+}
+}  // namespace
+
+RTTIRegistry::~RTTIRegistry() = default;
+
+bool RTTIRegistry::hasType(const Name& name) const noexcept {
+  std::shared_lock lock(m_typesMutex);
+  return m_types.contains(name);
+}
+
 RTTIType* RTTIRegistry::getType(const Name& name) const {
-  std::shared_lock lock(m_mutex);
+  std::shared_lock lock(m_typesMutex);
 
   if (m_types.contains(name)) {
     return m_types.at(name).get();
@@ -19,35 +55,48 @@ RTTIClassType* RTTIRegistry::getClass(const Name& name) const {
   return nullptr;
 }
 
+#ifdef TESTING_ENABLED
 bool RTTIRegistry::unregisterType(const Name& name) {
-  std::unique_lock lock(m_mutex);
+  std::unique_lock lock(m_typesMutex);
+  return unregisterTypeRecursive(m_types, name);
+}
+#endif
 
-  const auto it = m_types.find(name);
+bool RTTIRegistry::hasFunction(const Name& name) const noexcept {
+  std::shared_lock lock(m_functionsMutex);
+  return m_functions.contains(name);
+}
 
-  if (it == m_types.end()) {
+RTTIGlobalFunction* RTTIRegistry::getFunction(const Name& name) const noexcept {
+  std::shared_lock lock(m_functionsMutex);
+
+  if (m_functions.contains(name)) {
+    return m_functions.at(name).get();
+  }
+
+  return nullptr;
+}
+
+RTTIGlobalFunction* RTTIRegistry::registerFunction(std::unique_ptr<RTTIGlobalFunction>&& function) noexcept {
+  std::unique_lock lock(m_functionsMutex);
+  if (auto [it, success] = m_functions.emplace(function->name(), std::move(function)); success) {
+    return it->second.get();
+  }
+  return nullptr;
+}
+
+#ifdef TESTING_ENABLED
+bool RTTIRegistry::unregisterFunction(const Name& name) noexcept {
+  std::unique_lock lock(m_functionsMutex);
+
+  const auto it = m_functions.find(name);
+
+  if (it == m_functions.end()) {
     return false;
   }
 
-  const auto* type = it->second.get();
-
-  if (type->kind() != RTTITypeKind::ARRAY) {
-    unregisterType(GetPrefixedRTTIName<RTTITypeKind::ARRAY>(name));
-  }
-
-  if (type->kind() != RTTITypeKind::REF) {
-    unregisterType(GetPrefixedRTTIName<RTTITypeKind::REF>(name));
-  }
-
-  if (type->kind() != RTTITypeKind::WEAK_REF) {
-    unregisterType(GetPrefixedRTTIName<RTTITypeKind::WEAK_REF>(name));
-  }
-
-  m_types.erase(it);
+  m_functions.erase(it);
   return true;
 }
-
-bool RTTIRegistry::hasType(const Name& name) const noexcept {
-  std::shared_lock lock(m_mutex);
-  return m_types.contains(name);
-}
+#endif
 }  // namespace core::rtti

@@ -85,12 +85,12 @@ class JAYBIRD_API NamePool {
   NamePool() = default;
 
   /**
-   * @brief Protects concurrent access to the pool.
+   * @brief This mutex protects concurrent access to the pool.
    */
   mutable std::shared_mutex m_mutex;
 
   /**
-   * @brief Maps interned hashes to their corresponding strings.
+   * @brief This map stores interned hashes and their corresponding strings.
    */
   std::unordered_map<Name, std::string> m_names;
 };

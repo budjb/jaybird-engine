@@ -15,12 +15,12 @@ namespace core::rtti {
 class RTTINameType : public TypedRTTIType<Name, RTTIType> {
  public:
   /**
-   * @brief Constructs an @code RTTNameType@endcode descriptor with the canonical @code Name@endcode type name.
+   * @brief Constructs an @code RTTINameType@endcode descriptor with the canonical @code Name@endcode type name.
    */
   explicit RTTINameType() noexcept : TypedRTTIType(NamePool::get().addName(GetRTTIName<Name>()), RTTITypeKind::NAME) {}
 
   /**
-   * @brief Destroys the @code RTTNameType@endcode descriptor.
+   * @brief Destroys the @code RTTINameType@endcode descriptor.
    */
   ~RTTINameType() override = default;
 };

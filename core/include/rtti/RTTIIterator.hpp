@@ -314,17 +314,16 @@ class RTTIIterator {
 
  private:
   /**
-   * @brief Element size in bytes used by the type-erased (`T=void`) iterator path.
+   * @brief This field stores the element size in bytes used by the type-erased (@c T=void) iterator path.
    */
   std::size_t m_elementSize;
 
   /**
-   * @brief A pointer to the current element in the array. This is the primary data member of the iterator that tracks
-   * its position within the array. The type of this pointer is void* to allow for type-erased access to array elements,
-   * and the actual type of the elements is determined by the template parameter T.
+   * @brief This pointer tracks the current position within the array.
    *
-   * When T is void, the iterator uses the size of the inner type from the array type descriptor to perform pointer
-   * arithmetic correctly, treating the pointer as a byte pointer for arithmetic operations.
+   * The pointer is stored as @c void* to allow type-erased access to array elements. When @c T is @c void,
+   * the iterator treats it as a byte pointer and uses @c m_elementSize for arithmetic. Otherwise,
+   * it is cast to @code T*@endcode for typed arithmetic.
    */
   void* m_ptr;
 };
@@ -636,10 +635,11 @@ class ReverseIterator {
 
  private:
   /**
-   * @brief The underlying regular iterator that this reverse iterator is based on. The reverse iterator points to the
-   * element before the position of this regular iterator, which is the standard behavior for reverse iterators in C++.
-   * This member is used to implement all the operations of the reverse iterator by manipulating the underlying regular
-   * iterator accordingly.
+   * @brief This field holds the underlying regular iterator that this reverse iterator is based on.
+   *
+   * The reverse iterator points to the element before the position of the underlying forward iterator,
+   * which is the standard C++ reverse iterator semantic. All reverse iterator operations are implemented
+   * by manipulating this underlying iterator accordingly.
    */
   RTTIIterator<T> m_iterator;
 };

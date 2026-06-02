@@ -2,8 +2,8 @@
 
 #include "Export.hpp"
 #include "NamePool.hpp"
-#include "RTTIName.hpp"
-#include "RTTIType.hpp"
+#include "rtti/RTTIName.hpp"
+#include "rtti/RTTIType.hpp"
 
 namespace core::rtti {
 
@@ -16,7 +16,7 @@ namespace core::rtti {
 class JAYBIRD_API RTTIFundamentalType : public RTTIType {
  public:
   /**
-   * @brief Constructs an @c IFundamentalType with the given metadata.
+   * @brief Constructs an @c RTTIFundamentalType with the given metadata.
    *
    * @param name The interned string name of the fundamental type.
    * @param size The size of the fundamental type in bytes.
@@ -25,7 +25,7 @@ class JAYBIRD_API RTTIFundamentalType : public RTTIType {
   explicit RTTIFundamentalType(const Name& name, std::size_t size, std::size_t alignment) noexcept;
 
   /**
-   * @brief Virtual destructor for the @c IFundamentalType class.
+   * @brief Virtual destructor for the @c RTTIFundamentalType class.
    */
   ~RTTIFundamentalType() override;
 };
@@ -50,10 +50,10 @@ class TypedRTTIFundamentalType : public TypedRTTIType<T, RTTIFundamentalType> {
   using Type = T;
 
   /**
-   * @brief Constructs a @c TFundamentalType for the specified type @code T@endcode.
+   * @brief Constructs a @c TypedRTTIFundamentalType for the specified type @code T@endcode.
    *
-   * The constructor initializes the base @c IFundamentalType with the type name obtained from the @c TypeName mapping
-   * for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
+   * The constructor initializes the base @c RTTIFundamentalType with the type name obtained from the @c TypeName
+   * mapping for type @c T and sets the type kind to @code RTTITypeKind::FUNDAMENTAL@endcode.
    */
   TypedRTTIFundamentalType() noexcept
       : TypedRTTIType<T, RTTIFundamentalType>(NamePool::get().addName(GetRTTIName<T>())) {}

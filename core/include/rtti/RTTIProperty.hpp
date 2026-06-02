@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RTTIType.hpp"
+#include "rtti/RTTIType.hpp"
 #include "types/Name.hpp"
 
 namespace core::rtti {
@@ -37,14 +37,13 @@ class JAYBIRD_API RTTIProperty {
 
  private:
   /**
-   * @brief The interned name of the property, which serves as a unique identifier for the property within the RTTI
+   * @brief This field stores the interned name of the property, which serves as its unique identifier within the RTTI
    * system.
    */
   Name m_name;
 
   /**
-   * @brief A pointer to the type of the property, which describes the data type of the property and allows for type
-   * introspection and dynamic type checking within the RTTI system.
+   * @brief This pointer refers to the type of the property, enabling type introspection and dynamic type checking.
    */
   const RTTIType* m_type;
 };

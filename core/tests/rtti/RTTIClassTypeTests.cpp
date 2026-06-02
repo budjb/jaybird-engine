@@ -7,6 +7,8 @@
 #include "Vector.hpp"
 #include "rtti/RTTIClassType.hpp"
 #include "rtti/RTTIName.hpp"
+#include "rtti/RTTISystem.hpp"
+#include "rtti/RTTITypedFunction.hpp"
 #include "types/CString.hpp"
 
 /**

@@ -105,33 +105,36 @@ template <typename T>
 struct CanonicalTypeNameType {
  private:
   /**
-   * @brief The type to base the fixed width type lookup on.
+   * @brief This alias is the type used as the base for the fixed-width type lookup.
    */
   using BaseType = std::remove_cvref_t<T>;
 
   /**
-   * @brief Whether the base type is a character type that should be excluded from integral normalization.
+   * @brief This flag indicates whether the base type is a character type that should be excluded from integral
+   * normalization.
    */
   static constexpr bool isCharacterCategory = std::same_as<BaseType, char> || std::same_as<BaseType, wchar_t> ||
                                               std::same_as<BaseType, char8_t> || std::same_as<BaseType, char16_t> ||
                                               std::same_as<BaseType, char32_t>;
 
   /**
-   * @brief Whether the base type is an integral type that is a candidate for normalization to a fixed-width type.
+   * @brief This flag indicates whether the base type is an integral type that is a candidate for normalization to a
+   * fixed-width type.
    */
   static constexpr bool isIntegralCandidate =
       std::is_integral_v<BaseType> && !std::same_as<BaseType, bool> && !isCharacterCategory;
 
   /**
-   * @brief The canonical integral type corresponding to the base type's signedness and width, or @c void if the base
-   * type is not a candidate for normalization.
+   * @brief This alias is the canonical integral type corresponding to the base type's signedness and width, or
+   * @c void when the base type is not a candidate for normalization.
    */
   using CanonicalIntegral = FixedWidthIntegral<std::is_signed_v<BaseType>, sizeof(BaseType)>::type;
 
  public:
   /**
-   * @brief The canonical type to use for @c RTTINameProvider lookups, which is either the normalized fixed-width
-   * integral type or the original base type if it is not a candidate for normalization.
+   * @brief This alias is the canonical type to use for @c RTTINameProvider lookups.
+   *
+   * It is the normalized fixed-width integral type when the base type qualifies, or the original base type otherwise.
    */
   using type =
       std::conditional_t<isIntegralCandidate && !std::same_as<CanonicalIntegral, void>, CanonicalIntegral, BaseType>;

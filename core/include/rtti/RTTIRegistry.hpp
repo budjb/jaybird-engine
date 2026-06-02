@@ -3,26 +3,20 @@
 #include <concepts>
 #include <memory>
 #include <shared_mutex>
-#include <type_traits>
 #include <unordered_map>
 
 #include "Export.hpp"
 #include "RTTIArrayType.hpp"
 #include "RTTIName.hpp"
 #include "RTTIRefType.hpp"
-#include "RTTIType.hpp"
 #include "RTTIWeakRefType.hpp"
+#include "rtti/RTTIGlobalFunction.hpp"
+#include "rtti/RTTIType.hpp"
 #include "types/Name.hpp"
 
 namespace core::rtti {
 /**
- * @brief Forward declaration of the RTTIClassType interface, which represents class type information in the RTTI
- * system.
- */
-class RTTIClassType;
-
-/**
- * @brief Concept that checks whether a type @c T exposes a nested @c Type member alias.
+ * @brief This variable template is @c true when @c T exposes a nested @c Type member alias.
  *
  * @tparam T The type to check for the presence of a nested @c Type member.
  */
@@ -30,7 +24,7 @@ template <typename T>
 constexpr bool has_type_v = requires { typename T::Type; };
 
 /**
- * @brief Concept that identifies RTTI type descriptors that represent container types.
+ * @brief This variable template is @c true when @c T publicly derives from @code RTTIContainerType@endcode.
  *
  * @tparam T The candidate descriptor type to check.
  */
@@ -60,10 +54,25 @@ concept TypeDescriptor = std::derived_from<D, RTTIType>;
 class JAYBIRD_API RTTIRegistry {
  public:
   /**
+   * @brief Destroys the registry and releases all owned type and function descriptors.
+   */
+  ~RTTIRegistry();
+
+  /**
+   * @brief Checks whether a type with the given name is registered.
+   *
+   * @param name The @c Name of the type to check.
+   * @return This function returns @c true if a type with that name exists in the registry, and it returns @c false
+   * otherwise.
+   */
+  bool hasType(const Name& name) const noexcept;
+
+  /**
    * @brief Retrieves the type descriptor for a given type name.
    *
    * @param name The @c Name of the type to look up.
-   * @return A pointer to the @c RTTIType descriptor, or @c nullptr if no type with that name is registered.
+   * @return This function returns a pointer to the @c RTTIType descriptor, or it returns @code nullptr@endcode if no
+   * type with that name is registered.
    */
   RTTIType* getType(const Name& name) const;
 
@@ -74,8 +83,8 @@ class JAYBIRD_API RTTIRegistry {
    * is found but is not a class type.
    *
    * @param name The @c Name of the type to look up.
-   * @return A pointer to the @c RTTIClassType descriptor, or @c nullptr if the type is not found or is not a class
-   * type.
+   * @return This function returns a pointer to the @c RTTIClassType descriptor, or it returns
+   * @code nullptr@endcode if the type is not found or is not a class type.
    */
   RTTIClassType* getClass(const Name& name) const;
 
@@ -84,18 +93,24 @@ class JAYBIRD_API RTTIRegistry {
    * @c TypedRTTIArrayType<D::Type> as well.
    *
    * On success, the registry takes ownership of the descriptor. If a type with the same name is already registered,
-   * the descriptor is discarded and @c false is returned — existing entries are never overwritten. When the element
+   * the descriptor is discarded and @code nullptr@endcode is returned, and existing entries are never overwritten. When
+   * the element
    * type @c D::Type satisfies the @c HasTypeName concept, an @c TypedRTTIArrayType<D::Type> is also registered under
    * the canonical @c "array:<typename>" name. The entire operation (including the companion array registration) is
    * performed under a single exclusive lock, so it is atomic with respect to other registry operations.
    *
    * @tparam D The concrete descriptor type, which must satisfy the @c TypeDescriptor concept.
    * @param type An owning pointer to the descriptor to register; ownership is transferred on success.
-   * @return @c true if the type was successfully registered, @c false if a type with the same name already existed.
+   * @return This function returns a pointer to the registered descriptor when insertion succeeds, or it returns
+   * @code nullptr@endcode when a type with the same name already exists.
    */
   template <TypeDescriptor D>
-  bool registerType(std::unique_ptr<D>&& type);
+  D* registerType(std::unique_ptr<D>&& type) {
+    std::unique_lock lock(m_typesMutex);
+    return registerTypeImpl(std::move(type));
+  }
 
+#ifdef TESTING_ENABLED
   /**
    * @brief Unregisters a type descriptor by its name.
    *
@@ -108,14 +123,45 @@ class JAYBIRD_API RTTIRegistry {
    * @return @c true if the type existed and was removed, or @c false if no matching type was registered.
    */
   bool unregisterType(const Name& name);
+#endif
 
   /**
-   * @brief Checks whether a type with the given name is registered.
+   * @brief Checks whether a global function with the given name is registered in the registry.
    *
-   * @param name The @c Name of the type to check.
-   * @return @c true if a type with that name exists in the registry, @c false otherwise.
+   * @param name The @c Name of the global function to check for existence.
+   * @return @c true if a global function with the specified name is registered, @c false otherwise.
    */
-  bool hasType(const Name& name) const noexcept;
+  [[nodiscard]] bool hasFunction(const Name& name) const noexcept;
+
+  /**
+   * @brief Retrieves the global function descriptor associated with the given name.
+   *
+   * @param name The @c Name of the global function to retrieve.
+   * @return A pointer to the @c RTTIGlobalFunction descriptor if found, or @c nullptr if no global function with the
+   * specified name is registered.
+   */
+  [[nodiscard]] RTTIGlobalFunction* getFunction(const Name& name) const noexcept;
+
+  /**
+   * @brief Registers a global function descriptor in the registry.
+   *
+   * @param function An owning pointer to the @c RTTIGlobalFunction descriptor to register; ownership is transferred on
+   * success.
+   * @return A pointer to the registered @c RTTIGlobalFunction descriptor if registration was successful, or @c nullptr
+   * if a global function with the same name already exists in the registry.
+   */
+  RTTIGlobalFunction* registerFunction(std::unique_ptr<RTTIGlobalFunction>&& function) noexcept;
+
+#ifdef TESTING_ENABLED
+  /**
+   * @brief Unregisters a global function descriptor by its name.
+   *
+   * @param name The @c Name of the global function to remove from the registry.
+   * @return @c true if a global function with the specified name existed and was successfully unregistered, or @c false
+   * if no matching global function was found in the registry.
+   */
+  bool unregisterFunction(const Name& name) noexcept;
+#endif
 
  private:
   /**
@@ -130,65 +176,61 @@ class JAYBIRD_API RTTIRegistry {
    *
    * @tparam D The concrete descriptor type, which must satisfy the @c TypeDescriptor concept.
    * @param type An owning pointer to the descriptor to insert.
-   * @return @c true if the descriptor was inserted, @c false if the name was already present.
+   * @return This function returns a pointer to the inserted descriptor when insertion succeeds, or it returns
+   * @code nullptr@endcode when the name is already present.
    */
   template <TypeDescriptor D>
-  bool registerTypeImpl(std::unique_ptr<D>&& type);
+  D* registerTypeImpl(std::unique_ptr<D>&& type) {
+    auto* instance = type.get();
+
+    if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
+      if constexpr (has_type_v<D>) {
+        using NativeType = D::Type;
+
+        if constexpr (!is_container_type_v<D> && NamedRTTIType<NativeType>) {
+          if (instance->kind() == RTTITypeKind::CLASS) {
+            auto refType = std::make_unique<TypedRTTIRefType<NativeType>>(instance);
+            auto* refDescriptor = refType.get();
+
+            registerTypeImpl(std::move(refType));
+            registerTypeImpl(std::make_unique<TypedRTTIWeakRefType<NativeType>>(instance));
+            registerTypeImpl(std::make_unique<TypedRTTIArrayType<std::shared_ptr<NativeType>>>(refDescriptor));
+          } else {
+            registerTypeImpl(std::make_unique<TypedRTTIArrayType<NativeType>>(instance));
+          }
+        }
+      } else {
+        // TODO: handle runtime-only companion types
+      }
+      return instance;
+    }
+
+    return nullptr;
+  }
 
   /**
-   * @brief A flag indicating whether the type registry has been initialized.
+   * @brief This flag indicates whether the type registry has been initialized.
    */
   bool m_initialized = false;
 
   /**
-   * @brief A mutex to protect access to the type registry. This allows for thread-safe access to the registry.
+   * @brief This mutex protects access to the types map, enabling thread-safe reads and writes.
    */
-  mutable std::shared_mutex m_mutex;
+  mutable std::shared_mutex m_typesMutex;
 
   /**
-   * @brief A pointer to the singleton instance of the RTTIRegistry.
-   */
-  static RTTIRegistry* s_instance;
-
-  /**
-   * @brief A map of type names to their corresponding type information. This is the core of the type registry, allowing
-   * for fast lookups of types by name.
+   * @brief This map stores RTTI type descriptors, keyed by their interned name.
    */
   std::unordered_map<Name, std::unique_ptr<RTTIType>> m_types;
+
+  /**
+   * @brief This mutex protects access to the global functions map, enabling thread-safe reads and writes.
+   */
+  mutable std::shared_mutex m_functionsMutex;
+
+  /**
+   * @brief This map stores global function descriptors, keyed by their interned name.
+   */
+  std::unordered_map<Name, std::unique_ptr<RTTIGlobalFunction>> m_functions;
 };
-
-template <TypeDescriptor D>
-bool RTTIRegistry::registerType(std::unique_ptr<D>&& type) {
-  std::unique_lock lock(m_mutex);
-  return registerTypeImpl(std::move(type));
-}
-
-template <TypeDescriptor D>
-bool RTTIRegistry::registerTypeImpl(std::unique_ptr<D>&& type) {
-  auto* instance = type.get();
-
-  if (auto [it, success] = m_types.insert({type->name(), std::move(type)}); success) {
-    if constexpr (has_type_v<D>) {
-      using NativeType = D::Type;
-
-      if constexpr (!is_container_type_v<D> && NamedRTTIType<NativeType>) {
-        if (instance->kind() == RTTITypeKind::CLASS) {
-          auto refType = std::make_unique<TypedRTTIRefType<NativeType>>(instance);
-          auto* refDescriptor = refType.get();
-
-          registerTypeImpl(std::move(refType));
-          registerTypeImpl(std::make_unique<TypedRTTIWeakRefType<NativeType>>(instance));
-          registerTypeImpl(std::make_unique<TypedRTTIArrayType<std::shared_ptr<NativeType>>>(refDescriptor));
-        } else {
-          registerTypeImpl(std::make_unique<TypedRTTIArrayType<NativeType>>(instance));
-        }
-      }
-    } else {
-      // TODO: handle runtime-only companion types
-    }
-    return true;
-  }
-
-  return false;
-}
 }  // namespace core::rtti

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Export.hpp"
-#include "RTTIRegistry.hpp"
+#include "rtti/RTTIRegistry.hpp"
 
 #ifdef TESTING_ENABLED
 #define TEST_VISIBILITY public:
@@ -93,76 +93,25 @@ class JAYBIRD_API RTTISystem {
   void registerBuiltInTypes() noexcept;
 
   /**
-   * @brief A flag indicating whether the type system has been initialized.
+   * @brief This flag indicates whether the type system has been initialized.
    *
-   * This is used to ensure that the initialization process is only performed once, and that any subsequent calls to the
-   * initialization method will simply return true without repeating the initialization logic.
+   * It ensures that initialization runs only once; subsequent calls to @c initialize() return @c false immediately.
    */
   bool m_initialized = false;
 
   /**
-   * @brief The @c RTTIRegistry instance that is managed by the @code RTTISystem@endcode.
-   *
-   * This registry is responsible for storing all type information for the RTTI system, and is accessed and modified
-   * through the various registration functions and callback mechanisms provided by the @code RTTISystem@endcode.
+   * @brief This registry stores all type information managed by the @code RTTISystem@endcode.
    */
   RTTIRegistry m_registry;
 
   /**
-   * @brief Collection of callback functions for declaring types in the RTTI system.
-   *
-   * Each function in this collection takes no parameters and performs declaration-phase registration work.
+   * @brief This collection stores callback functions that run during the declaration phase of initialization.
    */
   std::vector<CallbackFunction> m_declareFunctions;
 
   /**
-   * @brief Collection of callback functions for defining types in the RTTI system.
-   *
-   * Each function in this collection takes no parameters and performs definition-phase registration work.
+   * @brief This collection stores callback functions that run during the definition phase of initialization.
    */
   std::vector<CallbackFunction> m_defineFunctions;
-};
-
-/**
- * @brief Helper struct that resolves a reflected type descriptor for a C++ type.
- *
- * This helper caches the registry lookup result after the first request so repeated
- * uses do not repeatedly query the type registry.
- *
- * @tparam T This type is the C++ type whose reflected descriptor is requested.
- */
-template <typename T>
-struct TypeResolver {
-  /**
-   * @brief Returns the reflected type descriptor for @c T.
-   *
-   * @return This function returns the reflected type descriptor for @c T, or @code nullptr@endcode when no descriptor
-   * has been registered.
-   */
-  static RTTIType* get() {
-    static bool initialized = false;
-    static RTTIType* type = nullptr;
-
-    if (!initialized) {
-      type = RTTISystem::get().registry().getType(GetRTTIName<T>());
-      initialized = true;
-    }
-
-    return type;
-  }
-
-  /**
-   * @brief Returns the reflected class descriptor for @c T when the resolved type is a class.
-   *
-   * @return This function returns the reflected class descriptor for @c T, or @code nullptr@endcode when the resolved
-   * type is absent or not a class.
-   */
-  static RTTIClassType* getClass() {
-    if (auto* type = get(); type && type->kind() == RTTITypeKind::CLASS) {
-      return reinterpret_cast<RTTIClassType*>(type);
-    }
-
-    return nullptr;
-  }
 };
 }  // namespace core::rtti

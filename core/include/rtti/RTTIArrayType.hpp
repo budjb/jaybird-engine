@@ -2,11 +2,11 @@
 
 #include "Export.hpp"
 #include "NamePool.hpp"
-#include "RTTIContainerType.hpp"
-#include "RTTIIterator.hpp"
-#include "RTTIName.hpp"
-#include "RTTIType.hpp"
 #include "Vector.hpp"
+#include "rtti/RTTIContainerType.hpp"
+#include "rtti/RTTIIterator.hpp"
+#include "rtti/RTTIName.hpp"
+#include "rtti/RTTIType.hpp"
 
 namespace core::rtti {
 /**

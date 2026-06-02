@@ -1,11 +1,12 @@
 #pragma once
-#include "RTTIFunction.hpp"
+
+#include "rtti/RTTIFunction.hpp"
 
 namespace core::rtti {
 /**
  * @brief Base interface for reflected global (non-member) functions.
  */
-class RTTIGlobalFunction : public RTTIFunction {
+class JAYBIRD_API RTTIGlobalFunction : public RTTIFunction {
  public:
   /**
    * @brief Constructs a reflected global function descriptor.
@@ -13,39 +14,11 @@ class RTTIGlobalFunction : public RTTIFunction {
    * @param name This value is the reflected function name.
    * @param flags This value initializes the function flags.
    */
-  explicit RTTIGlobalFunction(const std::string_view name, const FunctionFlags flags = {}) noexcept
-      : RTTIFunction(name, flags) {
-    m_flags.isStatic = true;
-  }
+  explicit RTTIGlobalFunction(std::string_view name, FunctionFlags flags = {}) noexcept;
 
   /**
    * @brief Destroys the reflected global function descriptor.
    */
-  ~RTTIGlobalFunction() override = default;
-};
-
-/**
- * @brief Concrete reflected wrapper for free functions.
- *
- * @tparam F The free-function pointer type to wrap.
- */
-template <StaticFunction F>
-class TypedRTTIGlobalFunction : public TypedRTTIFunction<F, RTTIGlobalFunction> {
- public:
-  using traits = FunctionTraits<F>;
-
-  /**
-   * @brief Constructs a reflected wrapper for a global function from a function name.
-   *
-   * @tparam ArgNames These types provide one name per function argument.
-   * @param name This value is the reflected function name.
-   * @param function This value is the global function pointer to wrap.
-   * @param argNames These values provide argument names in declaration order.
-   */
-  template <typename... ArgNames>
-    requires(StaticFunction<F> && sizeof...(ArgNames) == traits::numArgs &&
-             (std::convertible_to<ArgNames, std::string_view> && ...))
-  explicit TypedRTTIGlobalFunction(std::string_view name, F function, ArgNames&&... argNames)
-      : TypedRTTIFunction<F, RTTIGlobalFunction>(name, function, std::forward<ArgNames>(argNames)...) {}
+  ~RTTIGlobalFunction() override;
 };
 }  // namespace core::rtti

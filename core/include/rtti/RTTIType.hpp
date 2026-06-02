@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "RTTITypeKind.hpp"
+#include "rtti/RTTITypeKind.hpp"
 #include "types/Name.hpp"
 
 namespace core::rtti {
@@ -22,19 +22,19 @@ class JAYBIRD_API RTTIType {
    * @brief Constructs an RTTIType with the given name, size, and kind. The alignment is set to maximum alignment by
    * default.
    *
-   * @param name The name of the type, represented as an Name.
+   * @param name The name of the type, represented as a @c Name.
    * @param size The size of the type in bytes.
-   * @param kind The kind of the type, represented as an RTTITypeKind enumeration value.
+   * @param kind The kind of the type, represented as a @c RTTITypeKind enumeration value.
    */
   explicit RTTIType(const Name& name, std::size_t size, RTTITypeKind kind) noexcept;
 
   /**
    * @brief Constructs an RTTIType with the given name, size, alignment, and kind.
    *
-   * @param name The name of the type, represented as an Name.
+   * @param name The name of the type, represented as a @c Name.
    * @param size The size of the type in bytes.
    * @param alignment The alignment requirement of the type in bytes.
-   * @param kind The kind of the type, represented as an RTTITypeKind enumeration value.
+   * @param kind The kind of the type, represented as a @c RTTITypeKind enumeration value.
    */
   explicit RTTIType(const Name& name, std::size_t size, std::size_t alignment, RTTITypeKind kind) noexcept;
 
@@ -59,16 +59,16 @@ class JAYBIRD_API RTTIType {
   [[nodiscard]] std::size_t alignment() const noexcept;
 
   /**
-   * @brief Returns the kind of the type, represented as an RTTITypeKind enumeration value.
+   * @brief Returns the kind of the type, represented as a @c RTTITypeKind enumeration value.
    *
-   * @return The kind of the type, represented as an RTTITypeKind enumeration value.
+   * @return The kind of the type, represented as a @c RTTITypeKind enumeration value.
    */
   [[nodiscard]] RTTITypeKind kind() const noexcept;
 
   /**
-   * @brief Returns the name of the type, represented as an Name.
+   * @brief Returns the name of the type, represented as a @c Name.
    *
-   * @return The name of the type, represented as an Name.
+   * @return The name of the type, represented as a @c Name.
    */
   [[nodiscard]] Name name() const noexcept;
 
@@ -207,30 +207,29 @@ class JAYBIRD_API RTTIType {
 
  private:
   /**
-   * @brief The name of the type, represented as an Name.
+   * @brief The name of the type, represented as a @c Name.
    *
    * This name uniquely identifies the type within the RTTI system and enables type lookup and comparison.
    */
   Name m_name;
 
   /**
-   * @brief The size of the type in bytes.
+   * @brief This field stores the size of the type in bytes.
    */
   std::size_t m_size;
 
   /**
-   * @brief The alignment requirement of the type in bytes.
+   * @brief This field stores the alignment requirement of the type in bytes.
    */
   std::size_t m_alignment;
 
   /**
-   * @brief A pointer to the parent type descriptor if this type is derived from another type, or @c nullptr if it has
-   * no parent.
+   * @brief This pointer refers to the parent type descriptor, or @c nullptr when the type has no parent.
    */
   RTTIType* m_parent = nullptr;
 
   /**
-   * @brief The kind of the type, represented as an RTTITypeKind enumeration value.
+   * @brief This field stores the kind of the type, represented as a @c RTTITypeKind enumeration value.
    */
   RTTITypeKind m_kind;
 };

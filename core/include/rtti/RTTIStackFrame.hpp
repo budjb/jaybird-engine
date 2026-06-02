@@ -187,15 +187,14 @@ class RTTIStackFrame {
 
  private:
   /**
-   * @brief The size of a pointer on the target platform, which determines the size of each slot in the stack frame for
-   * the "this" pointer, argument pointers, and return value pointer.
-   *
+   * @brief This constant stores the size of a pointer on the target platform, which determines the slot size in the
+   * stack frame buffer.
    */
   static constexpr auto POINTER_SIZE = sizeof(void*);
 
   /**
-   * @brief The alignment requirement for the stack frame buffer, which is set to the alignment of a pointer on the
-   * target platform to ensure that all pointer accesses are properly aligned.
+   * @brief This constant stores the alignment requirement for the stack frame buffer, equal to the alignment of a
+   * pointer on the target platform.
    */
   static constexpr auto ALIGNMENT = static_cast<std::align_val_t>(alignof(void*));
 
@@ -211,28 +210,30 @@ class RTTIStackFrame {
   }
 
   /**
-   * @brief The number of argument slots in the stack frame, which determines how many argument pointers can be stored.
+   * @brief This field stores the number of argument slots in the stack frame.
    */
   std::size_t m_numArgs;
 
   /**
-   * @brief Whether the stack frame includes a slot for a return value pointer, which is true if the function has a
-   * non-void return type. This flag determines whether space is allocated in the buffer for a return value pointer.
+   * @brief This flag indicates whether the stack frame includes a slot for a return value pointer.
+   *
+   * It is @c true when the function has a non-void return type, and @c false otherwise.
    */
   bool m_return;
 
   /**
-   * @brief Whether the stack frame includes a slot for a "this" pointer, which is true if the function is a non-static
-   * member function. This flag determines whether space is allocated in the buffer for a "this" pointer.
+   * @brief This flag indicates whether the function is static and therefore has no @c this pointer slot.
+   *
+   * It is @c true for static member functions and free functions, and @c false for non-static member functions.
    */
   bool m_static;
 
   /**
-   * @brief A pointer to a contiguous block of memory that serves as the storage for the "this" pointer (if applicable),
-   * argument pointers, and return value pointer (if applicable) for the stack frame. The layout of the buffer is as
-   * follows:
-   * - If m_isMember is true, the first pointer-sized slot is reserved for the "this" pointer.
-   * - The next @c m_numArgs pointer-sized slots are reserved for argument pointers set and read via @c argPtr.
+   * @brief This pointer refers to a contiguous block of memory that stores the @c this pointer (if applicable),
+   * argument pointers, and return value pointer (if applicable).
+   *
+   * The layout is: an optional @c this slot (when @c m_static is @c false), @c m_numArgs argument slots,
+   * then an optional return slot (when @c m_return is @c true).
    */
   void* m_buffer;
 };

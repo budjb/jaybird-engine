@@ -4,10 +4,10 @@
 
 #include "Export.hpp"
 #include "NamePool.hpp"
-#include "RTTIClassFunction.hpp"
-#include "RTTIName.hpp"
-#include "RTTIProperty.hpp"
-#include "RTTIType.hpp"
+#include "rtti/RTTIClassFunction.hpp"
+#include "rtti/RTTIName.hpp"
+#include "rtti/RTTIProperty.hpp"
+#include "rtti/RTTIType.hpp"
 
 namespace core::rtti {
 /**
@@ -105,27 +105,27 @@ class JAYBIRD_API RTTIClassType : public RTTIType {
 
  private:
   /**
-   * @brief A boolean indicating whether the class type is trivially copyable.
+   * @brief This flag indicates whether the class type is trivially copyable.
    */
   bool m_trivial;
 
   /**
-   * @brief Mutex to protect concurrent access to the properties of the class type.
+   * @brief This mutex protects concurrent access to the properties of the class type.
    */
   mutable std::shared_mutex m_propertiesMutex;
 
   /**
-   * @brief Mutex to protect concurrent access to the member functions of the class type.
+   * @brief This mutex protects concurrent access to the member functions of the class type.
    */
   mutable std::shared_mutex m_functionsMutex;
 
   /**
-   * @brief A vector of @c RTTIProperty objects representing the properties of the class.
+   * @brief This map stores @c RTTIProperty descriptors for the properties of the class, keyed by name.
    */
   std::unordered_map<Name, std::shared_ptr<RTTIProperty>> m_properties;
 
   /**
-   * @brief A vector of @c RTTIClassFunction objects representing the member functions of the class.
+   * @brief This map stores @c RTTIClassFunction descriptors for the member functions of the class, keyed by name.
    */
   std::unordered_map<Name, std::shared_ptr<RTTIClassFunction>> m_functions;
 };
@@ -145,7 +145,7 @@ class TypedRTTIClassType : public TypedRTTIType<T, RTTIClassType> {
   using Type = T;
 
   /**
-   * @brief Constructs a @c TClassType for the specified type @code T@endcode.
+   * @brief Constructs a @c TypedRTTIClassType for the specified type @code T@endcode.
    */
   explicit TypedRTTIClassType() : TypedRTTIType<T, RTTIClassType>(NamePool::get().addName(GetRTTIName<T>())) {}
 };

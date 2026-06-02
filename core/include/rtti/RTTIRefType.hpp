@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "NamePool.hpp"
-#include "RTTIContainerType.hpp"
-#include "RTTIName.hpp"
+#include "rtti/RTTIContainerType.hpp"
+#include "rtti/RTTIName.hpp"
 
 namespace core::rtti {
 
@@ -17,7 +17,7 @@ namespace core::rtti {
 class RTTIRefType : public RTTIContainerType {
  public:
   /**
-   * @brief Constructs an @c IRefType with the given name, size, alignment, and inner type descriptor.
+   * @brief Constructs an @c RTTIRefType with the given name, size, alignment, and inner type descriptor.
    *
    * @param name The interned string name of the reference type.
    * @param size The size of the smart pointer type in bytes.
@@ -28,7 +28,7 @@ class RTTIRefType : public RTTIContainerType {
       : RTTIContainerType(name, size, alignment, inner, RTTITypeKind::REF) {}
 
   /**
-   * @brief Virtual destructor for @code IRefType@endcode.
+   * @brief Virtual destructor for @code RTTIRefType@endcode.
    */
   ~RTTIRefType() override = default;
 

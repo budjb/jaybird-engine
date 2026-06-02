@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Export.hpp"
-#include "RTTIType.hpp"
+#include "rtti/RTTIType.hpp"
 
 namespace core::rtti {
 /**
@@ -50,7 +50,7 @@ class JAYBIRD_API RTTIContainerType : public RTTIType {
 
  private:
   /**
-   * @brief A pointer to the @c RTTIType descriptor for the type contained within the container.
+   * @brief This pointer refers to the @c RTTIType descriptor for the type contained within the container.
    */
   const RTTIType* m_inner;
 };

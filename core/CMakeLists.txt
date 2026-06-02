@@ -34,8 +34,15 @@ add_library(jaybird-engine-core SHARED
         include/rtti/RTTIProperty.hpp
         include/rtti/RTTIStackFrame.hpp
         include/rtti/RTTIFunction.hpp
+        src/rtti/RTTIFunction.cpp
         include/rtti/RTTIGlobalFunction.hpp
         include/rtti/RTTIStringType.hpp
+        include/rtti/RTTITypeResolver.inl
+        include/rtti/RTTITypeResolver.hpp
+        src/rtti/RTTIFunction.cpp
+        src/rtti/RTTIGlobalFunction.cpp
+        src/rtti/RTTIClassFunction.cpp
+        include/rtti/RTTITypedFunction.hpp
 )
 
 include(GenerateExportHeader)
@@ -53,6 +60,7 @@ target_include_directories(jaybird-engine-core
 )
 
 if (BUILD_TESTING)
+  message(STATUS "Building core tests")
   add_executable(core-tests
           tests/types/NameTests.cpp
           tests/NamePoolTests.cpp

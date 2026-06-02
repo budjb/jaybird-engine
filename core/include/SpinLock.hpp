@@ -49,8 +49,8 @@ class JAYBIRD_API SpinLock {
 
  private:
   /**
-   * @brief Atomic state variable tracking the lock: 0 means unlocked, positive values represent
-   * the active shared-reader count, and -1 means held exclusively.
+   * @brief This atomic state variable tracks the lock state: 0 means unlocked, positive values represent the active
+   * shared-reader count, and -1 means held exclusively.
    */
   std::atomic<int> m_locked = 0;
 };
