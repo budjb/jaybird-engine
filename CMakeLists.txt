@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_TESTING "Build and enable tests" ON)
 option(ENABLE_COVERAGE "Enable LLVM code coverage instrumentation" OFF)
 
+include(cmake/CPM.cmake)
+CPMAddPackage("gh:TheLartians/Format.cmake@1.8.2")
+
 if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(BUILD_TESTING OFF)
 elseif (BUILD_TESTING)
