@@ -9,6 +9,9 @@
 #define VALIDATE_RTTI_TYPE(registry, typeName, expectedKind)                                                        \
   REQUIRE(registry.hasType(typeName));                                                                              \
   REQUIRE(registry.getType(typeName)->kind() == expectedKind);                                                      \
+  REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::POINTER>(typeName)));          \
+  REQUIRE(registry.getType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::POINTER>(typeName))->kind() == \
+          core::rtti::RTTITypeKind::POINTER);                                                                       \
   if (expectedKind == core::rtti::RTTITypeKind::CLASS) {                                                            \
     REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::REF>(typeName)));            \
     REQUIRE(registry.hasType(core::rtti::GetPrefixedRTTIName<core::rtti::RTTITypeKind::WEAK_REF>(typeName)));       \

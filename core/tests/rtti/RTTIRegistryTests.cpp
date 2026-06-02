@@ -242,7 +242,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Given a registered non-trivial TypedRTTIClassType, when companion container descriptors are queried, then ref, "
-    "weak ref, and array-of-ref descriptors are registered",
+    "pointer, weak ref, and array-of-ref descriptors are registered",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
@@ -250,6 +250,7 @@ TEST_CASE(
 
   RTTIType* baseType = registry.getType("reg_target_e");
   RTTIType* refType = registry.getType("ref:reg_target_e");
+  RTTIType* pointerType = registry.getType("ptr:reg_target_e");
   RTTIType* weakRefType = registry.getType("wref:reg_target_e");
   RTTIType* refArrayType = registry.getType("array:ref:reg_target_e");
 
@@ -258,6 +259,9 @@ TEST_CASE(
 
   REQUIRE(refType != nullptr);
   REQUIRE(refType->kind() == RTTITypeKind::REF);
+
+  REQUIRE(pointerType != nullptr);
+  REQUIRE(pointerType->kind() == RTTITypeKind::POINTER);
 
   REQUIRE(weakRefType != nullptr);
   REQUIRE(weakRefType->kind() == RTTITypeKind::WEAK_REF);
@@ -275,14 +279,17 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a TypedRTTIClassType registered in RTTIRegistry, when the companion array name is queried, then it is also "
-    "registered automatically",
+    "Given a TypedRTTIClassType registered in RTTIRegistry, when companion pointer and array names are queried, then "
+    "both are registered automatically",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetB_Solo>>()) != nullptr);
 
+  const Name pointerName("ptr:reg_target_b_solo");
   const Name arrayName("array:reg_target_b_solo");
+  REQUIRE(registry.hasType(pointerName));
+  REQUIRE(registry.getType(pointerName) != nullptr);
   REQUIRE(registry.hasType(arrayName));
   REQUIRE(registry.getType(arrayName) != nullptr);
 }
@@ -432,6 +439,7 @@ TEST_CASE(
 
   REQUIRE(successCount == 1);
   REQUIRE(registry.hasType("reg_target_h"));
+  REQUIRE(registry.hasType("ptr:reg_target_h"));
   REQUIRE(registry.hasType("array:reg_target_h"));
 }
 
@@ -530,51 +538,57 @@ TEST_CASE(
 // =============================================================================
 
 TEST_CASE(
-    "Given a registered type, when unregisterType is called in tests, then the type and companion descriptors are "
-    "removed",
+    "Given a registered type, when unregisterType is called in tests, then the type and its pointer and array "
+    "companions are removed",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetJ_Solo>>()) != nullptr);
   REQUIRE(registry.hasType("reg_target_j_solo"));
+  REQUIRE(registry.hasType("ptr:reg_target_j_solo"));
   REQUIRE(registry.hasType("array:reg_target_j_solo"));
 
   REQUIRE(registry.unregisterType("reg_target_j_solo"));
   REQUIRE_FALSE(registry.hasType("reg_target_j_solo"));
+  REQUIRE_FALSE(registry.hasType("ptr:reg_target_j_solo"));
   REQUIRE_FALSE(registry.hasType("array:reg_target_j_solo"));
 }
 
 TEST_CASE(
-    "Given a registered non-trivial class type, when unregisterType is called in tests, then class companion "
-    "descriptors are removed",
+    "Given a registered non-trivial class type, when unregisterType is called in tests, then class pointer, ref, "
+    "weak-ref, and array-of-ref companions are removed",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetK_Solo>>()) != nullptr);
   REQUIRE(registry.hasType("reg_target_k_solo"));
+  REQUIRE(registry.hasType("ptr:reg_target_k_solo"));
   REQUIRE(registry.hasType("ref:reg_target_k_solo"));
   REQUIRE(registry.hasType("wref:reg_target_k_solo"));
   REQUIRE(registry.hasType("array:ref:reg_target_k_solo"));
 
   REQUIRE(registry.unregisterType("reg_target_k_solo"));
   REQUIRE_FALSE(registry.hasType("reg_target_k_solo"));
+  REQUIRE_FALSE(registry.hasType("ptr:reg_target_k_solo"));
   REQUIRE_FALSE(registry.hasType("ref:reg_target_k_solo"));
   REQUIRE_FALSE(registry.hasType("wref:reg_target_k_solo"));
   REQUIRE_FALSE(registry.hasType("array:ref:reg_target_k_solo"));
 }
 
 TEST_CASE(
-    "Given a registered type with an auto-array companion, when unregisterType is called for only the array name in "
-    "tests, then the base type remains registered",
+    "Given a registered type with pointer and auto-array companions, when unregisterType is called for only the array "
+    "name in tests, then the base and pointer types remain registered",
     "[rtti][type_registry]") {
   RTTIRegistry& registry = RTTISystem::get().registry();
 
   REQUIRE(registry.registerType(std::make_unique<TypedRTTIClassType<RegTargetL_Solo>>()) != nullptr);
   REQUIRE(registry.hasType("reg_target_l_solo"));
+  REQUIRE(registry.hasType("ptr:reg_target_l_solo"));
   REQUIRE(registry.hasType("array:reg_target_l_solo"));
 
   REQUIRE(registry.unregisterType("array:reg_target_l_solo"));
   REQUIRE(registry.hasType("reg_target_l_solo"));
+  REQUIRE(registry.hasType("ptr:reg_target_l_solo"));
   REQUIRE_FALSE(registry.hasType("array:reg_target_l_solo"));
 }
 

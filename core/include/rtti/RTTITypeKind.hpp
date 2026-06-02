@@ -49,6 +49,11 @@ enum class RTTITypeKind : std::size_t {
    * @brief Identifies non-owning, weak-reference smart pointers (i.e. @c std::weak_ptr<T>).
    */
   WEAK_REF,
+
+  /**
+   * @brief Identifies raw pointer types (i.e. @c T*).
+   */
+  POINTER,
 };
 
 }  // namespace core::rtti

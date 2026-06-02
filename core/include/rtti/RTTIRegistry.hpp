@@ -8,6 +8,7 @@
 #include "Export.hpp"
 #include "RTTIArrayType.hpp"
 #include "RTTIName.hpp"
+#include "RTTIPointerType.hpp"
 #include "RTTIRefType.hpp"
 #include "RTTIWeakRefType.hpp"
 #include "rtti/RTTIGlobalFunction.hpp"
@@ -193,9 +194,11 @@ class JAYBIRD_API RTTIRegistry {
             auto* refDescriptor = refType.get();
 
             registerTypeImpl(std::move(refType));
+            registerTypeImpl(std::make_unique<TypedRTTIPointerType<NativeType*>>(instance));
             registerTypeImpl(std::make_unique<TypedRTTIWeakRefType<NativeType>>(instance));
             registerTypeImpl(std::make_unique<TypedRTTIArrayType<std::shared_ptr<NativeType>>>(refDescriptor));
           } else {
+            registerTypeImpl(std::make_unique<TypedRTTIPointerType<NativeType*>>(instance));
             registerTypeImpl(std::make_unique<TypedRTTIArrayType<NativeType>>(instance));
           }
         }

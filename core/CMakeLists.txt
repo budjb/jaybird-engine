@@ -47,6 +47,8 @@ add_library(jaybird-engine-core SHARED
         include/types/Vector2.hpp
         src/types/Vector3.cpp
         include/types/Vector3.hpp
+        include/rtti/RTTIPointerType.cpp
+        include/rtti/RTTIPointerType.hpp
 )
 
 include(GenerateExportHeader)
@@ -82,6 +84,7 @@ if (BUILD_TESTING)
           tests/rtti/RTTIIteratorTests.cpp
           tests/rtti/RTTIRefTypeTests.cpp
           tests/rtti/RTTIWeakRefTypeTests.cpp
+          tests/rtti/RTTIPointerTypeTests.cpp
           tests/rtti/RTTINameTypeTests.cpp
           tests/rtti/RTTISystemTests.cpp
           tests/rtti/RTTIRegistryTests.cpp

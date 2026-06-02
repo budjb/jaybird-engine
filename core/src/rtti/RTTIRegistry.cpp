@@ -27,6 +27,10 @@ bool unregisterTypeRecursive(std::unordered_map<Name, std::unique_ptr<RTTIType>>
     unregisterTypeRecursive(types, GetPrefixedRTTIName<RTTITypeKind::WEAK_REF>(name));
   }
 
+  if (kind != RTTITypeKind::POINTER) {
+    unregisterTypeRecursive(types, GetPrefixedRTTIName<RTTITypeKind::POINTER>(name));
+  }
+
   types.erase(it);
   return true;
 }

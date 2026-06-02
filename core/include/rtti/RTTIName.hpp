@@ -193,6 +193,16 @@ constexpr auto GetRTTIPrefix<RTTITypeKind::WEAK_REF>() {
 }
 
 /**
+ * @brief Returns the prefix string for raw pointer type names.
+ *
+ * @return The string @c "ptr:" used as a prefix for raw pointer type names.
+ */
+template <>
+constexpr auto GetRTTIPrefix<RTTITypeKind::POINTER>() {
+  return CString("ptr:");
+}
+
+/**
  * @brief Provider template for mapping a C++ type @c T to its RTTI string name.
  *
  * Specialize this struct for any type that cannot declare a @c static constexpr NAME member, providing a
